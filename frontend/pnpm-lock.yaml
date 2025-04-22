@@ -42,6 +42,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.1
         version: 19.1.2(@types/react@19.1.2)
+      daisyui:
+        specifier: ^5.0.27
+        version: 5.0.27
       react-router-devtools:
         specifier: ^1.1.0
         version: 1.1.10(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react-router@7.5.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@5.4.18(@types/node@20.17.30)(lightningcss@1.29.2))
@@ -1236,6 +1239,9 @@ packages:
   d3-zoom@3.0.0:
     resolution: {integrity: sha512-b8AmV3kfQaqWAuacbPuNbL6vahnOJflOhexLzMMNLga62+/nh0JzvJ0aO/5a5MVgUFGS7Hu1P9P03o3fJkDCyw==}
     engines: {node: '>=12'}
+
+  daisyui@5.0.27:
+    resolution: {integrity: sha512-XrpqgfpGaZJvTPg9pS9Rq6xbYpmMnR0a7AKqyVPZceJzjAs5HH3rfkRkiuGin0+KC2Adnu+WLHU7UDxAtCMyAw==}
 
   date-fns@4.1.0:
     resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
@@ -3441,6 +3447,8 @@ snapshots:
       d3-interpolate: 3.0.1
       d3-selection: 3.0.0
       d3-transition: 3.0.1(d3-selection@3.0.0)
+
+  daisyui@5.0.27: {}
 
   date-fns@4.1.0: {}
 
