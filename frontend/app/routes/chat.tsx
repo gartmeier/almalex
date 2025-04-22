@@ -1,5 +1,5 @@
-import type { Route } from "./+types/chat";
 import { ArrowUp, PenBox } from "lucide-react";
+import type { Route } from "./+types/chat";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -32,7 +32,7 @@ function Header() {
           Alma Lex
         </a>
       </div>
-      <div className="flex-none flex gap-4">
+      <div className="flex flex-none gap-4">
         <button className="btn btn-primary">Sign In</button>
         <button className="btn">Sign Up</button>
       </div>
@@ -42,10 +42,10 @@ function Header() {
 
 function Panel() {
   return (
-    <div className="card mx-auto bg-base-200 shadown-sm border-b-0 max-w-3xl fixed bottom-12 right-0 left-0">
+    <div className="card bg-base-200 shadown-sm fixed right-0 bottom-12 left-0 mx-auto max-w-3xl border-b-0">
       <div className="card-body p-3">
         <textarea
-          className="w-full resize-none focus:outline-none text-lg"
+          className="w-full resize-none text-lg focus:outline-none"
           placeholder="Ask anything"
           autoFocus
           rows={2}
