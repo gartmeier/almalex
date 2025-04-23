@@ -11,11 +11,11 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Chat() {
   return (
-    <>
+    <div className="flex h-screen flex-col">
       <Header />
       <Messages />
       <Panel />
-    </>
+    </div>
   );
 }
 
@@ -82,10 +82,12 @@ const MESSAGE_LIST = [
 
 function Messages() {
   return (
-    <div className="mx-auto max-w-3xl">
-      {MESSAGE_LIST.map((message) => (
-        <Message key={message.id} message={message} />
-      ))}
+    <div className="flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-3xl">
+        {MESSAGE_LIST.map((message) => (
+          <Message key={message.id} message={message} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -118,7 +120,7 @@ function Message({
 
 function Panel() {
   return (
-    <div className="card bg-base-200 shadown-sm fixed right-0 bottom-12 left-0 mx-auto max-w-3xl border-b-0">
+    <div className="card bg-base-200 shadown-sm mx-auto w-full max-w-3xl">
       <div className="card-body p-3">
         <textarea
           className="w-full resize-none text-lg focus:outline-none"
