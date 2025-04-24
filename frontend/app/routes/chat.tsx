@@ -99,18 +99,20 @@ function Message({
 }) {
   if (message.role === "assistant") {
     return (
-      <div className="card">
-        <div className="card-body prose px-0">
-          <Markdown>{message.content}</Markdown>
+      <div className="py-5">
+        <div className="card">
+          <div className="card-body prose p-0">
+            <Markdown>{message.content}</Markdown>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-end">
-      <div className="card bg-base-200 shadown-sm w-[70%]">
-        <div className="card-body prose">
+    <div className="flex justify-end py-5">
+      <div className="card bg-base-200 w-[70%] rounded-3xl">
+        <div className="card-body prose px-5 py-2.5">
           <Markdown>{message.content}</Markdown>
         </div>
       </div>
