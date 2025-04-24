@@ -1,4 +1,5 @@
 import { ArrowUp, PenBox } from "lucide-react";
+import React, { useState } from "react";
 import Markdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
 import type { Route } from "./+types/chat";
@@ -36,8 +37,8 @@ function Header() {
         </a>
       </div>
       <div className="flex flex-none gap-4">
-        <button className="btn btn-primary">Sign In</button>
-        <button className="btn">Sign Up</button>
+        <button className="btn">Sign In</button>
+        <button className="btn btn-primary">Sign Up</button>
       </div>
     </header>
   );
@@ -122,6 +123,14 @@ function Message({
 }
 
 function Panel() {
+  const [_, setInput] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  function handleInputChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(event.target.value);
+    setIsButtonDisabled(!event.target.value);
+  }
+
   return (
     <div className="card bg-base-200 shadown-sm mx-auto mb-6 w-full max-w-3xl">
       <div className="card-body flex-row items-start p-3">
@@ -129,8 +138,12 @@ function Panel() {
           className="w-full resize-none focus:outline-none"
           placeholder="How can I help you today?"
           autoFocus
+          onChange={handleInputChange}
         />
-        <button className="btn btn-primary btn-square btn-sm h-9 w-9 rounded-lg">
+        <button
+          className="btn btn-primary btn-square btn-sm h-9 w-9 rounded-lg"
+          disabled={isButtonDisabled}
+        >
           <ArrowUp size={24} />
         </button>
       </div>
