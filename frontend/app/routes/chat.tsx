@@ -76,13 +76,16 @@ const MESSAGE_LIST = [
 ];
 
 function ChatProvider({ children }: { children: React.ReactNode }) {
+  const [chatId] = useState<string>(nanoid());
   const [state, setState] = useState<string>("idle");
   const [messages, setMessages] = useState<ChatMessage[]>(MESSAGE_LIST);
   const timeoutRef = useRef<number | null>(null);
 
-  console.log(messages);
-
   const sendMessage = (message: string) => {
+    if (window.location.pathname !== `/chat/${chatId}`) {
+      window.history.pushState(null, "", `/chat/${chatId}`);
+    }
+
     setMessages([
       ...messages,
       { id: nanoid(), role: "user", content: message },
