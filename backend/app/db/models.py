@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, Integer
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
-from pgvector.sqlalchemy import Vector
+
 from app.db.session import Base
 
 

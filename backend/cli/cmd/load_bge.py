@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 import requests
 from bs4 import BeautifulSoup
+
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
 from cli.utils.text import normalize_text, split_text
