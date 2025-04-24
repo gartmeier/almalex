@@ -5,38 +5,6 @@ import TextareaAutosize from "react-textarea-autosize";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Alma Lex" },
-    { name: "description", content: "Welcome to Alma Lex!" },
-  ];
-}
-
-type ChatMessage = {
-  id: string;
-  role: string;
-  content: string;
-};
-
-type ChatContextType = {
-  state: string;
-  messages: ChatMessage[];
-  sendMessage: (message: string) => void;
-  stopResponse: () => void;
-};
-
-export default function Chat() {
-  return (
-    <ChatProvider>
-      <div className="flex h-screen flex-col">
-        <Header />
-        <Messages />
-        <Panel />
-      </div>
-    </ChatProvider>
-  );
-}
-
 const MESSAGE_LIST = [
   {
     id: nanoid(),
@@ -75,15 +43,56 @@ const MESSAGE_LIST = [
   },
 ];
 
-function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [chatId] = useState<string>(nanoid());
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Alma Lex" },
+    { name: "description", content: "Welcome to Alma Lex!" },
+  ];
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { id: nanoid(), initialMessages: MESSAGE_LIST };
+}
+
+type ChatMessage = {
+  id: string;
+  role: string;
+  content: string;
+};
+
+type ChatContextType = {
+  state: string;
+  messages: ChatMessage[];
+  sendMessage: (message: string) => void;
+  stopResponse: () => void;
+};
+
+export default function Chat({ loaderData }: Route.ComponentProps) {
+  return (
+    <ChatProvider {...loaderData}>
+      <div className="flex h-screen flex-col">
+        <Header />
+        <Messages />
+        <Panel />
+      </div>
+    </ChatProvider>
+  );
+}
+
+type ChatProviderProps = {
+  id: string;
+  initialMessages: ChatMessage[];
+  children: React.ReactNode;
+};
+
+function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [state, setState] = useState<string>("idle");
-  const [messages, setMessages] = useState<ChatMessage[]>(MESSAGE_LIST);
   const timeoutRef = useRef<number | null>(null);
 
   const sendMessage = (message: string) => {
-    if (window.location.pathname !== `/chat/${chatId}`) {
-      window.history.pushState(null, "", `/chat/${chatId}`);
+    if (window.location.pathname !== `/chat/${id}`) {
+      window.history.pushState(null, "", `/chat/${id}`);
     }
 
     setMessages([
