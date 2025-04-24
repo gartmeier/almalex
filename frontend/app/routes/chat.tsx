@@ -51,7 +51,54 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  return { id: nanoid(), initialMessages: MESSAGE_LIST };
+  // TODO store in session storage
+  let accessToken = await fetchAccessToken();
+
+  if (params.chatId) {
+    let chat = await fetchChat(params.chatId, accessToken);
+    return {
+      accessToken,
+      chatId: chat.id,
+      initialMessages: chat.messages,
+    };
+  } else {
+    return {
+      accessToken,
+      chatId: nanoid(),
+      initialMessages: [],
+    };
+  }
+}
+
+async function fetchAccessToken(): Promise {
+  let res = await fetch("http://localhost:8000/api/token", {
+    method: "POST",
+  });
+  let data = await res.json();
+  return data.access_token;
+}
+
+async function fetchChat(chatId: string, accessToken: string) {
+  let res = await fetch(`http://localhost:8000/api/chat/${chatId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return await res.json();
+}
+
+export default function Chat({ loaderData }: Route.ComponentProps) {
+  let { chatId, initialMessages } = loaderData;
+  return (
+    <ChatProvider id={chatId} initialMessages={initialMessages}>
+      <div className="flex h-screen flex-col">
+        <Header />
+        <Messages />
+        <Panel />
+      </div>
+    </ChatProvider>
+  );
 }
 
 type ChatMessage = {
@@ -67,23 +114,21 @@ type ChatContextType = {
   stopResponse: () => void;
 };
 
-export default function Chat({ loaderData }: Route.ComponentProps) {
-  return (
-    <ChatProvider {...loaderData}>
-      <div className="flex h-screen flex-col">
-        <Header />
-        <Messages />
-        <Panel />
-      </div>
-    </ChatProvider>
-  );
-}
-
 type ChatProviderProps = {
   id: string;
   initialMessages: ChatMessage[];
   children: React.ReactNode;
 };
+
+const ChatContext = createContext<ChatContextType | null>(null);
+
+function useChatContext() {
+  const context = useContext(ChatContext);
+  if (context === null) {
+    throw new Error("useChatContext must be used within a ChatProvider");
+  }
+  return context;
+}
 
 function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -121,16 +166,6 @@ function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
       {children}
     </ChatContext.Provider>
   );
-}
-
-const ChatContext = createContext<ChatContextType | null>(null);
-
-function useChatContext() {
-  const context = useContext(ChatContext);
-  if (context === null) {
-    throw new Error("useChatContext must be used within a ChatProvider");
-  }
-  return context;
 }
 
 function Header() {
@@ -212,16 +247,14 @@ function Panel() {
     setMessage("");
   };
 
-  function handleTextAreaKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-  ) {
+  function handleTextAreaKeyDown(event: React.KeyboardEvent) {
     if (state === "idle" && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleMessageSubmit();
     }
   }
 
-  function handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  function handleTextAreaChange(event: React.ChangeEvent) {
     setMessage(event.target.value);
   }
 
