@@ -1,5 +1,6 @@
 import { ArrowUp, PenBox } from "lucide-react";
 import Markdown from "react-markdown";
+import TextareaAutosize from "react-textarea-autosize";
 import type { Route } from "./+types/chat";
 
 export function meta({}: Route.MetaArgs) {
@@ -122,19 +123,16 @@ function Message({
 
 function Panel() {
   return (
-    <div className="card bg-base-200 shadown-sm mx-auto w-full max-w-3xl">
-      <div className="card-body p-3">
-        <textarea
-          className="w-full resize-none text-lg focus:outline-none"
-          placeholder="Ask anything"
+    <div className="card bg-base-200 shadown-sm mx-auto mb-6 w-full max-w-3xl">
+      <div className="card-body flex-row items-start p-3">
+        <TextareaAutosize
+          className="w-full resize-none focus:outline-none"
+          placeholder="How can I help you today?"
           autoFocus
-          rows={2}
-        ></textarea>
-        <div className="card-actions justify-end">
-          <button className="btn btn-primary btn-circle">
-            <ArrowUp size={20} strokeWidth={3} />
-          </button>
-        </div>
+        />
+        <button className="btn btn-primary btn-square btn-sm h-9 w-9 rounded-lg">
+          <ArrowUp size={24} />
+        </button>
       </div>
     </div>
   );
