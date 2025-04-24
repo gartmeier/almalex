@@ -5,44 +5,6 @@ import TextareaAutosize from "react-textarea-autosize";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
-const MESSAGE_LIST = [
-  {
-    id: nanoid(),
-    role: "user",
-    content:
-      "Hi, I just moved to Zurich — am I allowed to break my rental contract early?",
-  },
-  {
-    id: nanoid(),
-    role: "assistant",
-    content:
-      "Welcome to Zurich! 🇨🇭 Yes, you can end your rental contract early, but there are some rules. Do you know if your contract has a minimum rental period?",
-  },
-  {
-    id: nanoid(),
-    role: "user",
-    content:
-      "Yes, it says I have to stay for at least 12 months. I’ve only been here 4 months.",
-  },
-  {
-    id: nanoid(),
-    role: "assistant",
-    content:
-      "In that case, the usual way out is to find a suitable replacement tenant. If you present a new tenant who is solvent and willing to take over under the same conditions, you can leave early — and legally, the landlord must accept them. Want tips on how to find a replacement tenant?",
-  },
-  {
-    id: nanoid(),
-    role: "user",
-    content: "Yes please!",
-  },
-  {
-    id: nanoid(),
-    role: "assistant",
-    content:
-      "Great! 🎯 Here are 3 quick tips:  \n1. Post your ad on platforms like Homegate and Ron Orp.  \n2. Make sure the rent price and contract terms are clearly stated.  \n3. Collect an application dossier from the interested party (including salary, ID, and credit report).  \nNeed a free template for a rental application form?",
-  },
-];
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Alma Lex" },
@@ -70,7 +32,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 }
 
-async function fetchAccessToken(): Promise {
+async function fetchAccessToken(): Promise<string> {
   let res = await fetch("http://localhost:8000/api/token", {
     method: "POST",
   });
@@ -247,14 +209,16 @@ function Panel() {
     setMessage("");
   };
 
-  function handleTextAreaKeyDown(event: React.KeyboardEvent) {
+  function handleTextAreaKeyDown(
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) {
     if (state === "idle" && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleMessageSubmit();
     }
   }
 
-  function handleTextAreaChange(event: React.ChangeEvent) {
+  function handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     setMessage(event.target.value);
   }
 
