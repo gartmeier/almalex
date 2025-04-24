@@ -5,6 +5,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
+    secret_key: str = None
     database_url: str = None
     openai_api_key: str = None
 
