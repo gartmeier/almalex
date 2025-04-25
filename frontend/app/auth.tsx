@@ -35,17 +35,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  useEffect(() => {
-    client.setConfig({
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-  }, [accessToken]);
-
   if (!accessToken) {
     return null;
   }
+
+  client.setConfig({
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
 
   return <AuthContext value={{ accessToken }}>{children}</AuthContext>;
 }
