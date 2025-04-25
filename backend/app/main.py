@@ -2,6 +2,7 @@ from typing import Annotated
 
 import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.routing import APIRoute
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
@@ -64,3 +65,8 @@ async def read_user(user_id: Annotated[str, Depends(get_user_id)]):
 @app.get("/api/limits")
 async def read_limits(user_id: Annotated[str, Depends(get_user_id)]):
     return {"messages_remaining": 100}
+
+
+for route in app.routes:
+    if isinstance(route, APIRoute):
+        route.operation_id = route.name

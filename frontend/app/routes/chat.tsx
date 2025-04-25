@@ -2,7 +2,6 @@ import { ArrowUp, PenBox, Square } from "lucide-react";
 import React, { createContext, useContext, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
-import { useApi } from "~/hooks/api";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
@@ -14,7 +13,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Chat() {
-  let api = useApi();
   return (
     <ChatProvider id={nanoid()} initialMessages={[]}>
       <div className="flex h-screen flex-col">

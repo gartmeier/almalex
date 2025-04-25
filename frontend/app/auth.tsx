@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { client } from "~/client/client.gen";
+import { createToken } from "./client";
 
 type AuthContextType = {
   accessToken: string | null;
@@ -7,7 +8,7 @@ type AuthContextType = {
 
 let AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   let [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,17 +18,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return setAccessToken(storedToken);
       }
 
-      let res = await fetch("/api/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      let {data, error} = await createToken()
 
-      if (!res.ok) {
-        throw new Error(`Failed to get token: ${res.status}`);
+      if (error) {
+        throw new Error(`Failed to create access token`);
       }
 
-      let data = await res.json();
-      let token = data.access_token;
+      let token = data!.access_token;
 
       if (token) {
         localStorage.setItem("access_token", token);
@@ -37,6 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("No access token received");
     })();
   }, []);
+
+  useEffect(() => {
+    client.setConfig({
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  }, [accessToken]);
 
   if (!accessToken) {
     return null;
