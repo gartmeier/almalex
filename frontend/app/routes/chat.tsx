@@ -2,6 +2,7 @@ import { ArrowUp, PenBox, Square } from "lucide-react";
 import React, { createContext, useContext, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
+import { useApi } from "~/hooks/api";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
@@ -12,48 +13,10 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-  // TODO store in session storage
-  let accessToken = await fetchAccessToken();
-
-  if (params.chatId) {
-    let chat = await fetchChat(params.chatId, accessToken);
-    return {
-      accessToken,
-      chatId: chat.id,
-      initialMessages: chat.messages,
-    };
-  } else {
-    return {
-      accessToken,
-      chatId: nanoid(),
-      initialMessages: [],
-    };
-  }
-}
-
-async function fetchAccessToken(): Promise<string> {
-  let res = await fetch("http://localhost:8000/api/token", {
-    method: "POST",
-  });
-  let data = await res.json();
-  return data.access_token;
-}
-
-async function fetchChat(chatId: string, accessToken: string) {
-  let res = await fetch(`http://localhost:8000/api/chat/${chatId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  return await res.json();
-}
-
-export default function Chat({ loaderData }: Route.ComponentProps) {
-  let { chatId, initialMessages } = loaderData;
+export default function Chat() {
+  let api = useApi();
   return (
-    <ChatProvider id={chatId} initialMessages={initialMessages}>
+    <ChatProvider id={nanoid()} initialMessages={[]}>
       <div className="flex h-screen flex-col">
         <Header />
         <Messages />
