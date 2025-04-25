@@ -187,7 +187,7 @@ function Panel() {
     <div className="card bg-base-200 shadown-sm mx-auto mb-6 w-full max-w-3xl">
       <div className="card-body flex-row items-start p-3">
         <TextareaAutosize
-          className="w-full resize-none focus:outline-none"
+          className="w-full resize-none focus:outline-none text-base"
           value={message}
           placeholder="How can I help you today?"
           autoFocus
