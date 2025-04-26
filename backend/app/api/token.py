@@ -1,1 +1,0 @@
-ALGORITHM = "HS256"

@@ -9,7 +9,7 @@ export type HttpValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type MessageCreate = {
+export type MessageRequest = {
     id: string;
     content: string;
 };
@@ -20,7 +20,7 @@ export type MessageResponse = {
     content: string;
 };
 
-export type Token = {
+export type TokenResponse = {
     access_token: string;
 };
 
@@ -34,14 +34,14 @@ export type CreateTokenData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/token';
+    url: '/api/auth/token';
 };
 
 export type CreateTokenResponses = {
     /**
      * Successful Response
      */
-    200: Token;
+    200: TokenResponse;
 };
 
 export type CreateTokenResponse = CreateTokenResponses[keyof CreateTokenResponses];
@@ -74,12 +74,12 @@ export type ReadChatResponses = {
 export type ReadChatResponse = ReadChatResponses[keyof ReadChatResponses];
 
 export type CreateMessageData = {
-    body: MessageCreate;
+    body: MessageRequest;
     path: {
         chat_id: string;
     };
     query?: never;
-    url: '/api/chats/{chat_id}/messages';
+    url: '/api/chats{chat_id}/messages';
 };
 
 export type CreateMessageErrors = {
@@ -95,8 +95,10 @@ export type CreateMessageResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    204: void;
 };
+
+export type CreateMessageResponse = CreateMessageResponses[keyof CreateMessageResponses];
 
 export type ClientOptions = {
     baseUrl: 'http://localhost:8000' | (string & {});
