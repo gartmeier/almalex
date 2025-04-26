@@ -1,7 +1,16 @@
 import { ArrowUp, PenBox, Square } from "lucide-react";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Markdown from "react-markdown";
+import { useLoaderData } from "react-router";
 import TextareaAutosize from "react-textarea-autosize";
+import { ensureServerToken } from "~/auth.server";
+import { client } from "~/client/client.gen";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
@@ -12,7 +21,31 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Chat() {
+export async function loader({ request }: Route.LoaderArgs) {
+  let token = await ensureServerToken(request);
+
+  client.setConfig({
+    baseUrl: "http://localhost:8000/",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return { token };
+}
+
+export default function Chat({ params }: Route.ComponentProps) {
+  let { token } = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    client.setConfig({
+      baseUrl: "/",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }, [token]);
+
   return (
     <ChatProvider id={nanoid()} initialMessages={[]}>
       <div className="flex h-screen flex-col">
@@ -187,7 +220,7 @@ function Panel() {
     <div className="card bg-base-200 shadown-sm mx-auto mb-6 w-full max-w-3xl">
       <div className="card-body flex-row items-start p-3">
         <TextareaAutosize
-          className="w-full resize-none focus:outline-none text-base"
+          className="w-full resize-none text-base focus:outline-none"
           value={message}
           placeholder="How can I help you today?"
           autoFocus

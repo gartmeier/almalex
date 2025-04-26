@@ -1,1 +1,2 @@
-pnpm-lock.yaml
+/app/client
+/pnpm-lock.yaml

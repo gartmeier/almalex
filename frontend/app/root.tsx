@@ -8,12 +8,8 @@ import {
 } from "react-router";
 
 import React, { Suspense } from "react";
-import { AuthProvider } from "~/auth";
-import { client } from "~/client/client.gen";
 import type { Route } from "./+types/root";
 import "./app.css";
-
-client.setConfig({ baseUrl: "/" });
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,9 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <Suspense fallback={"Loading..."}>
-      <AuthProvider>
-        <Outlet />
-      </AuthProvider>
+      <Outlet />
     </Suspense>
   );
 }
