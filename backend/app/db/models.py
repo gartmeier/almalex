@@ -44,7 +44,7 @@ class Chat(Base):
 
     id = Column(String, primary_key=True)
     user_id = Column(String, index=True, nullable=False)
-    title = Column(String, index=True, nullable=False)
+    title = Column(String, index=True)
     created_at = Column(
         DateTime(timezone=True),
         index=True,
@@ -54,8 +54,8 @@ class Chat(Base):
     updated_at = Column(
         DateTime(timezone=True),
         index=True,
-        nullable=False,
         onupdate=func.now(),
+        server_default=func.now(),
     )
 
     messages = relationship(

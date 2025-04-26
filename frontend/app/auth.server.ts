@@ -24,5 +24,5 @@ export async function ensureServerToken(request: Request) {
     token = data!.access_token;
   }
 
-  return { token };
+  return token;
 }

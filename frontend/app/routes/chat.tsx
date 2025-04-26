@@ -7,9 +7,10 @@ import React, {
   useState,
 } from "react";
 import Markdown from "react-markdown";
-import { data, useLoaderData } from "react-router";
+import { data, redirect } from "react-router";
 import TextareaAutosize from "react-textarea-autosize";
 import { ensureServerToken, tokenCookie } from "~/auth.server";
+import { type ChatResponse, createMessage, readChat } from "~/client";
 import { client } from "~/client/client.gen";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
@@ -31,18 +32,33 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     },
   });
 
+  let chat: ChatResponse;
+
   if (params.chatId) {
-    console.log(params.chatId);
+    let { data: fetchedChat, response } = await readChat({
+      path: { chat_id: params.chatId },
+    });
+
+    if (!response.ok) {
+      throw redirect("/");
+    }
+
+    chat = fetchedChat!;
+  } else {
+    chat = {
+      id: nanoid(),
+      messages: [],
+    };
   }
 
   return data(
-    { token },
+    { chat, token },
     { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
   );
 }
 
-export default function Chat({ params }: Route.ComponentProps) {
-  let { token } = useLoaderData<typeof loader>();
+export default function Chat({ loaderData }: Route.ComponentProps) {
+  let { chat, token } = loaderData;
 
   useEffect(() => {
     client.setConfig({
@@ -54,7 +70,7 @@ export default function Chat({ params }: Route.ComponentProps) {
   }, [token]);
 
   return (
-    <ChatProvider id={nanoid()} initialMessages={[]}>
+    <ChatProvider id={chat.id} initialMessages={chat.messages}>
       <div className="flex h-screen flex-col">
         <Header />
         <Messages />
@@ -73,7 +89,7 @@ type ChatMessage = {
 type ChatContextType = {
   state: string;
   messages: ChatMessage[];
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string) => Promise<void>;
   stopResponse: () => void;
 };
 
@@ -98,21 +114,27 @@ function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
   const [state, setState] = useState<string>("idle");
   const timeoutRef = useRef<number | null>(null);
 
-  const sendMessage = (message: string) => {
+  async function sendMessage(content: string) {
     if (window.location.pathname !== `/chat/${id}`) {
       window.history.pushState(null, "", `/chat/${id}`);
     }
 
-    setMessages([
-      ...messages,
-      { id: nanoid(), role: "user", content: message },
-    ]);
+    let message = {
+      id: nanoid(),
+      role: "user",
+      content,
+    };
+
+    setMessages([...messages, message]);
     setState("loading");
 
-    timeoutRef.current = window.setTimeout(() => {
-      setState("idle");
-    }, 3000);
-  };
+    await createMessage({
+      body: message,
+      path: { chat_id: id },
+    });
+
+    setState("idle");
+  }
 
   const stopResponse = () => {
     if (timeoutRef.current !== null) {
@@ -202,20 +224,21 @@ function Panel() {
   const isIdle = state === "idle";
   const isMessageEmpty = message.trim().length === 0;
 
-  const handleMessageSubmit = () => {
+  async function handleMessageSubmit() {
     if (isMessageEmpty) return;
 
-    const normalizedMessage = normalizeMessage(message);
-    sendMessage(normalizedMessage);
     setMessage("");
-  };
 
-  function handleTextAreaKeyDown(
+    const normalizedMessage = normalizeMessage(message);
+    await sendMessage(normalizedMessage);
+  }
+
+  async function handleTextAreaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) {
     if (state === "idle" && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      handleMessageSubmit();
+      await handleMessageSubmit();
     }
   }
 
