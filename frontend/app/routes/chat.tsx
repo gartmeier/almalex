@@ -7,9 +7,9 @@ import React, {
   useState,
 } from "react";
 import Markdown from "react-markdown";
-import { useLoaderData } from "react-router";
+import { data, useLoaderData } from "react-router";
 import TextareaAutosize from "react-textarea-autosize";
-import { ensureServerToken } from "~/auth.server";
+import { ensureServerToken, tokenCookie } from "~/auth.server";
 import { client } from "~/client/client.gen";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
@@ -21,7 +21,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   let token = await ensureServerToken(request);
 
   client.setConfig({
@@ -31,7 +31,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   });
 
-  return { token };
+  if (params.chatId) {
+    console.log(params.chatId);
+  }
+
+  return data(
+    { token },
+    { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
+  );
 }
 
 export default function Chat({ params }: Route.ComponentProps) {
