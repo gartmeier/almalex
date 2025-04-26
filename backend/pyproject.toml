@@ -9,6 +9,7 @@ dependencies = [
     "click>=8.1.8",
     "fastapi[standard]>=0.115.12",
     "nanoid>=2.0.0",
+    "openai>=1.76.0",
     "pgvector>=0.4.0",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.9.0",

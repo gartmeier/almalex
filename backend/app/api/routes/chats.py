@@ -1,9 +1,11 @@
 from fastapi import APIRouter, status, HTTPException, Response
 from sqlalchemy import select
+from fastapi.responses import StreamingResponse
 
 from app import crud
 from app.api.deps import SessionDep, CurrentUserID
 from app.api.schemas import ChatResponse, MessageRequest
+from app.core.config import settings
 from app.db.models import Chat
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -25,6 +27,28 @@ async def read_chat(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return chat
+
+
+def stream_chat_completion(content):
+    from openai import OpenAI
+
+    client = OpenAI(api_key=settings.openai_api_key)
+
+    stream = client.chat.completions.create(
+        model="gpt-4.1-nano",
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+        stream=True,
+    )
+
+    for chunk in stream:
+        data = chunk.choices[0].delta.content
+        if data:
+            yield f"event: delta\ndata: {data}\n\n"
 
 
 @router.post(
@@ -55,4 +79,8 @@ async def create_message(
         session=session,
         message_in=message_in,
         chat_id=chat_id,
+    )
+
+    return StreamingResponse(
+        stream_chat_completion(message_in.content), media_type="text/event-stream"
     )
