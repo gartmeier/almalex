@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.schema import TokenResponse
+from app.api.schemas import TokenResponse
 from app.core.security import encode_token
 from app.utils.helpers import nanoid
 
