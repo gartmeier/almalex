@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     secret_key: str = None
     database_url: str = None
     openai_api_key: str = None
+    openai_model: str = "gpt-4.1-nano"
 
 
 @lru_cache()

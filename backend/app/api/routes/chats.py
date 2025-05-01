@@ -5,8 +5,9 @@ from fastapi.responses import StreamingResponse
 from app import crud
 from app.api.deps import SessionDep, CurrentUserID
 from app.api.schemas import ChatResponse, MessageRequest
-from app.core.config import settings
-from app.db.models import Chat
+from app.db.models import Chat, ChatMessage
+from app.db.session import SessionLocal
+from app.services import ai
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -27,28 +28,6 @@ async def read_chat(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return chat
-
-
-def stream_chat_completion(content):
-    from openai import OpenAI
-
-    client = OpenAI(api_key=settings.openai_api_key)
-
-    stream = client.chat.completions.create(
-        model="gpt-4.1-nano",
-        messages=[
-            {
-                "role": "user",
-                "content": content,
-            },
-        ],
-        stream=True,
-    )
-
-    for chunk in stream:
-        data = chunk.choices[0].delta.content
-        if data:
-            yield f"event: delta\ndata: {data}\n\n"
 
 
 @router.post(
@@ -82,5 +61,43 @@ async def create_message(
     )
 
     return StreamingResponse(
-        stream_chat_completion(message_in.content), media_type="text/event-stream"
+        stream_chat_completion(chat_id),
+        media_type="text/event-stream",
     )
+
+
+def stream_chat_completion(chat_id: str):
+    with SessionLocal() as session:
+        chat = session.get(Chat, chat_id)
+
+        if not chat.title:
+            stmt = (
+                select(ChatMessage.content)
+                .where(ChatMessage.chat_id == chat_id, ChatMessage.role == "user")
+                .order_by(ChatMessage.id.asc())
+                .limit(1)
+            )
+            first_user_message = session.scalar(stmt)
+            chat.title = ai.generate_title(first_user_message)
+            session.commit()
+
+            yield f"event: chat_title\ndata: {chat.title}\n\n"
+
+        message_dicts = []
+
+        for message in chat.messages:
+            message_dicts.append(
+                {
+                    "role": message.role,
+                    "content": message.content,
+                }
+            )
+
+        stream = ai.create_completion(message_dicts)
+
+        yield "event: message_start\n\n"
+
+        for delta in stream:
+            yield f"event: message_delta\ndata: {delta}\n\n"
+
+        yield "event: message_end\n\n"
