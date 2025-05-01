@@ -22,24 +22,13 @@ client = OpenAI(api_key=settings.openai_api_key)
 
 
 def generate_title(message: str) -> str:
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=settings.openai_model,
-        messages=[
-            {
-                "role": "developer",
-                "content": "You are a helpful assistant that generates concise chat titles.",
-            },
-            {
-                "role": "user",
-                "content": message,
-            },
-        ],
-        temperature=0.7,
-        max_tokens=20,
+        input=TITLE_PROMPT.format(user_message=message),
     )
 
     # Extract just the title from the response
-    title = response.choices[0].message.content.strip()
+    title = response.output_text
 
     # Remove any quotes that might be in the response
     title = title.replace('"', "").replace("'", "")
