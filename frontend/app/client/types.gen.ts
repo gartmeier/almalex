@@ -2,6 +2,7 @@
 
 export type ChatResponse = {
     id: string;
+    title: string | null;
     messages: Array<MessageResponse>;
 };
 

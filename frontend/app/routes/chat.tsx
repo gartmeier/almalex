@@ -15,13 +15,6 @@ import { client } from "~/client/client.gen";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Alma Lex" },
-    { name: "description", content: "Welcome to Alma Lex!" },
-  ];
-}
-
 export async function loader({ request, params }: Route.LoaderArgs) {
   let token = await ensureServerToken(request);
 
@@ -47,6 +40,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   } else {
     chat = {
       id: nanoid(),
+      title: null,
       messages: [],
     };
   }
@@ -57,8 +51,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   );
 }
 
+export function meta({ data: { chat } }: Route.MetaArgs) {
+  return [
+    { title: chat.title ? `${chat.title} | Alma Lex` : 'Alma Lex' },
+    { name: "description", content: "Welcome to Alma Lex!" },
+  ];
+}
+
 export default function Chat({ loaderData }: Route.ComponentProps) {
-  let { token } = loaderData;
+  let { chat, token } = loaderData;
 
   useEffect(() => {
     client.setConfig({
@@ -156,7 +157,8 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
         }
 
         switch (event) {
-          case "message_title":
+          case "chat_title":
+            document.title = `${data} | Alma Lex`;
             break;
           case "message_delta":
             break;
