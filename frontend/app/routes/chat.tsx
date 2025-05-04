@@ -7,10 +7,10 @@ import React, {
   useState,
 } from "react";
 import Markdown from "react-markdown";
-import { data, redirect } from "react-router";
+import { data, redirect, useLoaderData } from "react-router";
 import TextareaAutosize from "react-textarea-autosize";
 import { ensureServerToken, tokenCookie } from "~/auth.server";
-import { type ChatResponse, createMessage, readChat } from "~/client";
+import { type ChatResponse, readChat } from "~/client";
 import { client } from "~/client/client.gen";
 import { nanoid } from "~/utils";
 import type { Route } from "./+types/chat";
@@ -58,7 +58,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export default function Chat({ loaderData }: Route.ComponentProps) {
-  let { chat, token } = loaderData;
+  let { token } = loaderData;
 
   useEffect(() => {
     client.setConfig({
@@ -70,7 +70,7 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
   }, [token]);
 
   return (
-    <ChatProvider id={chat.id} initialMessages={chat.messages}>
+    <ChatProvider>
       <div className="flex h-screen flex-col">
         <Header />
         <Messages />
@@ -93,12 +93,6 @@ type ChatContextType = {
   stopResponse: () => void;
 };
 
-type ChatProviderProps = {
-  id: string;
-  initialMessages: ChatMessage[];
-  children: React.ReactNode;
-};
-
 const ChatContext = createContext<ChatContextType | null>(null);
 
 function useChatContext() {
@@ -109,14 +103,16 @@ function useChatContext() {
   return context;
 }
 
-function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+function ChatProvider({ children }: { children: React.ReactNode }) {
+  const { chat, token } = useLoaderData<typeof loader>();
+
+  const [messages, setMessages] = useState<ChatMessage[]>(chat.messages);
   const [state, setState] = useState<string>("idle");
   const timeoutRef = useRef<number | null>(null);
 
   async function sendMessage(content: string) {
-    if (window.location.pathname !== `/chat/${id}`) {
-      window.history.pushState(null, "", `/chat/${id}`);
+    if (window.location.pathname !== `/chat/${chat.id}`) {
+      window.history.pushState(null, "", `/chat/${chat.id}`);
     }
 
     let message = {
@@ -128,10 +124,45 @@ function ChatProvider({ id, initialMessages, children }: ChatProviderProps) {
     setMessages([...messages, message]);
     setState("loading");
 
-    await createMessage({
-      body: message,
-      path: { chat_id: id },
+    let response = await fetch(`/api/chats/${chat.id}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
     });
+    let reader = response.body!.getReader();
+    let decoder = new TextDecoder();
+
+    while (true) {
+      let { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      let chunk = decoder.decode(value!);
+
+      for (let message of chunk.split("\n\n")) {
+        let event, data;
+
+        for (let line of message.split("\n")) {
+          if (line.startsWith("event: ")) {
+            event = line.slice(7);
+          } else if (line.startsWith("data: ")) {
+            data = line.slice(6);
+          }
+        }
+
+        switch (event) {
+          case "message_title":
+            break;
+          case "message_delta":
+            break;
+        }
+      }
+    }
 
     setState("idle");
   }

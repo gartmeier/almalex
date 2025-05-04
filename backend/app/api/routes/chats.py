@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException, Response
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from fastapi.responses import StreamingResponse
 
@@ -31,9 +31,17 @@ async def read_chat(
 
 
 @router.post(
-    "{chat_id}/messages",
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_class=Response,
+    "/{chat_id}/messages",
+    response_class=StreamingResponse,
+    responses={
+        200: {
+            "description": "Event stream",
+            "content": {
+                "text/event-stream": {"schema": {"type": "string", "format": "binary"}}
+            },
+        }
+    },
+    response_model=None,
 )
 async def create_message(
     chat_id: str,
@@ -95,9 +103,5 @@ def stream_chat_completion(chat_id: str):
 
         stream = ai.create_completion(message_dicts)
 
-        yield "event: message_start\n\n"
-
         for delta in stream:
             yield f"event: message_delta\ndata: {delta}\n\n"
-
-        yield "event: message_end\n\n"

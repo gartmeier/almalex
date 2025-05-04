@@ -55,7 +55,7 @@ export const createMessage = <ThrowOnError extends boolean = false>(options: Opt
                 type: 'http'
             }
         ],
-        url: '/api/chats{chat_id}/messages',
+        url: '/api/chats/{chat_id}/messages',
         ...options,
         headers: {
             'Content-Type': 'application/json',

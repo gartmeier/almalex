@@ -79,7 +79,7 @@ export type CreateMessageData = {
         chat_id: string;
     };
     query?: never;
-    url: '/api/chats{chat_id}/messages';
+    url: '/api/chats/{chat_id}/messages';
 };
 
 export type CreateMessageErrors = {
@@ -93,9 +93,9 @@ export type CreateMessageError = CreateMessageErrors[keyof CreateMessageErrors];
 
 export type CreateMessageResponses = {
     /**
-     * Successful Response
+     * Event stream
      */
-    204: void;
+    200: Blob | File;
 };
 
 export type CreateMessageResponse = CreateMessageResponses[keyof CreateMessageResponses];
