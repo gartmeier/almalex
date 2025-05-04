@@ -103,5 +103,21 @@ def stream_chat_completion(chat_id: str):
 
         stream = ai.create_completion(message_dicts)
 
+        assistant_message = ChatMessage(
+            chat_id=chat_id,
+            role="assistant",
+            content="",  # Initially empty, will be filled with stream content
+        )
+        session.add(assistant_message)
+        session.commit()
+
+        yield f"event: message_id\ndata: {assistant_message.id}\n\n"
+
+        full_content = ""
+
         for delta in stream:
+            full_content += delta
             yield f"event: message_delta\ndata: {delta}\n\n"
+
+        assistant_message.content = full_content
+        session.commit()

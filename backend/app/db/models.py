@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
+from app.utils.helpers import nanoid
 
 
 class Document(Base):
@@ -68,7 +69,7 @@ class Chat(Base):
 class ChatMessage(Base):
     __tablename__ = "chat_message"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=nanoid)
     chat_id = Column(
         String,
         ForeignKey("chat.id", ondelete="CASCADE"),
