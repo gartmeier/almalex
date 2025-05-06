@@ -157,6 +157,10 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
           case "chat_title":
             document.title = `${event.data} | Alma Lex`;
             break;
+          case "message_id":
+            assistantMessage.id = event.data;
+            setMessages([...messages, userMessage, assistantMessage]);
+            break;
           case "message_delta":
             assistantMessage.content += event.data;
             setMessages([...messages, userMessage, assistantMessage]);
