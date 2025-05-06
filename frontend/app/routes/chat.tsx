@@ -12,7 +12,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { ensureServerToken, tokenCookie } from "~/auth.server";
 import { type ChatResponse, readChat } from "~/client";
 import { client } from "~/client/client.gen";
-import { nanoid } from "~/utils";
+import { nanoid, parseServerSentEvents } from "~/utils";
 import type { Route } from "./+types/chat";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -53,7 +53,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export function meta({ data: { chat } }: Route.MetaArgs) {
   return [
-    { title: chat.title ? `${chat.title} | Alma Lex` : 'Alma Lex' },
+    { title: chat.title ? `${chat.title} | Alma Lex` : "Alma Lex" },
     { name: "description", content: "Welcome to Alma Lex!" },
   ];
 }
@@ -90,7 +90,7 @@ type ChatMessage = {
 type ChatContextType = {
   state: string;
   messages: ChatMessage[];
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string) => Promise;
   stopResponse: () => void;
 };
 
@@ -126,7 +126,7 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
       role: "assistant",
       content: "",
       state: "streaming",
-    }
+    };
 
     setMessages([...messages, userMessage, assistantMessage]);
     setState("streaming");
@@ -150,19 +150,10 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
       }
 
       let chunk = decoder.decode(value!);
+      let events = parseServerSentEvents(chunk);
 
-      for (let serverMessage of chunk.split("\n\n")) {
-        let event, data;
-
-        for (let line of serverMessage.split("\n")) {
-          if (line.startsWith("event: ")) {
-            event = line.slice(7);
-          } else if (line.startsWith("data: ")) {
-            data = line.slice(6);
-          }
-        }
-
-        switch (event) {
+      for (let { name, data } of events) {
+        switch (name) {
           case "chat_title":
             document.title = `${data} | Alma Lex`;
             break;
@@ -277,16 +268,14 @@ function Panel() {
     await sendMessage(normalizedMessage);
   }
 
-  async function handleTextAreaKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-  ) {
+  async function handleTextAreaKeyDown(event: React.KeyboardEvent) {
     if (state === "idle" && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       await handleMessageSubmit();
     }
   }
 
-  function handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  function handleTextAreaChange(event: React.ChangeEvent) {
     setMessage(event.target.value);
   }
 
