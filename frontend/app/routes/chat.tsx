@@ -116,14 +116,20 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
       window.history.pushState(null, "", `/chat/${chat.id}`);
     }
 
-    let message = {
+    let userMessage = {
       id: nanoid(),
       role: "user",
       content,
     };
+    let assistantMessage = {
+      id: nanoid(),
+      role: "assistant",
+      content: "",
+      state: "streaming",
+    }
 
-    setMessages([...messages, message]);
-    setState("loading");
+    setMessages([...messages, userMessage, assistantMessage]);
+    setState("streaming");
 
     let response = await fetch(`/api/chats/${chat.id}/messages`, {
       method: "POST",
@@ -131,7 +137,7 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(message),
+      body: JSON.stringify(userMessage),
     });
     let reader = response.body!.getReader();
     let decoder = new TextDecoder();
@@ -145,10 +151,10 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
 
       let chunk = decoder.decode(value!);
 
-      for (let message of chunk.split("\n\n")) {
+      for (let serverMessage of chunk.split("\n\n")) {
         let event, data;
 
-        for (let line of message.split("\n")) {
+        for (let line of serverMessage.split("\n")) {
           if (line.startsWith("event: ")) {
             event = line.slice(7);
           } else if (line.startsWith("data: ")) {
@@ -161,10 +167,15 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
             document.title = `${data} | Alma Lex`;
             break;
           case "message_delta":
+            assistantMessage.content += data;
+            setMessages([...messages, userMessage, assistantMessage]);
             break;
         }
       }
     }
+
+    assistantMessage.state = "idle";
+    setMessages([...messages, userMessage, assistantMessage]);
 
     setState("idle");
   }
