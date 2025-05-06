@@ -90,7 +90,7 @@ type ChatMessage = {
 type ChatContextType = {
   state: string;
   messages: ChatMessage[];
-  sendMessage: (message: string) => Promise;
+  sendMessage: (message: string) => Promise<void>;
   stopResponse: () => void;
 };
 
@@ -275,7 +275,7 @@ function Panel() {
     }
   }
 
-  function handleTextAreaChange(event: React.ChangeEvent) {
+  function handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     setMessage(event.target.value);
   }
 
