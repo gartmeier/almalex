@@ -152,13 +152,13 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
       let chunk = decoder.decode(value!);
       let events = parseServerSentEvents(chunk);
 
-      for (let { name, data } of events) {
-        switch (name) {
+      for (let event of events) {
+        switch (event.name) {
           case "chat_title":
-            document.title = `${data} | Alma Lex`;
+            document.title = `${event.data} | Alma Lex`;
             break;
           case "message_delta":
-            assistantMessage.content += data;
+            assistantMessage.content += event.data;
             setMessages([...messages, userMessage, assistantMessage]);
             break;
         }
