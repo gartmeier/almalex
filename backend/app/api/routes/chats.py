@@ -7,7 +7,7 @@ from app.api.deps import SessionDep, CurrentUserID
 from app.api.schemas import ChatResponse, MessageRequest
 from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
-from app.services import ai
+from app.ai.service import generate_title, generate_text
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -86,7 +86,7 @@ def stream_chat_completion(chat_id: str):
                 .limit(1)
             )
             first_user_message = session.scalar(stmt)
-            chat.title = ai.generate_title(first_user_message)
+            chat.title = generate_title(first_user_message)
             session.commit()
 
             yield f"event: chat_title\ndata: {chat.title}\n\n"
@@ -101,7 +101,7 @@ def stream_chat_completion(chat_id: str):
                 }
             )
 
-        stream = ai.create_completion(message_dicts)
+        stream = generate_text(message_dicts)
 
         assistant_message = ChatMessage(
             chat_id=chat_id,

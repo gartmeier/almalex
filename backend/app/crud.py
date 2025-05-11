@@ -1,7 +1,9 @@
+from sqlalchemy import ScalarResult, select
 from sqlalchemy.orm import Session
 
+from app.ai.service import create_embedding
 from app.api import schemas
-from app.db.models import Chat, ChatMessage
+from app.db.models import Chat, ChatMessage, DocumentChunk
 
 
 def create_chat(*, session: Session, chat_id: str, user_id: str) -> Chat:
@@ -25,3 +27,14 @@ def create_message(
     session.commit()
     session.refresh(db_message)
     return db_message
+
+
+def search(
+    *, session: Session, query: str, top_k: int = 10
+) -> ScalarResult[DocumentChunk]:
+    embedding = create_embedding(query)
+    return session.scalars(
+        select(DocumentChunk)
+        .order_by(DocumentChunk.embedding.l2_distance(embedding))
+        .limit(top_k)
+    )
