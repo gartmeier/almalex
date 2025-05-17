@@ -1,4 +1,5 @@
 import jwt
+
 from app.core.config import settings
 
 ALGORITHM = "HS256"

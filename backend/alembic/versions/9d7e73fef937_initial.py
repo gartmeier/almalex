@@ -1,9 +1,10 @@
 from typing import Sequence, Union
+
+import sqlalchemy as sa
 from pgvector.sqlalchemy.vector import VECTOR
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 revision: str = "9d7e73fef937"
 down_revision: Union[str, None] = None

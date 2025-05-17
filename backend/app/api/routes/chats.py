@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import select
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 
 from app import crud
-from app.api.deps import SessionDep, CurrentUserID
+from app.ai.service import generate_text, generate_title
+from app.api.deps import CurrentUserID, SessionDep
 from app.api.schemas import ChatResponse, MessageRequest
 from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
-from app.ai.service import generate_title, generate_text
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
