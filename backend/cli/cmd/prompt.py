@@ -23,7 +23,7 @@ def prompt(question):
         chat_messages = [
             {
                 "role": "developer",
-                "content": f"Answer based on this context: {formatted_context}",
+                "content": f"Answer based on this context:\n\n{formatted_context}",
             },
             {
                 "role": "user",
@@ -43,4 +43,4 @@ def format_chunks(chunks):
 
 
 def format_chunk(document_title, chunk_text):
-    return f"### {document_title}\n{chunk_text}"
+    return f"# {document_title}\n\n{chunk_text}"
