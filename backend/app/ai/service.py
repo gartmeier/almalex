@@ -21,10 +21,18 @@ def generate_title(message: str) -> str:
     return title
 
 
-def generate_text(messages: list):
+def generate_text(messages: list) -> str:
+    response = client.chat.completions.create(
+        messages=messages,
+        model=settings.openai_model,
+    )
+    return response.choices[0].message.content
+
+
+def generate_text_stream(messages: list):
     stream = client.chat.completions.create(
         messages=messages,
-        model="gpt-4.1-nano",
+        model=settings.openai_model,
         stream=True,
     )
 
