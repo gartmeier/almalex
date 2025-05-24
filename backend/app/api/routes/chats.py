@@ -80,24 +80,17 @@ def stream_chat_completion(chat_id: str):
         chat = session.get(Chat, chat_id)
 
         if not chat.title:
-            first_message = chat.messages[0]
-            chat.title = generate_title(first_message)
+            chat.title = generate_title(chat.messages[0])
             session.commit()
-
             yield format_event("chat_title", chat.title)
 
-        message_texts = []
-        for message in chat.messages:
-            message_texts.append(f"{message.role}: {message.content}")
+        messages_text = "\n".join(f"{msg.role}: {msg.content}" for msg in chat.messages)
 
-        messages_text = "\n".join(message_texts)
-
-        prompt_template = """\
-Deine Aufgabe ist es, eine Abfrage für eine Vektor-Datenbank anhand einer Chat-Historie zu erstellen. Das Ziel ist eine 
-Abfrage zu formulieren, die die relevantesten Gesetzesartikel und Gerichtsentscheide in der Datenbank findet.
+        query_prompt = f"""\
+Deine Aufgabe ist es, eine Abfrage für eine Vektor-Datenbank anhand einer Chat-Historie zu erstellen. Das Ziel ist eine Abfrage zu formulieren, die die relevantesten Gesetzesartikel und Gerichtsentscheide in der Datenbank findet.
 
 <chat_history>
-{chat_history}
+{messages_text}
 </chat_history>
 
 Um eine effektive Abfrage zu erstellen:
@@ -108,29 +101,21 @@ Um eine effektive Abfrage zu erstellen:
    - Wichtige juristische Begriffe oder Konzepte, die verwendet wurden
 2. Identifiziere die neueste und relevanteste Frage oder das Thema in der Chat-Historie.
 3. Extrahiere wichtige Schlüsselwörter und Phrasen mit Bezug zum Schweizer Recht aus der Unterhaltung.
-4. Kombiniere diese Elemente, um eine prägnante aber umfassende Abfrage zu erstellen, die dabei hilft, relevante 
-   Rechtsinformationen aus der Vektor-Datenbank abzurufen.
+4. Kombiniere diese Elemente, um eine prägnante aber umfassende Abfrage zu erstellen, die dabei hilft, relevante Rechtsinformationen aus der Vektor-Datenbank abzurufen.
 5. Stelle sicher, dass deine Abfrage auf Deutsch ist, da sie zum Durchsuchen von Schweizer Rechtstexten verwendet wird.
 
 Antworte nur mit einer einzigen Abfrage, ohne weitere Erklärungen oder zusätzlichen Text.
 """
-        prompt = prompt_template.format(chat_history=messages_text)
-        query = generate_text([{"role": "user", "content": prompt}])
 
-        message_dicts = []
-
-        for message in chat.messages[:-1]:
-            message_dicts.append(
-                {
-                    "role": message.role,
-                    "content": message.content,
-                }
-            )
-
+        query = generate_text([{"role": "user", "content": query_prompt}])
         context = get_relevant_context(session, query)
-        prompt_template = """\
-Du bist ein hochqualifizierter KI-Assistent, der Fragen basierend auf einem gegebenen Kontext beantwortet. 
-Deine Aufgabe ist es, die bereitgestellten Informationen sorgfältig zu analysieren und präzise Antworten zu formulieren.
+
+        message_dicts = [
+            {"role": msg.role, "content": msg.content} for msg in chat.messages[:-1]
+        ]
+
+        answer_prompt = f"""\
+Du bist ein hochqualifizierter KI-Assistent, der Fragen basierend auf einem gegebenen Kontext beantwortet. Deine Aufgabe ist es, die bereitgestellten Informationen sorgfältig zu analysieren und präzise Antworten zu formulieren.
 
 Hier ist der Kontext, auf den du dich beziehen sollst:
 
@@ -140,29 +125,19 @@ Hier ist der Kontext, auf den du dich beziehen sollst:
 
 Hier ist die Frage:
 <question>
-{question}
+{chat.messages[-1].content}
 </question>
 """
-        prompt = prompt_template.format(
-            context=context, question=chat.messages[-1].content
-        )
-        message_dicts.append({"role": "user", "content": prompt})
+        message_dicts.append({"role": "user", "content": answer_prompt})
 
-        stream = generate_text_stream(message_dicts)
-
-        assistant_message = ChatMessage(
-            chat_id=chat_id,
-            role="assistant",
-            content="",
-        )
+        assistant_message = ChatMessage(chat_id=chat_id, role="assistant", content="")
         session.add(assistant_message)
         session.commit()
 
         yield format_event("message_id", assistant_message.id)
 
         full_content = ""
-
-        for delta in stream:
+        for delta in generate_text_stream(message_dicts):
             full_content += delta
             yield format_event("message_delta", delta)
 
