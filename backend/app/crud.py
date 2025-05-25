@@ -14,7 +14,7 @@ def create_chat(*, session: Session, chat_id: str, user_id: str) -> Chat:
     return db_chat
 
 
-def create_message(
+def create_user_message(
     *, session: Session, message_in: schemas.MessageRequest, chat_id: str
 ) -> ChatMessage:
     db_message = ChatMessage(
@@ -22,6 +22,18 @@ def create_message(
         chat_id=chat_id,
         role="user",
         content=message_in.content,
+    )
+    session.add(db_message)
+    session.commit()
+    session.refresh(db_message)
+    return db_message
+
+
+def create_assistant_message(*, session: Session, chat_id: str) -> ChatMessage:
+    db_message = ChatMessage(
+        chat_id=chat_id,
+        role="assistant",
+        content="",
     )
     session.add(db_message)
     session.commit()

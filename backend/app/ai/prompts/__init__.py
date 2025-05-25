@@ -1,7 +1,7 @@
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 env = Environment(
-    loader=PackageLoader("app"),
+    loader=PackageLoader("app.ai.prompts"),
     autoescape=select_autoescape(),
     trim_blocks=True,
     lstrip_blocks=True,

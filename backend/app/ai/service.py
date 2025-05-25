@@ -1,37 +1,53 @@
 from openai import OpenAI
 
-from app.ai.prompts import TITLE_PROMPT
+from app.ai.prompts import render
 from app.core.config import settings
+from app.db.models import ChatMessage
 
 client = OpenAI(api_key=settings.openai_api_key)
 
 
-def generate_title(message: str) -> str:
+def generate_title(user_message: str) -> str:
+    prompt = render("title.md", user_message=user_message)
+
     response = client.responses.create(
         model=settings.openai_model,
-        input=TITLE_PROMPT.format(user_message=message),
+        input=prompt,
     )
-
-    # Extract just the title from the response
-    title = response.output_text
-
-    # Remove any quotes that might be in the response
-    title = title.replace('"', "").replace("'", "")
-
-    return title
+    return clean_title(response.output_text)
 
 
-def generate_text(messages: list) -> str:
-    response = client.chat.completions.create(
-        messages=messages,
+def clean_title(title: str) -> str:
+    return title.replace('"', "").replace("'", "")
+
+
+def generate_query(messages: list[ChatMessage]):
+    prompt = render("query.md", messages=messages)
+
+    response = client.responses.create(
+        input=prompt,
         model=settings.openai_model,
     )
-    return response.choices[0].message.content
+    return response.output_text
 
 
-def generate_text_stream(messages: list):
-    stream = client.chat.completions.create(
-        messages=messages,
+def generate_answer(messages: list[ChatMessage]):
+    context = ""
+    conversation = ""
+    question = ""
+
+    prompt = render(
+        "answer.md", context=context, conversation=conversation, question=question
+    )
+
+    input: list = [
+        {"role": "system", "content": "You are a helpful AI assistant"},
+        *[{"role": m.role, "content": m.content} for m in messages[:-1]],
+        {"role": "user", "content": prompt},
+    ]
+
+    stream = client.responses.create(
+        input=input,
         model=settings.openai_model,
         stream=True,
     )
