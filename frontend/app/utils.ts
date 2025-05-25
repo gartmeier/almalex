@@ -19,7 +19,7 @@ export function parseServerSentEvents(rawEvents: string) {
         if (line.startsWith("event: ")) {
           name = line.slice(7);
         } else if (line.startsWith("data: ")) {
-          data = line.slice(6);
+          data = JSON.parse(line.slice(6));
         }
       }
 

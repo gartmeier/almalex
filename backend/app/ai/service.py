@@ -49,10 +49,9 @@ def generate_answer(messages: list[ChatMessage]):
         stream=True,
     )
 
-    for chunk in stream:
-        data = chunk.choices[0].delta.content
-        if data:
-            yield data
+    for event in stream:
+        if event.type == "response.output_text.delta":
+            yield event.delta
 
 
 def create_embedding(input: str):

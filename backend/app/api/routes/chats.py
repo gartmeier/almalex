@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
@@ -106,4 +108,4 @@ def stream_chat_completion(chat_id: str):
 
 
 def format_event(event_type: str, data: str):
-    return f"event: {event_type}\ndata: {data}\n\n"
+    return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
