@@ -33,12 +33,9 @@ def generate_query(messages: list[ChatMessage]):
 
 def generate_answer(messages: list[ChatMessage]):
     context = ""
-    conversation = ""
     question = ""
 
-    prompt = render(
-        "answer.md", context=context, conversation=conversation, question=question
-    )
+    prompt = render("answer.md", context=context, messages=messages, question=question)
 
     input: list = [
         {"role": "system", "content": "You are a helpful AI assistant"},

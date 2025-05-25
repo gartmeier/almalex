@@ -6,7 +6,7 @@ Hier ist die Konversation:
 
 <conversation>
 {% for message in messages %}
-{{ message.role|capitalize }}: {{ message.content }}
+{{ message.role|capitalize }}: {{ message.content|inline_message }}
 {% endfor %}
 </conversation>
 

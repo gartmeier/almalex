@@ -1,3 +1,5 @@
+import re
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 env = Environment(
@@ -6,6 +8,13 @@ env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
+
+
+def inline(text):
+    return re.sub(r"\s+", " ", text)
+
+
+env.filters["inline"] = inline
 
 
 def render(template_name: str, **kwargs) -> str:
