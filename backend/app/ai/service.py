@@ -1,5 +1,7 @@
 from openai import OpenAI
+from sqlalchemy.orm import Session
 
+from app import crud
 from app.ai.prompts import render
 from app.core.config import settings
 from app.db.models import ChatMessage
@@ -21,21 +23,15 @@ def clean_title(title: str) -> str:
     return title.replace('"', "").replace("'", "")
 
 
-def generate_query(messages: list[ChatMessage]):
-    prompt = render("query.md", messages=messages)
+def generate_answer(session: Session, messages: list[ChatMessage]):
+    question = messages[-1].content
+    context = get_context(session, messages)
 
-    response = client.responses.create(
-        input=prompt,
-        model=settings.openai_model,
+    prompt = render(
+        "answer.md",
+        question=question,
+        context=context,
     )
-    return response.output_text
-
-
-def generate_answer(messages: list[ChatMessage]):
-    context = ""
-    question = ""
-
-    prompt = render("answer.md", context=context, messages=messages, question=question)
 
     input: list = [
         {"role": "system", "content": "You are a helpful AI assistant"},
@@ -54,9 +50,39 @@ def generate_answer(messages: list[ChatMessage]):
             yield event.delta
 
 
+def get_context(session: Session, messages: list[ChatMessage], top_k: int = 10) -> str:
+    query = generate_query(messages)
+    query_embedding = create_embedding(query)
+
+    chunks = crud.get_similar_chunks(session=session, query_embedding=query_embedding)
+
+    context = ""
+    for chunk in chunks:
+        context += f"# {chunk.document.title}\n{chunk.text}\n\n"
+
+    return context.strip()
+
+
+def generate_query(messages: list[ChatMessage]):
+    prompt = render("query.md", messages=messages)
+
+    response = client.responses.create(
+        input=prompt,
+        model=settings.openai_model,
+    )
+    return response.output_text
+
+
 def create_embedding(input: str):
     response = client.embeddings.create(
         input=input,
         model=settings.openai_embedding_model,
     )
     return response.data[0].embedding
+
+
+def format_chunks(chunks):
+    formatted_text = ""
+    for title, text in chunks:
+        formatted_text += f"## {title}\n\n{text}\n\n"
+    return formatted_text

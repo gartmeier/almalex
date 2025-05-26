@@ -10,11 +10,11 @@ env = Environment(
 )
 
 
-def inline(text):
+def inline_message(text):
     return re.sub(r"\s+", " ", text)
 
 
-env.filters["inline"] = inline
+env.filters["inline_message"] = inline_message
 
 
 def render(template_name: str, **kwargs) -> str:

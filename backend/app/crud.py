@@ -1,5 +1,7 @@
+from typing import Sequence
+
 from sqlalchemy import ScalarResult, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
 from app.api import schemas
@@ -50,3 +52,14 @@ def search(
         .order_by(DocumentChunk.embedding.l2_distance(embedding))
         .limit(top_k)
     )
+
+
+def get_similar_chunks(
+    *, session: Session, query_embedding: list[float], top_k: int = 10
+) -> Sequence[DocumentChunk]:
+    return session.scalars(
+        select(DocumentChunk)
+        .options(selectinload(DocumentChunk.document))
+        .order_by(DocumentChunk.embedding.l2_distance(query_embedding))
+        .limit(top_k)
+    ).all()

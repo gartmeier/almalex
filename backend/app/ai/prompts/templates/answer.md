@@ -5,12 +5,6 @@ verständliche Antworten zu rechtlichen Fragen basierend auf den bereitgestellte
 {{ context }}
 </context>
 
-<conversation>
-{% for message in messages %}
-{{ message.role|capitalize }}: {{ message.content|inline }}
-{% endfor %}
-</conversation>
-
 <question>
 {{ question }}
 </question>

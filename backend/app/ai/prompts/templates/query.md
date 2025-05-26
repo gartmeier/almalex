@@ -22,3 +22,5 @@ Extrahieren Sie die wichtigsten Informationen und formulieren Sie daraus eine Da
 - Kurz und prägnant sein (idealerweise nicht mehr als 2-3 Sätze)
 
 Antworten Sie NUR mit der Anfrage, sonst nichts.
+
+Suchabfrage:

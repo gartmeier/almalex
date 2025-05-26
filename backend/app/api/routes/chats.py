@@ -96,7 +96,7 @@ def stream_chat_completion(chat_id: str):
         )
         yield format_event("message_id", assistant_message.id)
 
-        answer_stream = generate_answer(chat.messages)
+        answer_stream = generate_answer(session, chat.messages)
         answer_text = ""
 
         for delta in answer_stream:
