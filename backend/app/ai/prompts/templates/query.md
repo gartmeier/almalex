@@ -10,17 +10,35 @@ Hier ist die Konversation:
 {% endfor %}
 </conversation>
 
-Analysieren Sie die obige Konversation sorgfältig. Achten Sie besonders auf:
-- Das Hauptthema oder die rechtliche Frage, die diskutiert wird
-- Spezifische rechtliche Begriffe oder Konzepte, die erwähnt werden
-- Allfällige Hinweise auf bestimmte Gesetze oder Gerichtsentscheide
+Analysieren Sie die obige Konversation sorgfältig und identifizieren Sie die Kernbegriffe der rechtlichen Fragestellung.
 
-Extrahieren Sie die wichtigsten Informationen und formulieren Sie daraus eine Datenbankabfrage. Die Abfrage sollte:
-- In Schweizer Hochdeutsch verfasst sein
-- Präzise und relevant für das diskutierte Thema sein
-- Rechtliche Fachbegriffe verwenden, wo angemessen
-- Kurz und prägnant sein (idealerweise nicht mehr als 2-3 Sätze)
+**WICHTIG - Formulieren Sie eine NATÜRLICHE Suchabfrage:**
+Die Abfrage soll wie eine normale Internetsuche aussehen, nicht wie eine Datenbankabfrage. Verwenden Sie:
 
-Antworten Sie NUR mit der Anfrage, sonst nichts.
+- Nur konkrete Rechtsbegriffe und Fachausdrücke aus dem Konversationsinhalt
+- KEINE Boolean-Operatoren (AND, OR, etc.)
+- KEINE Anführungszeichen
+- KEINE Metasprache ("Suche nach...", "Artikel über...")
+- KEINE allgemeinen Begriffe wie "Schweizer Recht", "Gesetz", "Regulierung", "Artikel"
+
+**Beispiele guter Abfragen:**
+- "Wertrechte Register Eintragung"
+- "Effekten Handelssystem Zulassung"
+- "digitale Token Wertpapier Qualifikation"
+- "Bucheffekten Entstehung Übertragung"
+- "Registerwertrechte verteilte Register"
+
+**Vermeiden Sie:**
+- Allgemeine rechtliche Begriffe (Recht, Gesetz, Regulierung, etc.)
+- Komplexe Suchsyntax mit Operatoren
+- Lange beschreibende Sätze
+- Länderbezüge ("Schweizer", "schweizerisch")
+
+Die Abfrage sollte:
+- 3-6 präzise Schlüsselwörter enthalten
+- Begriffe verwenden, die tatsächlich in Schweizer Gesetzen stehen
+- Das rechtliche Kernthema direkt treffen
+
+Antworten Sie NUR mit der natürlichen Suchabfrage, sonst nichts.
 
 Suchabfrage:
