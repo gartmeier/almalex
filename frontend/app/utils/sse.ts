@@ -1,10 +1,3 @@
-import { customAlphabet } from "nanoid";
-
-export const nanoid = customAlphabet(
-  "0123456789abcdefghijklmnopqrstuvwxyz",
-  12,
-);
-
 export function parseServerSentEvents(rawEvents: string) {
   let parsedEvents: { name: string; data: string }[] = [];
 
