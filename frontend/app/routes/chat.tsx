@@ -50,7 +50,7 @@ export function meta({ data: { chat } }: Route.MetaArgs) {
   ];
 }
 
-export default function Route({ loaderData }: Route.ComponentProps) {
+export default function Page({ loaderData }: Route.ComponentProps) {
   let { chat, token } = loaderData;
 
   useEffect(() => {
