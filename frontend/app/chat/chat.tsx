@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { data, redirect } from "react-router";
 import { ChatProvider } from "~/chat/context";
 import { Messages } from "~/chat/messages";
@@ -54,15 +53,6 @@ export function meta({ data: { chat } }: Route.MetaArgs) {
 
 export default function Chat({ loaderData }: Route.ComponentProps) {
   let { chat, token } = loaderData;
-
-  useEffect(() => {
-    client.setConfig({
-      baseUrl: "/",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  }, [token]);
 
   return (
     <ChatProvider chat={chat} token={token}>

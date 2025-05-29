@@ -1,4 +1,5 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -7,8 +8,10 @@ import {
   ScrollRestoration,
 } from "react-router";
 
-import React, { Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React, { Suspense, useEffect } from "react";
+import { client } from "~/lib/api/client.gen";
+import { ensureServerToken, tokenCookie } from "~/server/auth.server";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -32,7 +35,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export async function loader({ request }: Route.LoaderArgs) {
+  let token = await ensureServerToken(request);
+
+  client.setConfig({
+    baseUrl: "http://localhost:8000/",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data(
+    { token },
+    { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
+  );
+}
+
+export default function App({ loaderData }: Route.ComponentProps) {
+  let { token } = loaderData;
+
+  useEffect(() => {
+    client.setConfig({
+      baseUrl: "/",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }, [token]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={"Loading..."}>
