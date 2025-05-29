@@ -1,7 +1,7 @@
-import { MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { listChats } from "~/lib/api";
+import { MessageSquare } from "lucide-react";
 import { NavLink } from "react-router";
+import { listChats } from "~/lib/api";
 
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
@@ -14,10 +14,12 @@ export function SidebarHistory() {
 
   return (
     <div className="flex-1 px-4 pb-4">
-      <h3 className="text-sm font-medium text-base-content/70 mb-3">Recent Chats</h3>
+      <h3 className="text-base-content/70 mb-3 text-sm font-medium">
+        Recent Chats
+      </h3>
       <div className="space-y-2">
         {isLoading ? (
-          <div className="flex items-center gap-3 p-2 text-sm text-base-content/50">
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
             <MessageSquare size={14} />
             <span>Loading chats...</span>
           </div>
@@ -26,14 +28,14 @@ export function SidebarHistory() {
             <NavLink
               key={chat.id}
               to={`/chat/${chat.id}`}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 cursor-pointer text-sm"
+              className="hover:bg-base-300 flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm"
             >
               <MessageSquare size={14} className="text-base-content/50" />
               <span className="truncate">{chat.title || "Untitled Chat"}</span>
             </NavLink>
           ))
         ) : (
-          <div className="flex items-center gap-3 p-2 text-sm text-base-content/50">
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
             <MessageSquare size={14} />
             <span>No chats yet</span>
           </div>
