@@ -1,8 +1,8 @@
-import { ChatProvider } from "~/chat/context";
-import { Messages } from "~/chat/messages";
-import { Panel } from "~/chat/panel";
-import type { ChatResponse } from "~/client";
-import { Sidebar } from "~/layout/sidebar";
+import { ChatProvider } from "~/components/chat/context";
+import { Messages } from "~/components/chat/messages";
+import { Panel } from "~/components/chat/panel";
+import type { ChatResponse } from "~/lib/api";
+import { Sidebar } from "~/components/layout/sidebar";
 
 export function Chat({ chat, token }: { chat: ChatResponse; token: string }) {
   return (

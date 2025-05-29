@@ -1,7 +1,7 @@
 import { ArrowUp, Square } from "lucide-react";
 import React, { useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { useChatContext } from "~/chat/context";
+import { useChatContext } from "~/components/chat/context";
 
 export function Panel() {
   const [message, setMessage] = useState("");

@@ -1,5 +1,5 @@
 import Markdown from "react-markdown";
-import type { MessageResponse } from "~/client";
+import type { MessageResponse } from "~/lib/api";
 
 export function Message({ message }: { message: MessageResponse }) {
   if (message.role === "assistant") {

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useRef, useState } from "react";
-import type { ChatResponse, MessageResponse } from "~/client";
-import { nanoid } from "~/utils/nanoid";
-import { parseServerSentEvents } from "~/utils/sse";
+import type { ChatResponse, MessageResponse } from "~/lib/api";
+import { nanoid } from "~/lib/utils/nanoid";
+import { parseServerSentEvents } from "~/lib/utils/sse";
 
 type ChatContextType = {
   state: string;

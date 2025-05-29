@@ -1,5 +1,5 @@
 import { createCookie } from "react-router";
-import { createToken } from "./client";
+import { createToken } from "~/lib/api";
 
 export let tokenCookie = createCookie("token", {
   httpOnly: true,

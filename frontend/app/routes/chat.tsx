@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { data, redirect } from "react-router";
-import { ensureServerToken, tokenCookie } from "~/auth.server";
-import { Chat } from "~/chat/chat";
-import { type ChatResponse, readChat } from "~/client";
-import { client } from "~/client/client.gen";
-import { nanoid } from "~/utils/nanoid";
+import { ensureServerToken, tokenCookie } from "~/server/auth.server";
+import { Chat } from "~/components/chat/chat";
+import { type ChatResponse, readChat } from "~/lib/api";
+import { client } from "~/lib/api/client.gen";
+import { nanoid } from "~/lib/utils/nanoid";
 import type { Route } from "./+types/chat";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
