@@ -1,6 +1,7 @@
 import { MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { listChats } from "~/lib/api";
+import { NavLink } from "react-router";
 
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
@@ -22,14 +23,14 @@ export function SidebarHistory() {
           </div>
         ) : chats.length > 0 ? (
           chats.map((chat) => (
-            <a
+            <NavLink
               key={chat.id}
-              href={`/chat/${chat.id}`}
+              to={`/chat/${chat.id}`}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 cursor-pointer text-sm"
             >
               <MessageSquare size={14} className="text-base-content/50" />
               <span className="truncate">{chat.title || "Untitled Chat"}</span>
-            </a>
+            </NavLink>
           ))
         ) : (
           <div className="flex items-center gap-3 p-2 text-sm text-base-content/50">
