@@ -2,7 +2,6 @@ import json
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
 
 from app import crud
 from app.ai.service import (
@@ -11,8 +10,6 @@ from app.ai.service import (
 )
 from app.api.deps import CurrentUserID, SessionDep
 from app.api.schemas import ChatDetail, ChatListItem, MessageRequest
-from app.db.models import Chat
-from app.db.models import Chat as ChatModel
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -32,14 +29,10 @@ async def read_chat(
     session: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    query = select(ChatModel).where(ChatModel.id == chat_id)
-    chat = session.scalar(query)
+    chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
 
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-
-    if chat.user_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
 
     return chat
 
@@ -63,13 +56,9 @@ async def create_message(
     session: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    query = select(ChatModel).where(ChatModel.id == chat_id)
-    chat = session.scalar(query)
+    chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
 
-    if chat:
-        if chat.user_id != current_user_id:
-            raise HTTPException(status_code=403, detail="Not authorized")
-    else:
+    if not chat:
         crud.create_chat(
             session=session,
             chat_id=chat_id,
@@ -90,7 +79,7 @@ async def create_message(
 
 def stream_chat_completion(chat_id: str):
     with SessionLocal() as session:
-        chat = session.get(Chat, chat_id)
+        chat = crud.get_chat(session=session, chat_id=chat_id)
 
         if not chat.title:
             title = generate_title(chat.messages[0])
