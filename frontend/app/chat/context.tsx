@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ChatDetail, MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/utils/nanoid";
 import { parseServerSentEvents } from "~/lib/utils/sse";

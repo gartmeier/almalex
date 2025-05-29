@@ -4,6 +4,7 @@ import {
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
 } from "react-router";
@@ -36,6 +37,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  let url = new URL(request.url);
+
+  if (url.pathname === "/") {
+    throw redirect("/chat");
+  }
+
   let token = await ensureServerToken(request);
 
   client.setConfig({

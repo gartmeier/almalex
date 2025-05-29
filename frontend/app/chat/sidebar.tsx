@@ -1,20 +1,21 @@
 import { LogIn, PenBox } from "lucide-react";
+import { NavLink } from "react-router";
 import { SidebarHistory } from "~/chat/sidebar-history";
 
 export function Sidebar() {
   return (
     <aside className="bg-base-200 border-base-300 flex w-64 flex-col border-r p-2">
       <div className="border-base-300 border-b p-4">
-        <a href="/public" className="text-base-content text-xl font-bold">
+        <NavLink to="/chat" className="text-base-content text-xl font-bold">
           Alma Lex
-        </a>
+        </NavLink>
       </div>
 
       <div className="p-4">
-        <button className="btn btn-primary w-full gap-2">
+        <NavLink to="/chat" className="btn btn-primary w-full gap-2">
           <PenBox size={16} />
           New Chat
-        </button>
+        </NavLink>
       </div>
 
       <SidebarHistory />

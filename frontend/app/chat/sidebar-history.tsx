@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { MessageSquare } from "lucide-react";
 import { NavLink } from "react-router";
 import { listChats } from "~/lib/api";
 
