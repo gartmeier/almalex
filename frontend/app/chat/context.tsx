@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import React, {
   createContext,
   useContext,
@@ -35,6 +36,7 @@ export function ChatProvider({
   token: string;
   children: React.ReactNode;
 }) {
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<MessageResponse[]>(chat.messages);
   const [state, setState] = useState<string>("idle");
   const timeoutRef = useRef<number | null>(null);
@@ -88,10 +90,12 @@ export function ChatProvider({
         switch (event.name) {
           case "chat_title":
             document.title = `${event.data} | Alma Lex`;
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
             break;
           case "message_id":
             assistantMessage.id = event.data;
             setMessages([...messages, userMessage, assistantMessage]);
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
             break;
           case "message_delta":
             assistantMessage.content += event.data;
