@@ -8,8 +8,11 @@ import {
 } from "react-router";
 
 import React, { Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Route } from "./+types/root";
 import "./app.css";
+
+const queryClient = new QueryClient();
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -31,9 +34,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <Suspense fallback={"Loading..."}>
-      <Outlet />
-    </Suspense>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={"Loading..."}>
+        <Outlet />
+      </Suspense>
+    </QueryClientProvider>
   );
 }
 
