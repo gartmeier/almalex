@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { listChats } from "~/lib/api";
+import { cn } from "~/lib/utils/tailwind";
 
 export function SidebarHistory() {
   const { data: chats = [], isLoading } = useQuery({
@@ -26,7 +27,12 @@ export function SidebarHistory() {
             <NavLink
               key={chat.id}
               to={`/chat/${chat.id}`}
-              className="hover:bg-base-300 flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm"
+              className={({ isActive }) =>
+                cn(
+                  "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm",
+                  isActive ? "bg-base-300" : "hover:bg-base-300",
+                )
+              }
               title={chat.title || "New chat"}
             >
               <span className="truncate">{chat.title || "New chat"}</span>
