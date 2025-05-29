@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useState } from "react";
-import type { ChatResponse, MessageResponse } from "~/lib/api";
+import type { ChatDetail, MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/utils/nanoid";
 import { parseServerSentEvents } from "~/lib/utils/sse";
 
@@ -25,7 +25,7 @@ export function ChatProvider({
   token,
   children,
 }: {
-  chat: ChatResponse;
+  chat: ChatDetail;
   token: string;
   children: React.ReactNode;
 }) {
