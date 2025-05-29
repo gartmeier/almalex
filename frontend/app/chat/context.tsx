@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ChatDetail, MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/utils/nanoid";
 import { parseServerSentEvents } from "~/lib/utils/sse";
@@ -32,6 +32,10 @@ export function ChatProvider({
   const [messages, setMessages] = useState<MessageResponse[]>(chat.messages);
   const [state, setState] = useState<string>("idle");
   const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setMessages(chat.messages);
+  }, [chat.messages]);
 
   async function sendMessage(content: string) {
     if (window.location.pathname !== `/chat/${chat.id}`) {
