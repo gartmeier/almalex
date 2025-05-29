@@ -27,6 +27,7 @@ export function SidebarHistory() {
               key={chat.id}
               to={`/chat/${chat.id}`}
               className="hover:bg-base-300 flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm"
+              title={chat.title || "Untitled Chat"}
             >
               <span className="truncate">{chat.title || "Untitled Chat"}</span>
             </NavLink>

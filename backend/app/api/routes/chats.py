@@ -82,7 +82,7 @@ def stream_chat_completion(chat_id: str):
         chat = crud.get_chat(session=session, chat_id=chat_id)
 
         if not chat.title:
-            title = generate_title(chat.messages[0])
+            title = generate_title(chat.messages[0].content)
 
             chat.title = title
             session.commit()
