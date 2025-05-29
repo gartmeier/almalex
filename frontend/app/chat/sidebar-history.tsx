@@ -20,7 +20,6 @@ export function SidebarHistory() {
       <div className="space-y-2">
         {isLoading ? (
           <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-            <MessageSquare size={14} />
             <span>Loading chats...</span>
           </div>
         ) : chats.length > 0 ? (
@@ -30,13 +29,11 @@ export function SidebarHistory() {
               to={`/chat/${chat.id}`}
               className="hover:bg-base-300 flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm"
             >
-              <MessageSquare size={14} className="text-base-content/50" />
               <span className="truncate">{chat.title || "Untitled Chat"}</span>
             </NavLink>
           ))
         ) : (
           <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-            <MessageSquare size={14} />
             <span>No chats yet</span>
           </div>
         )}
