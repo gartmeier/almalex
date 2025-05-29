@@ -1,5 +1,5 @@
-import { useChatContext } from "~/components/chat/context";
-import { Message } from "~/components/chat/message";
+import { useChatContext } from "~/chat/context";
+import { Message } from "~/chat/message";
 
 export function Messages() {
   const { messages } = useChatContext();

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import { Sidebar } from "~/components/layout/sidebar";
+import { Sidebar } from "~/chat/sidebar";
 
 export default function ChatLayout() {
   return (

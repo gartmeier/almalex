@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { data, redirect } from "react-router";
-import { ensureServerToken, tokenCookie } from "~/server/auth.server";
-import { Chat } from "~/components/chat/chat";
+import { ChatProvider } from "~/chat/context";
+import { Messages } from "~/chat/messages";
+import { Panel } from "~/chat/panel";
 import { type ChatDetail, readChat } from "~/lib/api";
 import { client } from "~/lib/api/client.gen";
 import { nanoid } from "~/lib/utils/nanoid";
+import { ensureServerToken, tokenCookie } from "~/server/auth.server";
 import type { Route } from "./+types/chat";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -50,7 +52,7 @@ export function meta({ data: { chat } }: Route.MetaArgs) {
   ];
 }
 
-export default function Page({ loaderData }: Route.ComponentProps) {
+export default function Chat({ loaderData }: Route.ComponentProps) {
   let { chat, token } = loaderData;
 
   useEffect(() => {
@@ -62,5 +64,10 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     });
   }, [token]);
 
-  return <Chat chat={chat} token={token} />;
+  return (
+    <ChatProvider chat={chat} token={token}>
+      <Messages />
+      <Panel />
+    </ChatProvider>
+  );
 }

@@ -1,11 +1,11 @@
 import { PenBox, LogIn } from "lucide-react";
-import { SidebarHistory } from "~/components/layout/sidebar-history";
+import { SidebarHistory } from "~/chat/sidebar-history";
 
 export function Sidebar() {
   return (
     <aside className="w-64 bg-base-200 border-r border-base-300 flex flex-col">
       <div className="p-4 border-b border-base-300">
-        <a href="/" className="text-xl font-bold text-base-content">
+        <a href="/public" className="text-xl font-bold text-base-content">
           Alma Lex
         </a>
       </div>
