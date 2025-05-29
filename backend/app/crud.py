@@ -63,3 +63,11 @@ def get_similar_chunks(
         .order_by(DocumentChunk.embedding.l2_distance(query_embedding))
         .limit(top_k)
     ).all()
+
+
+def get_user_chats(*, session: Session, user_id: str) -> Sequence[Chat]:
+    return session.scalars(
+        select(Chat)
+        .where(Chat.user_id == user_id)
+        .order_by(Chat.updated_at.desc())
+    ).all()

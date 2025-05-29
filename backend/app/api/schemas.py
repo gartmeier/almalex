@@ -5,7 +5,14 @@ class TokenResponse(BaseModel):
     access_token: str
 
 
-class ChatResponse(BaseModel):
+class ChatListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    title: str | None
+
+
+class ChatDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str

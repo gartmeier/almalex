@@ -10,20 +10,29 @@ from app.ai.service import (
     generate_title,
 )
 from app.api.deps import CurrentUserID, SessionDep
-from app.api.schemas import ChatResponse, MessageRequest
+from app.api.schemas import ChatDetail, ChatListItem, MessageRequest
 from app.db.models import Chat
+from app.db.models import Chat as ChatModel
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
-@router.get("/{chat_id}", response_model=ChatResponse)
+@router.get("/", response_model=list[ChatListItem])
+async def list_chats(
+    session: SessionDep,
+    current_user_id: CurrentUserID,
+):
+    return crud.get_user_chats(session=session, user_id=current_user_id)
+
+
+@router.get("/{chat_id}", response_model=ChatDetail)
 async def read_chat(
     chat_id: str,
     session: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    query = select(Chat).where(Chat.id == chat_id)
+    query = select(ChatModel).where(ChatModel.id == chat_id)
     chat = session.scalar(query)
 
     if not chat:
@@ -54,7 +63,7 @@ async def create_message(
     session: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    query = select(Chat).where(Chat.id == chat_id)
+    query = select(ChatModel).where(ChatModel.id == chat_id)
     chat = session.scalar(query)
 
     if chat:
