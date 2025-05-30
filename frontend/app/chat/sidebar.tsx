@@ -1,6 +1,8 @@
 import { LogIn, PenBox } from "lucide-react";
 import { NavLink } from "react-router";
-import { SidebarHistory } from "~/chat/sidebar-history";
+import { useQuery } from "@tanstack/react-query";
+import { listChats } from "~/lib/api";
+import { cn } from "~/lib/utils/tailwind";
 
 export function Sidebar() {
   return (
@@ -13,12 +15,11 @@ export function Sidebar() {
 
       <div className="p-4">
         <NavLink to="/chat" className="btn btn-primary w-full gap-2">
-          <PenBox size={16} />
           New Chat
         </NavLink>
       </div>
 
-      <SidebarHistory />
+      <ChatHistory />
 
       <div className="p-2 pt-0">
         <button className="btn btn-ghost h-auto w-full justify-start gap-4 p-4">
@@ -27,5 +28,50 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+  );
+}
+
+export function ChatHistory() {
+  const { data: chats = [], isLoading } = useQuery({
+    queryKey: ["chats"],
+    queryFn: async () => {
+      const { data } = await listChats();
+      return data || [];
+    },
+  });
+
+  return (
+    <div className="flex-1 px-4 pb-4">
+      <h3 className="text-base-content/70 mb-3 text-sm font-medium">
+        Recent Chats
+      </h3>
+      <div className="space-y-2">
+        {isLoading ? (
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+            <span>Loading chats...</span>
+          </div>
+        ) : chats.length > 0 ? (
+          chats.map((chat) => (
+            <NavLink
+              key={chat.id}
+              to={`/chat/${chat.id}`}
+              className={({ isActive }) =>
+                cn(
+                  "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm",
+                  isActive ? "bg-base-300" : "hover:bg-base-300",
+                )
+              }
+              title={chat.title || "New chat"}
+            >
+              <span className="truncate">{chat.title || "New chat"}</span>
+            </NavLink>
+          ))
+        ) : (
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+            <span>No chats yet</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
