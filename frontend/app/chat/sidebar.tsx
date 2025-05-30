@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { LogIn } from "lucide-react";
-import { NavLink } from "react-router";
-import { listChats } from "~/lib/api";
+import { Suspense } from "react";
+import { Await, NavLink, useLoaderData } from "react-router";
 import { cn } from "~/lib/utils/tailwind";
+import type { loader } from "./chat";
 
 export function Sidebar() {
   return (
@@ -31,14 +31,8 @@ export function Sidebar() {
   );
 }
 
-export function ChatHistory() {
-  const { data: chats = [], isLoading } = useQuery({
-    queryKey: ["chats"],
-    queryFn: async () => {
-      const { data } = await listChats();
-      return data || [];
-    },
-  });
+function ChatHistory() {
+  let { chatHistory } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex-1 px-4 pb-4">
@@ -46,31 +40,39 @@ export function ChatHistory() {
         Recent Chats
       </h3>
       <div className="space-y-2">
-        {isLoading ? (
-          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-            <span>Loading chats...</span>
-          </div>
-        ) : chats.length > 0 ? (
-          chats.map((chat) => (
-            <NavLink
-              key={chat.id}
-              to={`/chat/${chat.id}`}
-              className={({ isActive }) =>
-                cn(
-                  "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm",
-                  isActive ? "bg-base-300" : "hover:bg-base-300",
-                )
-              }
-              title={chat.title || "New chat"}
-            >
-              <span className="truncate">{chat.title || "New chat"}</span>
-            </NavLink>
-          ))
-        ) : (
-          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-            <span>No chats yet</span>
-          </div>
-        )}
+        <Suspense
+          fallback={
+            <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+              <span>Loading chats...</span>
+            </div>
+          }
+        >
+          <Await resolve={chatHistory}>
+            {(items) =>
+              items.length > 0 ? (
+                items.map((chat) => (
+                  <NavLink
+                    key={chat.id}
+                    to={`/chat/${chat.id}`}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm",
+                        isActive ? "bg-base-300" : "hover:bg-base-300",
+                      )
+                    }
+                    title={chat.title || "New chat"}
+                  >
+                    <span className="truncate">{chat.title || "New chat"}</span>
+                  </NavLink>
+                ))
+              ) : (
+                <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+                  <span>No chats yet</span>
+                </div>
+              )
+            }
+          </Await>
+        </Suspense>
       </div>
     </div>
   );
