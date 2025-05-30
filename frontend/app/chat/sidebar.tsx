@@ -1,6 +1,6 @@
-import { LogIn, PenBox } from "lucide-react";
-import { NavLink } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { LogIn } from "lucide-react";
+import { NavLink } from "react-router";
 import { listChats } from "~/lib/api";
 import { cn } from "~/lib/utils/tailwind";
 
