@@ -35,7 +35,7 @@ function ChatHistory() {
   let { chatHistory } = useLoaderData<typeof loader>();
 
   return (
-    <div className="flex-1 px-4 pb-4">
+    <div className="flex-1 px-4 pb-4 overflow-y-auto">
       <h3 className="text-base-content/70 mb-3 text-sm font-medium">
         Recent Chats
       </h3>
