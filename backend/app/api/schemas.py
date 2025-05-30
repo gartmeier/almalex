@@ -20,6 +20,10 @@ class ChatDetail(BaseModel):
     messages: list["MessageResponse"]
 
 
+class ChatUpdate(BaseModel):
+    title: str
+
+
 class MessageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

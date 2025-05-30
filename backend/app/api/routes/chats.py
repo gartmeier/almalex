@@ -9,7 +9,7 @@ from app.ai.service import (
     generate_title,
 )
 from app.api.deps import CurrentUserID, SessionDep
-from app.api.schemas import ChatDetail, ChatListItem, MessageRequest
+from app.api.schemas import ChatDetail, ChatListItem, ChatUpdate, MessageRequest
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -35,6 +35,38 @@ async def read_chat(
         raise HTTPException(status_code=404, detail="Chat not found")
 
     return chat
+
+
+@router.put("/{chat_id}", status_code=204)
+async def update_chat(
+    chat_id: str,
+    chat_update: ChatUpdate,
+    session: SessionDep,
+    current_user_id: CurrentUserID,
+):
+    updated = crud.update_user_chat(
+        session=session,
+        chat_id=chat_id,
+        user_id=current_user_id,
+        chat_update=chat_update,
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+
+@router.delete("/{chat_id}", status_code=204)
+async def delete_chat(
+    chat_id: str,
+    session: SessionDep,
+    current_user_id: CurrentUserID,
+):
+    deleted = crud.delete_user_chat(
+        session=session, chat_id=chat_id, user_id=current_user_id
+    )
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Chat not found")
 
 
 @router.post(
