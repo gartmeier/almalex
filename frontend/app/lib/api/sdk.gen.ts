@@ -12,11 +12,17 @@ import type {
   CreateMessageResponse,
   CreateTokenData,
   CreateTokenResponse,
+  DeleteChatData,
+  DeleteChatError,
+  DeleteChatResponse,
   ListChatsData,
   ListChatsResponse,
   ReadChatData,
   ReadChatError,
   ReadChatResponse,
+  UpdateChatData,
+  UpdateChatError,
+  UpdateChatResponse,
 } from "./types.gen";
 
 export type Options<
@@ -75,6 +81,28 @@ export const listChats = <ThrowOnError extends boolean = false>(
 };
 
 /**
+ * Delete Chat
+ */
+export const deleteChat = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteChatData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteChatResponse,
+    DeleteChatError,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: "bearer",
+        type: "http",
+      },
+    ],
+    url: "/api/chats/{chat_id}",
+    ...options,
+  });
+};
+
+/**
  * Read Chat
  */
 export const readChat = <ThrowOnError extends boolean = false>(
@@ -93,6 +121,32 @@ export const readChat = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/chats/{chat_id}",
     ...options,
+  });
+};
+
+/**
+ * Update Chat
+ */
+export const updateChat = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateChatData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).put<
+    UpdateChatResponse,
+    UpdateChatError,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: "bearer",
+        type: "http",
+      },
+    ],
+    url: "/api/chats/{chat_id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    },
   });
 };
 

@@ -1,7 +1,7 @@
+import { useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import { useChatContext } from "~/chat/context";
 import type { MessageResponse } from "~/lib/api";
-import { useEffect, useRef } from "react";
 
 export function Messages() {
   const { messages } = useChatContext();

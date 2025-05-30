@@ -11,6 +11,10 @@ export type ChatListItem = {
   title: string | null;
 };
 
+export type ChatUpdate = {
+  title: string;
+};
+
 export type HttpValidationError = {
   detail?: Array<ValidationError>;
 };
@@ -69,6 +73,33 @@ export type ListChatsResponses = {
 
 export type ListChatsResponse = ListChatsResponses[keyof ListChatsResponses];
 
+export type DeleteChatData = {
+  body?: never;
+  path: {
+    chat_id: string;
+  };
+  query?: never;
+  url: "/api/chats/{chat_id}";
+};
+
+export type DeleteChatErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type DeleteChatError = DeleteChatErrors[keyof DeleteChatErrors];
+
+export type DeleteChatResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type DeleteChatResponse = DeleteChatResponses[keyof DeleteChatResponses];
+
 export type ReadChatData = {
   body?: never;
   path: {
@@ -95,6 +126,33 @@ export type ReadChatResponses = {
 };
 
 export type ReadChatResponse = ReadChatResponses[keyof ReadChatResponses];
+
+export type UpdateChatData = {
+  body: ChatUpdate;
+  path: {
+    chat_id: string;
+  };
+  query?: never;
+  url: "/api/chats/{chat_id}";
+};
+
+export type UpdateChatErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UpdateChatError = UpdateChatErrors[keyof UpdateChatErrors];
+
+export type UpdateChatResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type UpdateChatResponse = UpdateChatResponses[keyof UpdateChatResponses];
 
 export type CreateMessageData = {
   body: MessageRequest;

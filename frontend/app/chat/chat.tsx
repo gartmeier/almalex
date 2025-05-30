@@ -39,7 +39,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     };
   }
 
-  let chatHistory = listChats().then(({data}) => data || [])
+  let chatHistory = listChats().then(({ data }) => data || []);
 
   return data(
     { token, chat, chatHistory },
