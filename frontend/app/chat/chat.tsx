@@ -2,6 +2,7 @@ import { data, redirect } from "react-router";
 import { ChatProvider } from "~/chat/context";
 import { Messages } from "~/chat/messages";
 import { Panel } from "~/chat/panel";
+import { Sidebar } from "~/chat/sidebar";
 import { type ChatDetail, readChat } from "~/lib/api";
 import { client } from "~/lib/api/client.gen";
 import { nanoid } from "~/lib/utils/nanoid";
@@ -56,8 +57,13 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
 
   return (
     <ChatProvider chat={chat} token={token}>
-      <Messages />
-      <Panel />
+      <div className="flex h-screen">
+        <Sidebar />
+        <div className="flex flex-1 flex-col">
+          <Messages />
+          <Panel />
+        </div>
+      </div>
     </ChatProvider>
   );
 }

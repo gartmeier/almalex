@@ -1,5 +1,6 @@
 import { createCookie } from "react-router";
 import { createToken } from "~/lib/api";
+import { client } from "~/lib/api/client.gen";
 
 export let tokenCookie = createCookie("token", {
   httpOnly: true,
@@ -23,6 +24,13 @@ export async function ensureServerToken(request: Request) {
 
     token = data!.access_token;
   }
+
+  client.setConfig({
+    baseUrl: "http://localhost:8000/",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return token;
 }

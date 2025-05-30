@@ -45,13 +45,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   let token = await ensureServerToken(request);
 
-  client.setConfig({
-    baseUrl: "http://localhost:8000/",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
   return data(
     { token },
     { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
