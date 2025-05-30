@@ -1,9 +1,16 @@
 import Markdown from "react-markdown";
 import { useChatContext } from "~/chat/context";
 import type { MessageResponse } from "~/lib/api";
+import { useEffect, useRef } from "react";
 
 export function Messages() {
   const { messages } = useChatContext();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [messages, messagesEndRef]);
+
   return (
     <div
       className="flex-1 overflow-y-auto"
@@ -14,6 +21,7 @@ export function Messages() {
           <Message key={message.id} message={message} />
         ))}
       </div>
+      <div ref={messagesEndRef} />
     </div>
   );
 }
