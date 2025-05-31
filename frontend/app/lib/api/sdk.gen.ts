@@ -7,6 +7,9 @@ import type {
 } from "@hey-api/client-fetch";
 import { client as _heyApiClient } from "./client.gen";
 import type {
+  CreateChatData,
+  CreateChatError,
+  CreateChatResponse,
   CreateMessageData,
   CreateMessageError,
   CreateMessageResponse,
@@ -77,6 +80,32 @@ export const listChats = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/chats/",
     ...options,
+  });
+};
+
+/**
+ * Create Chat
+ */
+export const createChat = <ThrowOnError extends boolean = false>(
+  options: Options<CreateChatData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).post<
+    CreateChatResponse,
+    CreateChatError,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: "bearer",
+        type: "http",
+      },
+    ],
+    url: "/api/chats/",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    },
   });
 };
 
