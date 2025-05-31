@@ -50,36 +50,33 @@ function ChatHistory() {
     if (groupChats.length === 0) return null;
 
     return (
-      <div className="mb-4">
-        <h4 className="text-base-content/70 mb-2 text-xs font-medium uppercase">
-          {title}
-        </h4>
-        <div className="space-y-1">
-          {groupChats.map((chat) => (
-            <div key={chat.id} className="group relative">
-              <NavLink
-                to={`/chat/${chat.id}`}
-                className={({ isActive }) =>
-                  cn(
-                    "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm group-hover:pr-10",
-                    isActive ? "bg-base-300" : "hover:bg-base-300",
-                  )
-                }
-                title={chat.title || "New chat"}
-              >
-                <span className="truncate">{chat.title || "New chat"}</span>
-              </NavLink>
-              <button
-                onClick={(e) => handleDeleteChat(chat.id, e)}
-                className="hover:bg-base-100 absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                title="Delete chat"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+      <>
+        <li className="menu-title">{title}</li>
+        {groupChats.map((chat) => (
+          <li key={chat.id} className="group">
+            <NavLink
+              to={`/chat/${chat.id}`}
+              className={({ isActive }) =>
+                cn("relative", isActive && "menu-active")
+              }
+              title={chat.title || "New chat"}
+            >
+              <span className="truncate group-hover:pr-6">
+                {chat.title || "New chat"}
+              </span>
+              <div className="absolute top-1/2 right-2 -translate-y-1/2 p-0 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                  onClick={(e) => handleDeleteChat(chat.id, e)}
+                  className="btn btn-xs btn-ghost hover:btn-error"
+                  title="Delete chat"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </NavLink>
+          </li>
+        ))}
+      </>
     );
   }
 
@@ -106,13 +103,13 @@ function ChatHistory() {
   let groupedChats = groupChatsByDate(chats);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-4">
+    <ul className="menu flex-1 overflow-y-auto">
       {renderChatGroup("Today", groupedChats.today)}
       {renderChatGroup("Yesterday", groupedChats.yesterday)}
       {renderChatGroup("Last Week", groupedChats.lastWeek)}
       {renderChatGroup("Last Month", groupedChats.lastMonth)}
       {renderChatGroup("Older", groupedChats.older)}
-    </div>
+    </ul>
   );
 }
 
