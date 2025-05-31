@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -10,6 +12,7 @@ class ChatListItem(BaseModel):
 
     id: str
     title: str | None
+    created_at: datetime
 
 
 class ChatDetail(BaseModel):
