@@ -8,16 +8,16 @@ from app.api import schemas
 from app.db.models import Chat, ChatMessage, DocumentChunk
 
 
-def create_chat(*, session: Session, chat_id: str, user_id: str) -> Chat:
+def get_chat(*, session: Session, chat_id: str) -> Chat | None:
+    return session.scalar(select(Chat).where(Chat.id == chat_id))
+
+
+def create_user_chat(*, session: Session, chat_id: str, user_id: str) -> Chat:
     db_chat = Chat(id=chat_id, user_id=user_id)
     session.add(db_chat)
     session.commit()
     session.refresh(db_chat)
     return db_chat
-
-
-def get_chat(*, session: Session, chat_id: str) -> Chat | None:
-    return session.scalar(select(Chat).where(Chat.id == chat_id))
 
 
 def get_user_chat(*, session: Session, chat_id: str, user_id: str) -> Chat | None:

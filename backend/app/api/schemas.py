@@ -20,6 +20,10 @@ class ChatDetail(BaseModel):
     messages: list["MessageResponse"]
 
 
+class ChatCreate(BaseModel):
+    id: str
+
+
 class ChatUpdate(BaseModel):
     title: str
 

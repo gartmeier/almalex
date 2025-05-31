@@ -9,10 +9,30 @@ from app.ai.service import (
     generate_title,
 )
 from app.api.deps import CurrentUserID, SessionDep
-from app.api.schemas import ChatDetail, ChatListItem, ChatUpdate, MessageRequest
+from app.api.schemas import (
+    ChatCreate,
+    ChatDetail,
+    ChatListItem,
+    ChatUpdate,
+    MessageRequest,
+)
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
+
+
+@router.post("/", response_model=ChatListItem, status_code=201)
+async def create_chat(
+    chat_create: ChatCreate,
+    session: SessionDep,
+    current_user_id: CurrentUserID,
+):
+    chat = crud.create_user_chat(
+        session=session,
+        chat_id=chat_create.id,
+        user_id=current_user_id,
+    )
+    return chat
 
 
 @router.get("/", response_model=list[ChatListItem])
@@ -91,7 +111,7 @@ async def create_message(
     chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
 
     if not chat:
-        crud.create_chat(
+        crud.create_user_chat(
             session=session,
             chat_id=chat_id,
             user_id=current_user_id,
