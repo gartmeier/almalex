@@ -1,12 +1,14 @@
 from typing import Annotated
 
 import jwt
+import redis
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_token
 from app.db.session import SessionLocal
+from app.redis import get_redis
 
 security = HTTPBearer()
 
@@ -40,3 +42,10 @@ def get_session():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+
+
+def get_redis_connection():
+    return get_redis()
+
+
+RedisDep = Annotated[redis.Redis, Depends(get_redis_connection)]
