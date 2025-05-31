@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteChat, listChats } from "~/lib/api";
+import { deleteChat, listChats, readChat } from "~/lib/api";
 
 export function useChats() {
   return useQuery({
@@ -8,6 +8,20 @@ export function useChats() {
       const { data } = await listChats();
       return data || [];
     },
+  });
+}
+
+export function useChat(chatId: string | undefined) {
+  return useQuery({
+    queryKey: ["chat", chatId],
+    queryFn: async () => {
+      if (!chatId) return null;
+      const { data } = await readChat({
+        path: { chat_id: chatId },
+      });
+      return data || null;
+    },
+    enabled: !!chatId,
   });
 }
 
