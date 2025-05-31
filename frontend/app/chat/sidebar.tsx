@@ -1,15 +1,7 @@
 import { LogIn, Trash2 } from "lucide-react";
-import { Suspense } from "react";
-import {
-  Await,
-  NavLink,
-  useLoaderData,
-  useNavigate,
-  useRevalidator,
-} from "react-router";
-import { deleteChat } from "~/lib/api";
+import { NavLink, useNavigate, useParams } from "react-router";
+import { useChats, useDeleteChat } from "~/lib/hooks/use-chats";
 import { cn } from "~/lib/utils/tailwind";
-import type { loader } from "./chat";
 
 export function Sidebar() {
   return (
@@ -39,26 +31,18 @@ export function Sidebar() {
 }
 
 function ChatHistory() {
-  let { chat, chatHistory } = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-  const revalidator = useRevalidator();
+  let { data: chatHistory, isLoading } = useChats();
+  let { deleteChat } = useDeleteChat();
+  let { chatId: currentChatId } = useParams();
+  let navigate = useNavigate();
 
-  const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  async function handleDeleteChat(chatIdToDelete: string, e: React.MouseEvent) {
+    await deleteChat(chatIdToDelete);
 
-    try {
-      await deleteChat({ path: { chat_id: chatId } });
-
-      if (chat.id === chatId) {
-        navigate("/chat", { replace: true });
-      } else {
-        revalidator.revalidate();
-      }
-    } catch (error) {
-      console.error("Failed to delete chat:", error);
+    if (currentChatId === chatIdToDelete) {
+      navigate("/chat", { replace: true });
     }
-  };
+  }
 
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-4">
@@ -66,49 +50,39 @@ function ChatHistory() {
         Recent Chats
       </h3>
       <div className="space-y-2">
-        <Suspense
-          fallback={
-            <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-              <span>Loading chats...</span>
+        {isLoading ? (
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+            <span>Loading chats...</span>
+          </div>
+        ) : chatHistory && chatHistory.length > 0 ? (
+          chatHistory.map((chat) => (
+            <div key={chat.id} className="group relative">
+              <NavLink
+                to={`/chat/${chat.id}`}
+                className={({ isActive }) =>
+                  cn(
+                    "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm group-hover:pr-10",
+                    isActive ? "bg-base-300" : "hover:bg-base-300",
+                  )
+                }
+                title={chat.title || "New chat"}
+              >
+                <span className="truncate">{chat.title || "New chat"}</span>
+              </NavLink>
+              <button
+                onClick={(e) => handleDeleteChat(chat.id, e)}
+                className="hover:bg-base-100 absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                title="Delete chat"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
-          }
-        >
-          <Await resolve={chatHistory}>
-            {(items) =>
-              items.length > 0 ? (
-                items.map((chat) => (
-                  <div key={chat.id} className="group relative">
-                    <NavLink
-                      to={`/chat/${chat.id}`}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex cursor-pointer items-center gap-3 rounded-lg p-2 text-sm group-hover:pr-10",
-                          isActive ? "bg-base-300" : "hover:bg-base-300",
-                        )
-                      }
-                      title={chat.title || "New chat"}
-                    >
-                      <span className="truncate">
-                        {chat.title || "New chat"}
-                      </span>
-                    </NavLink>
-                    <button
-                      onClick={(e) => handleDeleteChat(chat.id, e)}
-                      className="hover:bg-base-100 absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                      title="Delete chat"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
-                  <span>No chats yet</span>
-                </div>
-              )
-            }
-          </Await>
-        </Suspense>
+          ))
+        ) : (
+          <div className="text-base-content/50 flex items-center gap-3 p-2 text-sm">
+            <span>No chats yet</span>
+          </div>
+        )}
       </div>
     </div>
   );

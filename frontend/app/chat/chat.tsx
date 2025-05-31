@@ -3,7 +3,7 @@ import { ChatProvider } from "~/chat/context";
 import { Messages } from "~/chat/messages";
 import { Panel } from "~/chat/panel";
 import { Sidebar } from "~/chat/sidebar";
-import { type ChatDetail, listChats, readChat } from "~/lib/api";
+import { type ChatDetail, readChat } from "~/lib/api";
 import { client } from "~/lib/api/client.gen";
 import { nanoid } from "~/lib/utils/nanoid";
 import { ensureServerToken, tokenCookie } from "~/server/auth.server";
@@ -39,10 +39,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     };
   }
 
-  let chatHistory = listChats().then(({ data }) => data || []);
-
   return data(
-    { token, chat, chatHistory },
+    { token, chat },
     { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
   );
 }
