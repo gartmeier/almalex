@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { data, useParams } from "react-router";
 import { ChatProvider } from "~/chat/context";
 import { Messages } from "~/chat/messages";
@@ -17,25 +18,26 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 }
 
-export function meta(): Array<
-  { title: string } | { name: string; content: string }
-> {
-  return [
-    { title: "Alma Lex" },
-    { name: "description", content: "Welcome to Alma Lex!" },
-  ];
-}
-
 export default function Chat({ loaderData }: Route.ComponentProps) {
   let { token } = loaderData;
   let { chatId } = useParams();
-  let { data: chat } = useChat(chatId);
+  let { data: chat, isLoading } = useChat(chatId);
 
   const chatData = chat || {
     id: chatId || nanoid(),
-    title: null,
+    title: "New chat",
     messages: [],
   };
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (chat) {
+        document.title = `${chat.title} - Alma Lex`;
+      } else {
+        document.title = "New chat - Alma Lex";
+      }
+    }
+  }, [chat, isLoading]);
 
   return (
     <ChatProvider chat={chatData} token={token}>

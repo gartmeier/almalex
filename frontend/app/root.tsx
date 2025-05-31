@@ -51,6 +51,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 }
 
+export function meta() {
+  return [
+    { title: "Alma Lex" },
+    { name: "description", content: "Welcome to Alma Lex!" },
+  ];
+}
+
 export default function App({ loaderData }: Route.ComponentProps) {
   let { token } = loaderData;
 
