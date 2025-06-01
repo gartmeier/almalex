@@ -8,22 +8,25 @@ import { cn } from "~/lib/utils/tailwind";
 export function Sidebar() {
   return (
     <aside className="bg-base-200 border-base-300 flex w-64 flex-col border-r p-2">
-      <div className="border-base-300 border-b p-4">
-        <NavLink to="/chat" className="text-base-content text-xl font-bold">
+      <div className="flex h-16 items-center justify-center">
+        <NavLink
+          to="/chat"
+          className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent"
+        >
           Alma Lex
         </NavLink>
       </div>
 
-      <div className="p-4">
-        <NavLink to="/chat" className="btn btn-primary w-full gap-2">
+      <div className="mb-4 px-1">
+        <NavLink to="/chat" className="btn btn-primary btn-block">
           New Chat
         </NavLink>
       </div>
 
       <ChatHistory />
 
-      <div className="p-2 pt-0">
-        <button className="btn btn-ghost h-auto w-full justify-start gap-4 p-4">
+      <div className="border-base-300 border-t px-1">
+        <button className="btn btn-ghost btn-block h-auto justify-start gap-4 p-4">
           <LogIn size={16} />
           Login
         </button>
@@ -50,33 +53,35 @@ function ChatHistory() {
     if (groupChats.length === 0) return null;
 
     return (
-      <>
-        <li className="menu-title">{title}</li>
+      <div className="mb-4">
+        <div className="text-base-content/70 flex h-8 items-center px-1.5 text-sm font-medium">
+          {title}
+        </div>
         {groupChats.map((chat) => (
-          <li key={chat.id} className="group">
-            <NavLink
-              to={`/chat/${chat.id}`}
-              className={({ isActive }) =>
-                cn("relative", isActive && "menu-active")
-              }
-              title={chat.title || "New chat"}
-            >
-              <span className="truncate group-hover:pr-6">
-                {chat.title || "New chat"}
-              </span>
-              <div className="absolute top-1/2 right-2 -translate-y-1/2 p-0 opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  onClick={(e) => handleDeleteChat(chat.id, e)}
-                  className="btn btn-xs btn-ghost hover:btn-error"
-                  title="Delete chat"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </NavLink>
-          </li>
+          <NavLink
+            key={chat.id}
+            to={`/chat/${chat.id}`}
+            className={({ isActive }) =>
+              cn(
+                "group flex h-9 items-center rounded px-2 py-1 text-sm",
+                isActive ? "bg-base-300" : "hover:bg-base-300",
+              )
+            }
+            title={chat.title || "New chat"}
+          >
+            <span className="grow truncate">{chat.title || "New chat"}</span>
+            <div className="hidden group-hover:block">
+              <button
+                onClick={(e) => handleDeleteChat(chat.id, e)}
+                className="btn btn-xs btn-ghost hover:btn-error"
+                title="Delete chat"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </NavLink>
         ))}
-      </>
+      </div>
     );
   }
 
@@ -103,13 +108,13 @@ function ChatHistory() {
   let groupedChats = groupChatsByDate(chats);
 
   return (
-    <ul className="menu flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto px-1">
       {renderChatGroup("Today", groupedChats.today)}
       {renderChatGroup("Yesterday", groupedChats.yesterday)}
       {renderChatGroup("Last Week", groupedChats.lastWeek)}
       {renderChatGroup("Last Month", groupedChats.lastMonth)}
       {renderChatGroup("Older", groupedChats.older)}
-    </ul>
+    </div>
   );
 }
 
