@@ -1,10 +1,10 @@
-from openai import OpenAI
-from sqlalchemy.orm import Session
+from typing import Sequence
 
-from app import crud
+from openai import OpenAI
+
 from app.ai.prompts import render
 from app.core.config import settings
-from app.db.models import ChatMessage
+from app.db.models import ChatMessage, DocumentChunk
 
 client = OpenAI(api_key=settings.openai_api_key)
 
@@ -23,9 +23,11 @@ def clean_title(title: str) -> str:
     return title.replace('"', "").replace("'", "")
 
 
-def generate_answer(session: Session, messages: list[ChatMessage]):
+def generate_answer(
+    *, messages: list[ChatMessage], search_results: Sequence[DocumentChunk]
+):
     question = messages[-1].content
-    context = get_context(session, messages)
+    context = format_chunks(search_results)
 
     prompt = render(
         "answer.md",
@@ -33,14 +35,14 @@ def generate_answer(session: Session, messages: list[ChatMessage]):
         context=context,
     )
 
-    input: list = [
+    openai_messages: list = [
         {"role": "system", "content": "You are a helpful AI assistant"},
         *[{"role": m.role, "content": m.content} for m in messages[:-1]],
         {"role": "user", "content": prompt},
     ]
 
     stream = client.responses.create(
-        input=input,
+        input=openai_messages,
         model=settings.openai_model,
         stream=True,
     )
@@ -48,19 +50,6 @@ def generate_answer(session: Session, messages: list[ChatMessage]):
     for event in stream:
         if event.type == "response.output_text.delta":
             yield event.delta
-
-
-def get_context(session: Session, messages: list[ChatMessage], top_k: int = 10) -> str:
-    query = generate_query(messages)
-    query_embedding = create_embedding(query)
-
-    chunks = crud.get_similar_chunks(session=session, query_embedding=query_embedding)
-
-    context = ""
-    for chunk in chunks:
-        context += f"# {chunk.document.title}\n{chunk.text}\n\n"
-
-    return context.strip()
 
 
 def generate_query(messages: list[ChatMessage]):
@@ -81,8 +70,10 @@ def create_embedding(input: str):
     return response.data[0].embedding
 
 
-def format_chunks(chunks):
-    formatted_text = ""
-    for title, text in chunks:
-        formatted_text += f"## {title}\n\n{text}\n\n"
-    return formatted_text
+def format_chunks(chunks: Sequence[DocumentChunk]) -> str:
+    context = ""
+
+    for chunk in chunks:
+        context += f"# {chunk.document.title}\n{chunk.text}\n\n"
+
+    return context.strip()

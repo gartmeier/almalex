@@ -92,11 +92,11 @@ def search(
 
 
 def get_similar_chunks(
-    *, session: Session, query_embedding: list[float], top_k: int = 10
+    *, session: Session, embedding: list[float], top_k: int = 10
 ) -> Sequence[DocumentChunk]:
     return session.scalars(
         select(DocumentChunk)
         .options(selectinload(DocumentChunk.document))
-        .order_by(DocumentChunk.embedding.l2_distance(query_embedding))
+        .order_by(DocumentChunk.embedding.l2_distance(embedding))
         .limit(top_k)
     ).all()

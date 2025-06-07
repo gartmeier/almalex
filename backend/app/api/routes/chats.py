@@ -5,7 +5,9 @@ from fastapi.responses import StreamingResponse
 
 from app import crud
 from app.ai.service import (
+    create_embedding,
     generate_answer,
+    generate_query,
     generate_title,
 )
 from app.api.deps import CurrentUserID, SessionDep
@@ -146,7 +148,15 @@ def stream_chat_completion(chat_id: str):
         )
         yield format_event("message_id", assistant_message.id)
 
-        answer_stream = generate_answer(session, chat.messages)
+        search_query = generate_query(chat.messages)
+        search_embedding = create_embedding(search_query)
+        search_results = crud.get_similar_chunks(
+            session=session, embedding=search_embedding
+        )
+
+        answer_stream = generate_answer(
+            messages=chat.messages, search_results=search_results
+        )
         answer_text = ""
 
         for delta in answer_stream:
