@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from app import crud
@@ -10,7 +10,7 @@ from app.ai.service import (
     generate_query,
     generate_title,
 )
-from app.api.deps import CurrentUserID, SessionDep
+from app.api.deps import CurrentUserID, RateLimiterDep, SessionDep
 from app.api.schemas import (
     ChatCreate,
     ChatDetail,
@@ -19,6 +19,7 @@ from app.api.schemas import (
     MessageRequest,
 )
 from app.db.session import SessionLocal
+from app.services.rate_limiter import RateLimitExceeded
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -109,7 +110,16 @@ async def create_message(
     message_in: MessageRequest,
     session: SessionDep,
     current_user_id: CurrentUserID,
+    rate_limiter: RateLimiterDep,
 ):
+    try:
+        await rate_limiter.check_and_increase(current_user_id)
+    except RateLimitExceeded:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="You've used all your credits. Please purchase more credits to continue using the service.",
+        )
+
     chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
 
     if not chat:
