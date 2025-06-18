@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.security import decode_token
 from app.db.session import SessionLocal
 from app.redis import get_redis
-from app.services.rate_limiter import RateLimiter
+from app.services.rate_limiter import WeeklyMessageLimiter
 
 security = HTTPBearer()
 
@@ -52,8 +52,10 @@ def get_redis_connection():
 RedisDep = Annotated[redis.Redis, Depends(get_redis_connection)]
 
 
-def get_rate_limiter(redis_client: RedisDep) -> RateLimiter:
-    return RateLimiter(redis_client)
+def get_weekly_message_limiter(redis_client: RedisDep) -> WeeklyMessageLimiter:
+    return WeeklyMessageLimiter(redis_client)
 
 
-RateLimiterDep = Annotated[RateLimiter, Depends(get_rate_limiter)]
+WeeklyMessageLimiterDep = Annotated[
+    WeeklyMessageLimiter, Depends(get_weekly_message_limiter)
+]

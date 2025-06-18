@@ -1,51 +1,32 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from typing import Tuple
 
-import redis.asyncio as redis
-
-
-class RateLimitExceeded(Exception):
-    pass
+import redis
 
 
-class RateLimiter:
-    def __init__(self, redis_client: redis.Redis):
+class WeeklyMessageLimiter:
+    def __init__(self, redis_client: redis.Redis, limit: int = 10):
         self.redis = redis_client
-        self.message_limit = 10
-        self.window_days = 7
+        self.limit = limit
 
-    async def check_rate_limit(self, user_id: str) -> bool:
-        """
-        Check if user has exceeded the rate limit of 10 messages in 7 days.
-        Returns True if within limit, False if exceeded.
-        """
-        key = f"rate_limit:messages:{user_id}"
-        current_time = datetime.now(timezone.utc)
+    def _get_week_key(self, user_id: str) -> str:
+        year, week, _ = datetime.now().isocalendar()
+        return f"messages:{user_id}:{year}:week{week}"
 
-        # Remove expired timestamps (older than 7 days)
-        expire_time = current_time - timedelta(days=self.window_days)
-        expire_timestamp = expire_time.timestamp()
+    def can_send_message(self, user_id: str) -> Tuple[bool, int]:
+        key = self._get_week_key(user_id)
 
-        # Remove old entries
-        await self.redis.zremrangebyscore(key, 0, expire_timestamp)
+        if self.redis.setnx(key, self.limit):
+            self.redis.expire(key, 7 * 24 * 60 * 60)  # 7 days in seconds
 
-        # Count current messages in the window
-        current_count = await self.redis.zcard(key)
+        current_remaining = self.redis.get(key)
+        if current_remaining is None:
+            return True, self.limit - 1
 
-        return current_count < self.message_limit
+        current_remaining = int(current_remaining)
+        return current_remaining > 0, current_remaining - 1
 
-    async def record_message(self, user_id: str) -> None:
-        """Record a new message for the user."""
-        key = f"rate_limit:messages:{user_id}"
-        current_timestamp = datetime.now(timezone.utc).timestamp()
-
-        # Add current message timestamp to sorted set
-        await self.redis.zadd(key, {str(current_timestamp): current_timestamp})
-
-        # Set expiration for the key (8 days to be safe)
-        await self.redis.expire(key, int(timedelta(days=8).total_seconds()))
-
-    async def check_and_increase(self, user_id: str) -> None:
-        if not await self.check_rate_limit(user_id):
-            raise RateLimitExceeded()
-
-        await self.record_message(user_id)
+    def use_message(self, user_id: str) -> int:
+        key = self._get_week_key(user_id)
+        remaining = self.redis.decrby(key, 1)
+        return max(0, remaining)

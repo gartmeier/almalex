@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app import crud
@@ -10,7 +10,11 @@ from app.ai.service import (
     generate_query,
     generate_title,
 )
-from app.api.deps import CurrentUserID, RateLimiterDep, SessionDep
+from app.api.deps import (
+    CurrentUserID,
+    SessionDep,
+    WeeklyMessageLimiterDep,
+)
 from app.api.schemas import (
     ChatCreate,
     ChatDetail,
@@ -19,7 +23,6 @@ from app.api.schemas import (
     MessageRequest,
 )
 from app.db.session import SessionLocal
-from app.services.rate_limiter import RateLimitExceeded
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -110,14 +113,14 @@ async def create_message(
     message_in: MessageRequest,
     session: SessionDep,
     current_user_id: CurrentUserID,
-    rate_limiter: RateLimiterDep,
+    limiter: WeeklyMessageLimiterDep,
 ):
-    try:
-        await rate_limiter.check_and_increase(current_user_id)
-    except RateLimitExceeded:
+    can_send = limiter.can_send_message(current_user_id)
+
+    if not can_send:
         raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="You've used all your credits. Please purchase more credits to continue using the service.",
+            status_code=429,
+            detail="Weekly message limit exceeded. Try again next week.",
         )
 
     chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
@@ -134,6 +137,8 @@ async def create_message(
         message_in=message_in,
         chat_id=chat_id,
     )
+
+    limiter.use_message(current_user_id)
 
     return StreamingResponse(
         stream_chat_completion(chat_id),
