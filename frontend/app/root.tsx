@@ -14,8 +14,6 @@ import { client as apiClient } from "~/lib/api/client.gen";
 import type { Route } from "./+types/root";
 import "./app.css";
 
-const queryClient = new QueryClient();
-
 export function meta() {
   return [
     { title: "Alma Lex" },
@@ -40,6 +38,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
+let queryClient = new QueryClient();
 
 export async function clientLoader() {
   apiClient.setConfig({ baseUrl: "/" });
