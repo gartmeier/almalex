@@ -1,22 +1,27 @@
 import {
-  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
-  redirect,
   Scripts,
   ScrollRestoration,
 } from "react-router";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { Suspense, useEffect } from "react";
-import { client } from "~/lib/api/client.gen";
-import { ensureServerToken, tokenCookie } from "~/server/auth.server";
+import React from "react";
+import { createToken } from "~/lib/api";
+import { client as apiClient } from "~/lib/api/client.gen";
 import type { Route } from "./+types/root";
 import "./app.css";
 
 const queryClient = new QueryClient();
+
+export function meta() {
+  return [
+    { title: "Alma Lex" },
+    { name: "description", content: "Welcome to Alma Lex!" },
+  ];
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,45 +41,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  let url = new URL(request.url);
+export async function clientLoader() {
+  apiClient.setConfig({ baseUrl: "/" });
 
-  if (url.pathname === "/") {
-    throw redirect("/chat");
+  let token = await getOrCreateToken();
+
+  apiClient.setConfig({
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return { token };
+}
+
+async function getOrCreateToken() {
+  let token = localStorage.getItem("token");
+  if (!token) {
+    let { data } = await createToken();
+    token = data!.access_token;
+    localStorage.setItem("token", token);
   }
-
-  let token = await ensureServerToken(request);
-
-  return data(
-    { token },
-    { headers: { "Set-Cookie": await tokenCookie.serialize(token) } },
-  );
+  return token;
 }
 
-export function meta() {
-  return [
-    { title: "Alma Lex" },
-    { name: "description", content: "Welcome to Alma Lex!" },
-  ];
+export function HydrateFallback() {
+  return null;
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
-  let { token } = loaderData;
-
-  useEffect(() => {
-    client.setConfig({
-      baseUrl: "/",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  }, [token]);
-
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={"Loading..."}>
-        <Outlet />
-      </Suspense>
+      <Outlet />
     </QueryClientProvider>
   );
 }
