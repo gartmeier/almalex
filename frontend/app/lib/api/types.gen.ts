@@ -35,6 +35,12 @@ export type MessageResponse = {
   content: string;
 };
 
+export type RateLimit = {
+  remaining: number;
+  used: number;
+  max: number;
+};
+
 export type TokenResponse = {
   access_token: string;
 };
@@ -211,6 +217,23 @@ export type CreateMessageResponses = {
 
 export type CreateMessageResponse =
   CreateMessageResponses[keyof CreateMessageResponses];
+
+export type GetRateLimitData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/chats/rate-limit";
+};
+
+export type GetRateLimitResponses = {
+  /**
+   * Successful Response
+   */
+  200: RateLimit;
+};
+
+export type GetRateLimitResponse =
+  GetRateLimitResponses[keyof GetRateLimitResponses];
 
 export type ClientOptions = {
   baseUrl: "http://localhost:8000" | (string & {});

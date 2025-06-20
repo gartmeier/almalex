@@ -109,6 +109,9 @@ export function ChatProvider({
     setMessages([...messages, userMessage, assistantMessage]);
 
     setState("idle");
+    
+    // Invalidate rate limit cache to refresh the data
+    queryClient.invalidateQueries({ queryKey: ["rateLimit"] });
   }
 
   const stopResponse = () => {

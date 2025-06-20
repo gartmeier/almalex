@@ -2,16 +2,19 @@ import { ArrowUp, Square } from "lucide-react";
 import React, { useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useChatContext } from "~/chat/context";
+import { useRateLimit } from "~/lib/hooks/use-rate-limit";
 
 export function Panel() {
   const [message, setMessage] = useState("");
   const { state, sendMessage, stopResponse } = useChatContext();
+  const { data: rateLimit } = useRateLimit();
 
   const isIdle = state === "idle";
   const isMessageEmpty = message.trim().length === 0;
+  const isRateLimited = rateLimit?.remaining === 0;
 
   async function handleMessageSubmit() {
-    if (isMessageEmpty) return;
+    if (isMessageEmpty || isRateLimited) return;
 
     setMessage("");
 
@@ -24,7 +27,7 @@ export function Panel() {
   }
 
   async function handleTextAreaKeyDown(event: React.KeyboardEvent) {
-    if (state === "idle" && event.key === "Enter" && !event.shiftKey) {
+    if (state === "idle" && event.key === "Enter" && !event.shiftKey && !isRateLimited) {
       event.preventDefault();
       await handleMessageSubmit();
     }
@@ -47,7 +50,7 @@ export function Panel() {
         />
         <ActionButton
           isIdle={isIdle}
-          isDisabled={isMessageEmpty}
+          isDisabled={isMessageEmpty || isRateLimited}
           onSend={handleMessageSubmit}
           onStop={stopResponse}
         />

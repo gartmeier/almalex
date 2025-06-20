@@ -18,6 +18,8 @@ import type {
   DeleteChatData,
   DeleteChatError,
   DeleteChatResponse,
+  GetRateLimitData,
+  GetRateLimitResponse,
   ListChatsData,
   ListChatsResponse,
   ReadChatData,
@@ -202,5 +204,27 @@ export const createMessage = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options?.headers,
     },
+  });
+};
+
+/**
+ * Get Rate Limit
+ */
+export const getRateLimit = <ThrowOnError extends boolean = false>(
+  options?: Options<GetRateLimitData, ThrowOnError>,
+) => {
+  return (options?.client ?? _heyApiClient).get<
+    GetRateLimitResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: "bearer",
+        type: "http",
+      },
+    ],
+    url: "/api/chats/rate-limit",
+    ...options,
   });
 };

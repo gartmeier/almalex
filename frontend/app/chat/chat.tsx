@@ -3,6 +3,7 @@ import { useParams, useRouteLoaderData } from "react-router";
 import { ChatProvider } from "~/chat/context";
 import { Messages } from "~/chat/messages";
 import { Panel } from "~/chat/panel";
+import { RateLimitAlert } from "~/chat/rate-limit-alert";
 import { Sidebar } from "~/chat/sidebar";
 import { useChat } from "~/lib/hooks/use-chats";
 import { nanoid } from "~/lib/utils/nanoid";
@@ -35,6 +36,7 @@ export default function Chat() {
         <Sidebar />
         <div className="flex flex-1 flex-col">
           <Messages />
+          <RateLimitAlert />
           <Panel />
         </div>
       </div>
