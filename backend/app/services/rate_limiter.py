@@ -30,3 +30,12 @@ class WeeklyMessageLimiter:
         key = self._get_week_key(user_id)
         remaining = self.redis.decrby(key, 1)
         return max(0, remaining)
+
+    def get_remaining_messages(self, user_id: str) -> int:
+        key = self._get_week_key(user_id)
+        remaining = self.redis.get(key)
+        
+        if remaining is None:
+            return self.limit
+        
+        return max(0, int(remaining))

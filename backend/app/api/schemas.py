@@ -42,3 +42,9 @@ class MessageResponse(BaseModel):
 class MessageRequest(BaseModel):
     id: str
     content: str
+
+
+class RateLimitResponse(BaseModel):
+    remaining: int
+    used: int
+    max: int
