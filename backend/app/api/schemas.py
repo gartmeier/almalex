@@ -44,7 +44,7 @@ class MessageRequest(BaseModel):
     content: str
 
 
-class RateLimitResponse(BaseModel):
+class RateLimit(BaseModel):
     remaining: int
     used: int
     max: int

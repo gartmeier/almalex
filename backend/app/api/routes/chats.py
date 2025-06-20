@@ -21,11 +21,25 @@ from app.api.schemas import (
     ChatListItem,
     ChatUpdate,
     MessageRequest,
-    RateLimitResponse,
+    RateLimit,
 )
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
+
+
+@router.get("/rate-limit", response_model=RateLimit)
+async def get_rate_limit(
+    current_user_id: CurrentUserID,
+    limiter: WeeklyMessageLimiterDep,
+):
+    remaining = limiter.get_remaining_messages(current_user_id)
+    used = limiter.limit - remaining
+    return RateLimit(
+        remaining=remaining,
+        used=used,
+        max=limiter.limit,
+    )
 
 
 @router.post("/", response_model=ChatListItem, status_code=201)
@@ -185,17 +199,3 @@ def stream_chat_completion(chat_id: str):
 
 def format_event(event_type: str, data: str):
     return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
-
-
-@router.get("/rate-limit", response_model=RateLimitResponse)
-async def get_rate_limit(
-    current_user_id: CurrentUserID,
-    limiter: WeeklyMessageLimiterDep,
-):
-    remaining = limiter.get_remaining_messages(current_user_id)
-    used = limiter.limit - remaining
-    return RateLimitResponse(
-        remaining=remaining,
-        used=used,
-        max=limiter.limit,
-    )
