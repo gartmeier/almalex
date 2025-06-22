@@ -10,7 +10,7 @@ export function Sidebar() {
     <aside className="bg-base-200 border-base-300 flex w-64 flex-col border-r p-2">
       <div className="flex h-16 items-center justify-center">
         <NavLink
-          to="/chat"
+          to="/"
           className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent"
         >
           Alma Lex
@@ -18,7 +18,7 @@ export function Sidebar() {
       </div>
 
       <div className="mb-4 px-1">
-        <NavLink to="/chat" className="btn btn-primary btn-block">
+        <NavLink to="/" className="btn btn-primary btn-block">
           New Chat
         </NavLink>
       </div>
