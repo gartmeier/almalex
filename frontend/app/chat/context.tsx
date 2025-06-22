@@ -7,8 +7,8 @@ import React, {
   useState,
 } from "react";
 import type { ChatDetail, MessageResponse } from "~/lib/api";
-import { nanoid } from "~/lib/utils/nanoid";
-import { parseServerSentEvents } from "~/lib/utils/sse";
+import { nanoid } from "~/lib/nanoid";
+import { parseServerSentEvents } from "~/lib/sse";
 
 type ChatContextType = {
   state: string;

@@ -6,7 +6,7 @@ import { Panel } from "~/chat/panel";
 import { RateLimitAlert } from "~/chat/rate-limit-alert";
 import { Sidebar } from "~/chat/sidebar";
 import { useChat } from "~/lib/hooks/use-chats";
-import { nanoid } from "~/lib/utils/nanoid";
+import { nanoid } from "~/lib/nanoid";
 
 export default function Chat() {
   let { token } = useRouteLoaderData("root");

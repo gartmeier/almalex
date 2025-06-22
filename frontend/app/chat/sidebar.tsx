@@ -3,7 +3,7 @@ import { LogIn, Trash2 } from "lucide-react";
 import { NavLink, useNavigate, useParams } from "react-router";
 import type { ChatListItem } from "~/lib/api";
 import { useChats, useDeleteChat } from "~/lib/hooks/use-chats";
-import { cn } from "~/lib/utils/tailwind";
+import { cn } from "~/lib/utils";
 
 export function Sidebar() {
   return (
