@@ -1,6 +1,6 @@
 import { index, route, type RouteConfig } from "@react-router/dev/routes";
 
 export default [
-  index("chat/chat.tsx", { id: "home" }),
-  route("chat/:chatId", "chat/chat.tsx"),
+  index("routes/chat.tsx", { id: "home" }),
+  route("chat/:chatId", "routes/chat.tsx"),
 ] satisfies RouteConfig;
