@@ -27,7 +27,12 @@ export function Panel() {
   }
 
   async function handleTextAreaKeyDown(event: React.KeyboardEvent) {
-    if (state === "idle" && event.key === "Enter" && !event.shiftKey && !isRateLimited) {
+    if (
+      state === "idle" &&
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !isRateLimited
+    ) {
       event.preventDefault();
       await handleMessageSubmit();
     }

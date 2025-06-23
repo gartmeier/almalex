@@ -25,7 +25,7 @@ export function meta() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,6 +33,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              let darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+              
+              function updateDarkMode() {
+                if (darkModeQuery.matches) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              }
+              
+              // Set initial dark mode
+              updateDarkMode();
+              
+              // Listen for changes
+              darkModeQuery.addEventListener('change', updateDarkMode);
+            })();
+          `,
+          }}
+        />
         {children}
         <ScrollRestoration />
         <Scripts />

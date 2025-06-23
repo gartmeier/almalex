@@ -22,7 +22,8 @@ export function RateLimitAlert() {
         <div className="alert alert-error">
           <Ban className="h-6 w-6" />
           <span>
-            You have reached your message limit ({max} messages). Please wait before sending more messages.
+            You have reached your message limit ({max} messages). Please wait
+            before sending more messages.
           </span>
         </div>
       </div>
