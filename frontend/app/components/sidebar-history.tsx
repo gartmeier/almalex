@@ -1,6 +1,5 @@
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { SidebarHistoryGroup } from "~/components/sidebar-history-group";
-import { SidebarGroup } from "~/components/ui/sidebar";
 import type { ChatListItem } from "~/lib/api";
 import { useChats } from "~/lib/hooks/use-chats";
 
@@ -9,13 +8,13 @@ export function SidebarHistory() {
   let groupedChats = groupChatsByDate(chats);
 
   return (
-    <SidebarGroup>
+    <>
       <SidebarHistoryGroup label="Today" chats={groupedChats.today} />
       <SidebarHistoryGroup label="Yesterday" chats={groupedChats.yesterday} />
       <SidebarHistoryGroup label="Last Week" chats={groupedChats.lastWeek} />
       <SidebarHistoryGroup label="Last Month" chats={groupedChats.lastMonth} />
       <SidebarHistoryGroup label="Older" chats={groupedChats.older} />
-    </SidebarGroup>
+    </>
   );
 }
 
