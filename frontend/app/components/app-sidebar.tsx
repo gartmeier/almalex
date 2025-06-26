@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { SidebarHistory } from "~/components/sidebar-history";
 import { Button } from "~/components/ui/button";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sidebar,
   SidebarContent,
@@ -19,11 +18,9 @@ export function AppSidebar() {
           <Link to="/">New Chat</Link>
         </Button>
       </SidebarHeader>
-      <ScrollArea className="min-h-0">
-        <SidebarContent className="w-(--sidebar-width)">
-          <SidebarHistory />
-        </SidebarContent>
-      </ScrollArea>
+      <SidebarContent>
+        <SidebarHistory />
+      </SidebarContent>
     </Sidebar>
   );
 }

@@ -117,4 +117,35 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(from var(--muted-foreground) l c h / 0.4);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    -webkit-background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(from var(--muted-foreground) l c h / 0.5);
+    border: 2px solid transparent;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(from var(--muted-foreground) l c h / 0.2);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    -webkit-background-clip: content-box;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(from var(--muted-foreground) l c h / 0.5);
+    border: 2px solid transparent;
+  }
 }
