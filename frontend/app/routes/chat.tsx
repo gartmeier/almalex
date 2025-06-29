@@ -1,4 +1,6 @@
 import { AppSidebar } from "~/components/app-sidebar";
+import { MessageInput } from "~/components/message-input";
+import { MessageList } from "~/components/message-list";
 import { SidebarProvider } from "~/components/ui/sidebar";
 
 export function loader() {}
@@ -11,7 +13,10 @@ export default function Chat() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main></main>
+      <main>
+        <MessageInput />
+        <MessageList />
+      </main>
     </SidebarProvider>
   );
 }
