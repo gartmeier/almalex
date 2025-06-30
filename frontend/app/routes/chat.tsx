@@ -17,9 +17,7 @@ function generateChatId(): string {
 
 export default function Chat() {
   let { chatId } = useParams();
-  let resolvedChatId = chatId || generateChatId();
-  
-  let { chatId: currentChatId } = useChat(resolvedChatId);
+  let { messages } = useChat(chatId);
 
   function handleSubmit(message: string) {
     // TODO: Handle message submission
@@ -30,7 +28,7 @@ export default function Chat() {
       <AppSidebar />
       <main>
         <MessageInput onSubmit={handleSubmit} />
-        <MessageList />
+        <MessageList messages={messages} />
       </main>
     </SidebarProvider>
   );

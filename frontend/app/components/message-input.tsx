@@ -31,8 +31,8 @@ export function MessageInput({ onSubmit }: MessageInputProps) {
   }
 
   return (
-    <div className="absolute bottom-0 w-full">
-      <div className="bg-secondary mx-auto max-w-3xl rounded-t-xl p-3">
+    <div className="absolute bottom-5 w-full">
+      <div className="bg-secondary mx-auto max-w-3xl rounded-xl p-3">
         <TextareaAutosize
           className="w-full resize-none text-base focus:outline-none"
           value={input}
