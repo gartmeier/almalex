@@ -21,11 +21,15 @@ export default function Chat() {
   
   let { chatId: currentChatId } = useChat(resolvedChatId);
 
+  function handleSubmit(message: string) {
+    // TODO: Handle message submission
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <main>
-        <MessageInput />
+        <MessageInput onSubmit={handleSubmit} />
         <MessageList />
       </main>
     </SidebarProvider>

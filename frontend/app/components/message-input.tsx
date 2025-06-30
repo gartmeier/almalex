@@ -4,10 +4,10 @@ import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "./ui/button";
 
 type MessageInputProps = {
-  sendMessage: (message: string) => void;
+  onSubmit: (message: string) => void;
 };
 
-export function MessageInput({ sendMessage }: MessageInputProps) {
+export function MessageInput({ onSubmit }: MessageInputProps) {
   let [input, setInput] = useState("");
 
   let isInputEmpty = input.trim() === "";
@@ -15,7 +15,7 @@ export function MessageInput({ sendMessage }: MessageInputProps) {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      submitForm();
+      handleSubmit();
     }
   }
 
@@ -23,9 +23,9 @@ export function MessageInput({ sendMessage }: MessageInputProps) {
     setInput(e.target.value);
   }
 
-  function submitForm() {
+  function handleSubmit() {
     if (!isInputEmpty) {
-      sendMessage(input.trim().replaceAll("\n", " \n"));
+      onSubmit(input.trim().replaceAll("\n", " \n"));
       setInput("");
     }
   }
@@ -46,7 +46,7 @@ export function MessageInput({ sendMessage }: MessageInputProps) {
             size="icon"
             type="button"
             disabled={isInputEmpty}
-            onClick={submitForm}
+            onClick={handleSubmit}
           >
             <ArrowUp />
           </Button>
