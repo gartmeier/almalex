@@ -24,7 +24,7 @@ export function SidebarHistoryGroup({
       <SidebarGroupContent>
         <SidebarMenu>
           {chats.map((chat) => (
-            <SidebarHistoryItem chat={chat} />
+            <SidebarHistoryItem key={chat.id} chat={chat} />
           ))}
         </SidebarMenu>
       </SidebarGroupContent>

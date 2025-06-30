@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { readChat } from "~/lib/api";
+import { useEffect, useState } from "react";
+import { readChat, type MessageResponse } from "~/lib/api";
 
 export function useChat(chatId: string | undefined) {
   let { data: chat } = useQuery({
@@ -17,7 +18,29 @@ export function useChat(chatId: string | undefined) {
     staleTime: 30 * 1000, // 30 seconds
   });
 
+  let [localMessages, setLocalMessages] = useState<MessageResponse[]>([]);
+
+  useEffect(() => {
+    if (chat?.messages) {
+      setLocalMessages(chat.messages);
+    }
+  }, [chat?.messages]);
+
+  function addMessage(message: MessageResponse) {
+    setLocalMessages((prev) => {
+      return [...prev, message];
+    });
+  }
+
+  function updateMessage(id: string, updatedMessage: MessageResponse) {
+    setLocalMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? updatedMessage : msg)),
+    );
+  }
+
   return {
-    messages: chat?.messages || [],
+    messages: localMessages,
+    addMessage,
+    updateMessage,
   };
 }
