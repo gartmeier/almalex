@@ -1,20 +1,54 @@
-import { nanoid } from "nanoid";
-import { useParams, useRouteLoaderData } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
 import { SidebarProvider } from "~/components/ui/sidebar";
-import { useChat } from "~/hooks/use-chat";
+import { readChat, type MessageResponse } from "~/lib/api";
+import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents } from "~/lib/sse";
+import type { Route } from "./+types/chat";
 
-export default function Chat() {
-  let { chatId } = useParams();
+export default function Chat({ params }: Route.ComponentProps) {
   let { token } = useRouteLoaderData("root");
+  let chatId = params.chatId || nanoid();
 
-  let { messages, addMessage, updateMessage } = useChat(chatId);
+  let { data } = useQuery({
+    queryKey: ["chat", params.chatId],
+    queryFn: async () => {
+      let { data, error } = await readChat({
+        path: { chat_id: params.chatId! },
+      });
+      if (error) {
+        throw new Error(`Failed to fetch chat ${params.chatId}`);
+      }
+      return data!;
+    },
+    enabled: !!params.chatId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  let [messages, setMessages] = useState(data?.messages || []);
+
+  useEffect(() => {
+    if (data?.messages) {
+      setMessages(data.messages);
+    }
+  }, [data?.messages]);
+
+  function addMessage(message: MessageResponse) {
+    setMessages((prev) => [...prev, message]);
+  }
+
+  function updateMessage(id: string, updatedMessage: MessageResponse) {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? updatedMessage : msg)),
+    );
+  }
 
   async function handleSubmit(message: string) {
-    if (!chatId) return;
+    window.history.replaceState({}, "", `/chat/${chatId}`);
 
     let userMessage = {
       id: nanoid(),
