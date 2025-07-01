@@ -17,15 +17,19 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
 import type { ChatListItem } from "~/lib/api";
-import { useDeleteChatMutation } from "~/lib/hooks/use-chats";
 
-export function SidebarHistoryItem({ chat }: { chat: ChatListItem }) {
+export function SidebarHistoryItem({
+  chat,
+  onDelete,
+}: {
+  chat: ChatListItem;
+  onDelete: (chat: ChatListItem) => void;
+}) {
   const [showDialog, setShowDialog] = useState(false);
-  const deleteChatMutation = useDeleteChatMutation();
 
   const handleDelete = () => {
-    deleteChatMutation.mutate(chat.id);
     setShowDialog(false);
+    onDelete(chat);
   };
 
   return (

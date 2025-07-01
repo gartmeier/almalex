@@ -10,9 +10,11 @@ import type { ChatListItem } from "~/lib/api";
 export function SidebarHistoryGroup({
   label,
   chats,
+  onDelete,
 }: {
   label: string;
   chats: ChatListItem[];
+  onDelete: (chat: ChatListItem) => void;
 }) {
   if (chats.length === 0) {
     return null;
@@ -24,7 +26,7 @@ export function SidebarHistoryGroup({
       <SidebarGroupContent>
         <SidebarMenu>
           {chats.map((chat) => (
-            <SidebarHistoryItem key={chat.id} chat={chat} />
+            <SidebarHistoryItem key={chat.id} chat={chat} onDelete={onDelete} />
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
