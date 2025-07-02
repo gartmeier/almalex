@@ -20,9 +20,11 @@ import type { ChatListItem } from "~/lib/api";
 
 export function SidebarHistoryItem({
   chat,
+  isActive,
   onDelete,
 }: {
   chat: ChatListItem;
+  isActive: boolean;
   onDelete: (chat: ChatListItem) => void;
 }) {
   const [showDialog, setShowDialog] = useState(false);
@@ -35,7 +37,7 @@ export function SidebarHistoryItem({
   return (
     <>
       <SidebarMenuItem key={chat.id}>
-        <SidebarMenuButton asChild>
+        <SidebarMenuButton asChild isActive={isActive}>
           <NavLink to={`/chat/${chat.id}`} title={chat.title || "New chat"}>
             <span>{chat.title}</span>
           </NavLink>

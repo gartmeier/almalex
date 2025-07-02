@@ -107,7 +107,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar activeChatId={chatId} />
       <main className="relative w-full">
         <MessageInput onSubmit={handleSubmit} />
         <MessageList messages={messages} />

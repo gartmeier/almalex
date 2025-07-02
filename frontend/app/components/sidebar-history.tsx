@@ -3,7 +3,7 @@ import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { SidebarHistoryGroup } from "~/components/sidebar-history-group";
 import { deleteChat, listChats, type ChatListItem } from "~/lib/api";
 
-export function SidebarHistory() {
+export function SidebarHistory({ activeChatId }: { activeChatId: string }) {
   let { data = [] } = useQuery({
     queryKey: ["chats"],
     queryFn: async () => {
@@ -54,26 +54,31 @@ export function SidebarHistory() {
       <SidebarHistoryGroup
         label="Today"
         chats={groupedChats.today}
+        activeChatId={activeChatId}
         onDelete={handleDelete}
       />
       <SidebarHistoryGroup
         label="Yesterday"
         chats={groupedChats.yesterday}
+        activeChatId={activeChatId}
         onDelete={handleDelete}
       />
       <SidebarHistoryGroup
         label="Last Week"
         chats={groupedChats.lastWeek}
+        activeChatId={activeChatId}
         onDelete={handleDelete}
       />
       <SidebarHistoryGroup
         label="Last Month"
         chats={groupedChats.lastMonth}
+        activeChatId={activeChatId}
         onDelete={handleDelete}
       />
       <SidebarHistoryGroup
         label="Older"
         chats={groupedChats.older}
+        activeChatId={activeChatId}
         onDelete={handleDelete}
       />
     </>

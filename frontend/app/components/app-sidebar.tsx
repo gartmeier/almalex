@@ -7,7 +7,7 @@ import {
   SidebarHeader,
 } from "~/components/ui/sidebar";
 
-export function AppSidebar() {
+export function AppSidebar({ activeChatId }: { activeChatId: string }) {
   return (
     <Sidebar>
       <SidebarHeader>
@@ -19,7 +19,7 @@ export function AppSidebar() {
         </Button>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarHistory />
+        <SidebarHistory activeChatId={activeChatId} />
       </SidebarContent>
     </Sidebar>
   );
