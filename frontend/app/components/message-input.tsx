@@ -31,26 +31,24 @@ export function MessageInput({ onSubmit }: MessageInputProps) {
   }
 
   return (
-    <div className="absolute bottom-5 w-full">
-      <div className="bg-secondary mx-auto max-w-3xl rounded-xl p-3">
-        <TextareaAutosize
-          className="w-full resize-none text-base focus:outline-none"
-          value={input}
-          placeholder="How can I help you today?"
-          autoFocus
-          onKeyDown={handleKeyDown}
-          onChange={handleChange}
-        />
-        <div className="mt-2 flex justify-end">
-          <Button
-            size="icon"
-            type="button"
-            disabled={isInputEmpty}
-            onClick={handleSubmit}
-          >
-            <ArrowUp />
-          </Button>
-        </div>
+    <div className="bg-secondary rounded-xl p-3">
+      <TextareaAutosize
+        className="w-full resize-none text-base focus:outline-none"
+        value={input}
+        placeholder="How can I help you today?"
+        autoFocus
+        onKeyDown={handleKeyDown}
+        onChange={handleChange}
+      />
+      <div className="mt-2 flex justify-end">
+        <Button
+          size="icon"
+          type="button"
+          disabled={isInputEmpty}
+          onClick={handleSubmit}
+        >
+          <ArrowUp />
+        </Button>
       </div>
     </div>
   );

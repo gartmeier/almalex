@@ -12,4 +12,3 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
     </div>
   );
 }
-

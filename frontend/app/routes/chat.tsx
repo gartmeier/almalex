@@ -4,6 +4,8 @@ import { useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
+import { RateLimitAlert } from "~/components/rate-limit-alert";
+import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { readChat, type MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
@@ -109,7 +111,13 @@ export default function Chat({ params }: Route.ComponentProps) {
     <SidebarProvider>
       <AppSidebar activeChatId={chatId} />
       <main className="relative w-full">
-        <MessageInput onSubmit={handleSubmit} />
+        <div className="absolute bottom-5 w-full">
+          <div className="mx-auto max-w-3xl">
+            <ScrollToBottomButton />
+            <RateLimitAlert />
+            <MessageInput onSubmit={handleSubmit} />
+          </div>
+        </div>
         <MessageList messages={messages} />
       </main>
     </SidebarProvider>
