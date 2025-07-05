@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
@@ -15,6 +15,7 @@ import type { Route } from "./+types/chat";
 export default function Chat({ params }: Route.ComponentProps) {
   let { token } = useRouteLoaderData("root");
   let chatId = params.chatId || nanoid();
+  let queryClient = useQueryClient();
 
   let { data } = useQuery({
     queryKey: ["chat", params.chatId],
@@ -105,6 +106,8 @@ export default function Chat({ params }: Route.ComponentProps) {
         }
       }
     }
+    
+    queryClient.invalidateQueries({ queryKey: ["rateLimit"] });
   }
 
   return (

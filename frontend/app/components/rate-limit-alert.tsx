@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getRateLimit } from "~/lib/api";
 
 export function RateLimitAlert() {
@@ -16,6 +16,12 @@ export function RateLimitAlert() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (rateLimit) {
+      setIsVisible(true);
+    }
+  }, [rateLimit]);
 
   if (!isVisible || !rateLimit || !rateLimit.used) return null;
 
