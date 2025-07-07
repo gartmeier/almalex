@@ -7,6 +7,7 @@ import { MessageList } from "~/components/message-list";
 import { RateLimitAlert } from "~/components/rate-limit-alert";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { SidebarProvider } from "~/components/ui/sidebar";
+import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import { readChat, type MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents } from "~/lib/sse";
@@ -106,7 +107,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         }
       }
     }
-    
+
     queryClient.invalidateQueries({ queryKey: ["rateLimit"] });
   }
 
@@ -114,14 +115,16 @@ export default function Chat({ params }: Route.ComponentProps) {
     <SidebarProvider>
       <AppSidebar activeChatId={chatId} />
       <main className="relative w-full">
-        <div className="absolute bottom-5 w-full">
-          <div className="mx-auto max-w-3xl">
-            <ScrollToBottomButton />
-            <RateLimitAlert />
-            <MessageInput onSubmit={handleSubmit} />
+        <ScrollToBottomProvider>
+          <div className="absolute bottom-5 w-full">
+            <div className="mx-auto max-w-3xl">
+              <ScrollToBottomButton />
+              <RateLimitAlert />
+              <MessageInput onSubmit={handleSubmit} />
+            </div>
           </div>
-        </div>
-        <MessageList messages={messages} />
+          <MessageList messages={messages} />
+        </ScrollToBottomProvider>
       </main>
     </SidebarProvider>
   );
