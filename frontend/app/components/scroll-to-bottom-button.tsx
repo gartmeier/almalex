@@ -3,7 +3,7 @@ import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
 import { Button } from "~/components/ui/button";
 
 export function ScrollToBottomButton() {
-  let { isAtBottom } = useScrollToBottom();
+  let { isAtBottom, scrollToBottom } = useScrollToBottom();
 
   if (isAtBottom) {
     return null;
@@ -12,6 +12,7 @@ export function ScrollToBottomButton() {
   return (
     <div className="mb-2 flex justify-center">
       <Button
+        onClick={() => scrollToBottom()}
         variant="secondary"
         size="icon"
         className="rounded-full shadow-lg"

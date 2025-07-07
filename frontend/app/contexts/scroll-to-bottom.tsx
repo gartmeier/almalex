@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 type ScrollToBottomContextType = {
   isAtBottom: boolean;
+  endRef: React.RefObject<HTMLDivElement | null>;
+  scrollToBottom: (behavior?: ScrollBehavior) => void;
   onViewportEnter: () => void;
   onViewportLeave: () => void;
 };
@@ -13,21 +15,36 @@ let ScrollToBottomContext = createContext<ScrollToBottomContextType | null>(
 
 export function ScrollToBottomProvider({ children }: { children: ReactNode }) {
   let [isAtBottom, setIsAtBottom] = useState(true);
+  let [scrollBehavior, setScrollBehavior] = useState<false | ScrollBehavior>(
+    false,
+  );
+  let endRef = useRef<HTMLDivElement>(null);
 
   function onViewportEnter() {
-    console.log("enter");
     setIsAtBottom(true);
   }
 
   function onViewportLeave() {
-    console.log("leave");
     setIsAtBottom(false);
   }
+
+  function scrollToBottom(behavior: ScrollBehavior = "smooth") {
+    setScrollBehavior(behavior);
+  }
+
+  useEffect(() => {
+    if (scrollBehavior !== false && endRef.current) {
+      endRef.current.scrollIntoView({ behavior: scrollBehavior });
+      setScrollBehavior(false);
+    }
+  }, [scrollBehavior]);
 
   return (
     <ScrollToBottomContext.Provider
       value={{
         isAtBottom,
+        endRef,
+        scrollToBottom,
         onViewportEnter,
         onViewportLeave,
       }}
@@ -46,4 +63,3 @@ export function useScrollToBottom() {
   }
   return context;
 }
-

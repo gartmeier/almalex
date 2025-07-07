@@ -9,7 +9,7 @@ type MessageListProps = {
 };
 
 export function MessageList({ messages }: MessageListProps) {
-  const { onViewportEnter, onViewportLeave } = useScrollToBottom();
+  const { endRef, onViewportEnter, onViewportLeave } = useScrollToBottom();
 
   return (
     <div
@@ -24,11 +24,12 @@ export function MessageList({ messages }: MessageListProps) {
             return <AssistantMessage key={message.id} message={message} />;
           }
         })}
-        <motion.div
-          onViewportEnter={onViewportEnter}
-          onViewportLeave={onViewportLeave}
-        />
       </div>
+      <motion.div
+        ref={endRef}
+        onViewportEnter={onViewportEnter}
+        onViewportLeave={onViewportLeave}
+      />
     </div>
   );
 }
