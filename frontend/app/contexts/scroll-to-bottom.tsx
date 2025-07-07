@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 type ScrollToBottomContextType = {
   isAtBottom: boolean;
@@ -28,9 +28,9 @@ export function ScrollToBottomProvider({ children }: { children: ReactNode }) {
     setIsAtBottom(false);
   }
 
-  function scrollToBottom(behavior: ScrollBehavior = "smooth") {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     setScrollBehavior(behavior);
-  }
+  }, []);
 
   useEffect(() => {
     if (scrollBehavior !== false && endRef.current) {

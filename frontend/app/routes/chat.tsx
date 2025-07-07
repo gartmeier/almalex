@@ -123,7 +123,7 @@ export default function Chat({ params }: Route.ComponentProps) {
               <MessageInput onSubmit={handleSubmit} />
             </div>
           </div>
-          <MessageList messages={messages} />
+          <MessageList chatId={chatId} messages={messages} />
         </ScrollToBottomProvider>
       </main>
     </SidebarProvider>

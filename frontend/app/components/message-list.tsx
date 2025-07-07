@@ -1,15 +1,23 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import type { MessageResponse } from "~/lib/api";
 import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
 import { AssistantMessage } from "./assistant-message";
 import { UserMessage } from "./user-message";
 
 type MessageListProps = {
+  chatId: string;
   messages: MessageResponse[];
 };
 
-export function MessageList({ messages }: MessageListProps) {
-  const { endRef, onViewportEnter, onViewportLeave } = useScrollToBottom();
+export function MessageList({ chatId, messages }: MessageListProps) {
+  const { endRef, onViewportEnter, onViewportLeave, scrollToBottom } = useScrollToBottom();
+
+  useEffect(() => {
+    if (chatId) {
+      scrollToBottom('instant');
+    }
+  }, [chatId, scrollToBottom]);
 
   return (
     <div
