@@ -58,7 +58,7 @@ export default function HomePage() {
 
           <h3>Upcoming Features</h3>
           <p>
-            We're planning several enhancements that would transform this into a comprehensive legal research platform:
+            To complete our demonstration, we'd like to add a few final enhancements:
           </p>
           <ul>
             <li><strong>Process Transparency:</strong> Show users what the AI is doing behind the scenes—translating queries, searching the database, and processing results in real-time</li>
