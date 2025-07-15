@@ -15,7 +15,7 @@ export function AppSidebar({ activeChatId }: { activeChatId: string }) {
           <Link to="/">Alma Lex</Link>
         </h1>
         <Button asChild>
-          <Link to="/">New Chat</Link>
+          <Link to="/chat/new">New Chat</Link>
         </Button>
       </SidebarHeader>
       <SidebarContent>
