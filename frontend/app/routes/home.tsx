@@ -56,6 +56,16 @@ export default function HomePage() {
             Users get <strong>10 messages per week</strong> to experience the AI legal assistant. We deliberately chose not to allow users to sign up. These were intentional design decisions to position this as a demonstration rather than a full-featured product—showcasing our technical capabilities while maintaining focus on the core AI functionality.
           </p>
 
+          <h3>Upcoming Features</h3>
+          <p>
+            We're planning several enhancements that would transform this into a comprehensive legal research platform:
+          </p>
+          <ul>
+            <li><strong>Process Transparency:</strong> Show users what the AI is doing behind the scenes—translating queries, searching the database, and processing results in real-time</li>
+            <li><strong>Source Document Display:</strong> Present the actual Swiss legal documents and court cases used to generate each response, eliminating the need to manually search Google for verification</li>
+            <li><strong>Interactive References:</strong> Link specific claims in AI responses directly to their source passages in Swiss Federal Law and court decisions</li>
+          </ul>
+
 
           <div className="text-center not-prose mt-8">
             <Link 
