@@ -1,4 +1,21 @@
 import { Link } from "react-router";
+import type { MetaFunction } from "react-router";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Alma Lex - AI-Powered Swiss Legal Assistant" },
+    { 
+      name: "description", 
+      content: "Advanced AI legal assistant built with RAG technology for Swiss Federal Law and court decisions. Created by legal professionals showcasing expertise in AI, embeddings, and modern web development." 
+    },
+    { property: "og:title", content: "Alma Lex - AI-Powered Swiss Legal Assistant" },
+    { 
+      property: "og:description", 
+      content: "Advanced AI legal assistant built with RAG technology for Swiss Federal Law and court decisions. Try our live demo with 10 free messages per week." 
+    },
+    { property: "og:type", content: "website" },
+  ];
+};
 
 export default function HomePage() {
   return (
