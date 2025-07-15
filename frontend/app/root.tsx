@@ -17,6 +17,11 @@ import "./app.css";
 
 Sentry.init({
   dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
+  integrations: [
+    Sentry.feedbackIntegration({
+      colorScheme: "system",
+    }),
+  ],
 });
 
 let queryClient = new QueryClient();
