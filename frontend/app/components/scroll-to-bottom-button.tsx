@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
-import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
 import { Button } from "~/components/ui/button";
+import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
 
 export function ScrollToBottomButton() {
   let { isAtBottom, scrollToBottom } = useScrollToBottom();

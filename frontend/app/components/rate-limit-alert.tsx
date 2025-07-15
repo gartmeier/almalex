@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getRateLimit } from "~/lib/api";
 
 export function RateLimitAlert() {
