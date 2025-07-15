@@ -56,9 +56,9 @@ export default function HomePage() {
             Users get <strong>10 messages per week</strong> to experience the AI legal assistant. We deliberately chose not to allow users to sign up. These were intentional design decisions to position this as a demonstration rather than a full-featured product—showcasing our technical capabilities while maintaining focus on the core AI functionality.
           </p>
 
-          <h3>Upcoming Features</h3>
+          <h3>Vision for Enhancement</h3>
           <p>
-            We're planning several enhancements that would transform this into a demo for a comprehensive legal research platform:
+            We envision extending this demonstration with powerful features that would showcase a complete legal research platform:
           </p>
           <ul>
             <li><strong>Process Transparency:</strong> Show users what the AI is doing behind the scenes—translating queries, searching the database, and processing results in real-time</li>
