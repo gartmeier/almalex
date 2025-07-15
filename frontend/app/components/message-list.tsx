@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useEffect } from "react";
 import type { MessageResponse } from "~/lib/api";
 import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
@@ -32,7 +33,11 @@ export function MessageList({ chatId, messages }: MessageListProps) {
           }
         })}
       </div>
-      <div ref={endRef} />
+      <motion.div
+        ref={endRef}
+        onViewportEnter={onViewportEnter}
+        onViewportLeave={onViewportLeave}
+      />
     </div>
   );
 }
