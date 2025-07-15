@@ -62,7 +62,7 @@ export default function HomePage() {
           </p>
           <ul>
             <li><strong>Process Transparency:</strong> Show users what the AI is doing behind the scenes—translating queries, searching the database, and processing results in real-time</li>
-            <li><strong>Source Document Display:</strong> Present the actual Swiss legal documents and court cases used to generate each response, eliminating the need to manually search Google for verification</li>
+            <li><strong>Source Document Display:</strong> Present the actual Swiss legal documents and court cases used to generate each response, eliminating the need to manually look up articles and court cases</li>
             <li><strong>Interactive References:</strong> Link specific claims in AI responses directly to their source passages in Swiss Federal Law and court decisions</li>
           </ul>
 
