@@ -7,12 +7,17 @@ import {
   ScrollRestoration,
 } from "react-router";
 
+import * as Sentry from "@sentry/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { createToken } from "~/lib/api";
 import { client as apiClient } from "~/lib/api/client.gen";
 import type { Route } from "./+types/root";
 import "./app.css";
+
+Sentry.init({
+  dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
+});
 
 let queryClient = new QueryClient();
 
