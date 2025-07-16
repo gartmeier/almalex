@@ -12,6 +12,7 @@ export default defineConfig({
     sentryVitePlugin({
       org: "gartmeier",
       project: "almalex_frontend",
+      telemetry: false,
     }),
   ],
 
