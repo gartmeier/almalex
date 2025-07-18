@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { MessageInput } from "~/components/message-input";
@@ -15,7 +15,7 @@ import type { Route } from "./+types/chat";
 
 export default function Chat({ params }: Route.ComponentProps) {
   let { token } = useRouteLoaderData("root");
-  let chatId = params.chatId || nanoid();
+  let chatId = useMemo(() => params.chatId || nanoid(), [params.chatId]);
   let queryClient = useQueryClient();
 
   let { data } = useQuery({
@@ -86,6 +86,8 @@ export default function Chat({ params }: Route.ComponentProps) {
       body: JSON.stringify(userMessage),
     });
 
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
+
     let reader = response.body!.getReader();
     let decoder = new TextDecoder();
 
@@ -103,6 +105,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         switch (event.name) {
           case "chat_title":
             document.title = `${event.data} | Alma Lex`;
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
             break;
           case "message_id":
             assistantMessage.id = event.data;
