@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useRouteLoaderData } from "react-router";
+import { useLocation, useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
@@ -40,6 +40,14 @@ export default function Chat({ params }: Route.ComponentProps) {
       setMessages(data.messages);
     }
   }, [data?.messages]);
+
+  let location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.timestamp) {
+      setMessages([]);
+    }
+  }, [location]);
 
   function addMessage(message: MessageResponse) {
     setMessages((prev) => [...prev, message]);
