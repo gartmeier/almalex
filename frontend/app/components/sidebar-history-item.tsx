@@ -27,6 +27,7 @@ export function SidebarHistoryItem({
   isActive: boolean;
   onDelete: (chat: ChatListItem) => void;
 }) {
+  const chatTitle = chat.title || "New chat";
   const [showDialog, setShowDialog] = useState(false);
 
   const handleDelete = () => {
@@ -38,8 +39,8 @@ export function SidebarHistoryItem({
     <>
       <SidebarMenuItem key={chat.id}>
         <SidebarMenuButton asChild isActive={isActive}>
-          <NavLink to={`/chat/${chat.id}`} title={chat.title || "New chat"}>
-            <span>{chat.title}</span>
+          <NavLink to={`/chat/${chat.id}`} title={chatTitle}>
+            <span>{chatTitle}</span>
           </NavLink>
         </SidebarMenuButton>
         <SidebarMenuAction
@@ -55,8 +56,8 @@ export function SidebarHistoryItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Chat</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{chat.title || "New chat"}"? This
-              action cannot be undone.
+              Are you sure you want to delete "{chatTitle}"? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
