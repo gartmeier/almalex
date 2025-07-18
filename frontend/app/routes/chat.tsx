@@ -15,8 +15,10 @@ import type { Route } from "./+types/chat";
 
 export default function Chat({ params }: Route.ComponentProps) {
   let { token } = useRouteLoaderData("root");
-  let chatId = useMemo(() => params.chatId || nanoid(), [params.chatId]);
+  let location = useLocation();
   let queryClient = useQueryClient();
+
+  let chatId = useMemo(() => params.chatId || nanoid(), [params.chatId]);
 
   let { data } = useQuery({
     queryKey: ["chat", params.chatId],
@@ -30,7 +32,7 @@ export default function Chat({ params }: Route.ComponentProps) {
       return data!;
     },
     enabled: !!params.chatId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000,
   });
 
   let [messages, setMessages] = useState(data?.messages || []);
@@ -40,8 +42,6 @@ export default function Chat({ params }: Route.ComponentProps) {
       setMessages(data.messages);
     }
   }, [data?.messages]);
-
-  let location = useLocation();
 
   useEffect(() => {
     if (location.state?.timestamp) {
