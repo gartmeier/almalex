@@ -77,6 +77,12 @@
   --sidebar-ring: oklch(0.606 0.25 292.717);
 }
 
+/* Position Sentry feedback button in top-right corner */
+#sentry-feedback {
+  --inset: 0px 0px auto auto !important;
+  --page-margin: 1rem !important;
+}
+
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
