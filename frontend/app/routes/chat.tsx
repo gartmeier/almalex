@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useRouteLoaderData } from "react-router";
+import { useLocation, useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
+import { ChatHeader } from "~/components/chat-header";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
 import { RateLimitAlert } from "~/components/rate-limit-alert";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { SidebarProvider } from "~/components/ui/sidebar";
-import { ChatHeader } from "~/components/chat-header";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import { readChat, type MessageResponse } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";

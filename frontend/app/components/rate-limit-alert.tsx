@@ -3,7 +3,11 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getRateLimit } from "~/lib/api";
 
-export function RateLimitAlert({ isRateLimited = false }: { isRateLimited?: boolean }) {
+export function RateLimitAlert({
+  isRateLimited = false,
+}: {
+  isRateLimited?: boolean;
+}) {
   const [isVisible, setIsVisible] = useState(true);
 
   const { data: rateLimit } = useQuery({
@@ -28,7 +32,8 @@ export function RateLimitAlert({ isRateLimited = false }: { isRateLimited?: bool
   if (isRateLimited || (rateLimit && rateLimit.remaining === 0)) {
     return (
       <div className="blur-fallback:bg-secondary relative mx-auto my-4 w-fit rounded-xl border border-red-400/20 bg-red-300/50 px-5 py-3 pr-12 text-red-800 shadow-lg backdrop-blur-md dark:border-red-800/20 dark:bg-red-800/30 dark:text-red-100/90">
-        You've used all 10 messages for this week. Your limit resets next Monday.
+        You've used all 10 messages for this week. Your limit resets next
+        Monday.
         <X
           size={18}
           className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"

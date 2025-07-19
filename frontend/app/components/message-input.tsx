@@ -31,9 +31,9 @@ export function MessageInput({ onSubmit }: MessageInputProps) {
   }
 
   return (
-    <div className="border border-input rounded-2xl bg-muted p-3">
+    <div className="border-input bg-muted rounded-2xl border p-3">
       <TextareaAutosize
-        className="w-full resize-none text-base focus:outline-none bg-transparent"
+        className="w-full resize-none bg-transparent text-base focus:outline-none"
         value={input}
         placeholder="How can I help you today?"
         autoFocus

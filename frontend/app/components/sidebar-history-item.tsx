@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +48,11 @@ export function SidebarHistoryItem({
     <>
       <SidebarMenuItem key={chat.id}>
         <SidebarMenuButton asChild isActive={isActive}>
-          <button onClick={handleChatClick} title={chatTitle} className="w-full text-left">
+          <button
+            onClick={handleChatClick}
+            title={chatTitle}
+            className="w-full text-left"
+          >
             <span>{chatTitle}</span>
           </button>
         </SidebarMenuButton>

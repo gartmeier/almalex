@@ -1,7 +1,7 @@
+import { Plus } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { SidebarTrigger, useSidebar } from "~/components/ui/sidebar";
-import { Plus } from "lucide-react";
 
 export function ChatHeader() {
   let navigate = useNavigate();
@@ -13,12 +13,12 @@ export function ChatHeader() {
 
   return (
     <div className="absolute top-4 left-4 z-10 flex gap-2">
-      <div className="bg-background/80 backdrop-blur-sm rounded-md p-1 flex gap-1">
+      <div className="bg-background/80 flex gap-1 rounded-md p-1 backdrop-blur-sm">
         <SidebarTrigger />
         {(isMobile || !open) && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="size-7"
             onClick={handleNewChat}
           >
