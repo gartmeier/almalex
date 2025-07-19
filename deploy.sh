@@ -4,9 +4,10 @@ set -e
 echo "🚀 Starting deployment..."
 echo "----------------------------------------"
 
-# Pull latest changes
-echo "📥 Pulling latest changes from git..."
-git pull
+# Reset to latest changes
+echo "📥 Resetting to latest changes from git..."
+git fetch origin
+git reset --hard origin/main
 
 # Frontend deployment
 echo ""
