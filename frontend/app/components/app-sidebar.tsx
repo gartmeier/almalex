@@ -5,12 +5,15 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  useSidebar,
 } from "~/components/ui/sidebar";
 
 export function AppSidebar({ activeChatId }: { activeChatId: string }) {
   let navigate = useNavigate();
+  let { setOpenMobile } = useSidebar();
 
   function handleNewChat() {
+    setOpenMobile(false);
     navigate("/chat/new", { state: { timestamp: Date.now() } });
   }
 

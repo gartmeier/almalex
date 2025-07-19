@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +15,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "~/components/ui/sidebar";
 import type { ChatListItem } from "~/lib/api";
 
@@ -29,19 +30,27 @@ export function SidebarHistoryItem({
 }) {
   const chatTitle = chat.title || "New chat";
   const [showDialog, setShowDialog] = useState(false);
+  const navigate = useNavigate();
+  const { setOpenMobile } = useSidebar();
 
-  const handleDelete = () => {
+  function handleDelete() {
     setShowDialog(false);
     onDelete(chat);
-  };
+  }
+
+  function handleChatClick(e: React.MouseEvent) {
+    e.preventDefault();
+    setOpenMobile(false);
+    navigate(`/chat/${chat.id}`);
+  }
 
   return (
     <>
       <SidebarMenuItem key={chat.id}>
         <SidebarMenuButton asChild isActive={isActive}>
-          <NavLink to={`/chat/${chat.id}`} title={chatTitle}>
+          <button onClick={handleChatClick} title={chatTitle} className="w-full text-left">
             <span>{chatTitle}</span>
-          </NavLink>
+          </button>
         </SidebarMenuButton>
         <SidebarMenuAction
           showOnHover={true}
