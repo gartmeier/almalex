@@ -24,7 +24,7 @@ class WeeklyMessageLimiter:
             return True, self.limit - 1
 
         current_remaining = int(current_remaining)
-        return current_remaining > 0, current_remaining - 1
+        return current_remaining > 0
 
     def use_message(self, user_id: str) -> int:
         key = self._get_week_key(user_id)
