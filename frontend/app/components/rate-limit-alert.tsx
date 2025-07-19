@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getRateLimit } from "~/lib/api";
 
-export function RateLimitAlert() {
+export function RateLimitAlert({ isRateLimited = false }: { isRateLimited?: boolean }) {
   const [isVisible, setIsVisible] = useState(true);
 
   const { data: rateLimit } = useQuery({
@@ -18,12 +18,27 @@ export function RateLimitAlert() {
   });
 
   useEffect(() => {
-    if (rateLimit) {
+    if (rateLimit || isRateLimited) {
       setIsVisible(true);
     }
-  }, [rateLimit]);
+  }, [rateLimit, isRateLimited]);
 
-  if (!isVisible || !rateLimit || !rateLimit.used) return null;
+  if (!isVisible) return null;
+
+  if (isRateLimited) {
+    return (
+      <div className="blur-fallback:bg-secondary relative mx-auto my-4 w-fit rounded-xl border border-red-400/20 bg-red-300/50 px-5 py-3 pr-12 text-red-800 shadow-lg backdrop-blur-md dark:border-red-800/20 dark:bg-red-800/30 dark:text-red-100/90">
+        Rate limit exceeded. You have used all your messages for this week.
+        <X
+          size={18}
+          className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+          onClick={() => setIsVisible(false)}
+        />
+      </div>
+    );
+  }
+
+  if (!rateLimit || !rateLimit.used) return null;
 
   return (
     <div className="blur-fallback:bg-secondary relative mx-auto my-4 w-fit rounded-xl border border-yellow-400/20 bg-yellow-300/50 px-5 py-3 pr-12 text-yellow-800 shadow-lg backdrop-blur-md dark:border-yellow-800/20 dark:bg-yellow-800/30 dark:text-yellow-100/90">

@@ -36,6 +36,7 @@ export default function Chat({ params }: Route.ComponentProps) {
   });
 
   let [messages, setMessages] = useState(data?.messages || []);
+  let [isRateLimited, setIsRateLimited] = useState(false);
 
   useEffect(() => {
     if (data?.messages) {
@@ -86,6 +87,12 @@ export default function Chat({ params }: Route.ComponentProps) {
       body: JSON.stringify(userMessage),
     });
 
+    if (response.status === 429) {
+      setIsRateLimited(true);
+      setMessages((prev) => prev.slice(0, -2));
+      return;
+    }
+
     queryClient.invalidateQueries({ queryKey: ["chats"] });
 
     let reader = response.body!.getReader();
@@ -130,7 +137,7 @@ export default function Chat({ params }: Route.ComponentProps) {
           <div className="absolute bottom-5 w-full">
             <div className="mx-auto max-w-3xl">
               <ScrollToBottomButton />
-              <RateLimitAlert />
+              <RateLimitAlert isRateLimited={isRateLimited} />
               <MessageInput onSubmit={handleSubmit} />
             </div>
           </div>
