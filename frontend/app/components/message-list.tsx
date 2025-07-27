@@ -22,7 +22,7 @@ export function MessageList({ chatId, messages }: MessageListProps) {
 
   return (
     <div
-      className="h-screen w-full overflow-y-auto pb-[120px]"
+      className="h-dvh w-full overflow-y-auto pb-[120px]"
       style={{ scrollbarGutter: "stable both-edges" }}
     >
       <div className="mx-auto max-w-3xl">
