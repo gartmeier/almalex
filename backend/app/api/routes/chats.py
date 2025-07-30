@@ -165,6 +165,9 @@ def stream_chat_completion(chat_id: str):
     with SessionLocal() as session:
         chat = crud.get_chat(session=session, chat_id=chat_id)
 
+        if chat is None:
+            raise ValueError("Expected chat to exist")
+
         if not chat.title:
             title = generate_title(chat.messages[0].content)
 
