@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
 from app.api import schemas
-from app.db.models import Chat, ChatMessage, DocumentChunk
+from app.db.models import Chat, ChatMessage, Document, DocumentChunk
 
 
 def get_chat(*, session: Session, chat_id: str) -> Chat | None:
@@ -91,12 +91,29 @@ def search(
     )
 
 
-def get_similar_chunks(
+def search_similar(
     *, session: Session, embedding: list[float], top_k: int = 10
-) -> Sequence[DocumentChunk]:
-    return session.scalars(
-        select(DocumentChunk)
+) -> tuple[list[DocumentChunk], list[Document]]:
+    """Return document chunks and unique documents from similarity search."""
+    result = session.execute(
+        select(
+            DocumentChunk,
+            DocumentChunk.embedding.l2_distance(embedding).label("distance"),
+        )
         .options(selectinload(DocumentChunk.document))
         .order_by(DocumentChunk.embedding.l2_distance(embedding))
         .limit(top_k)
     ).all()
+
+    chunks = [chunk for chunk, _ in result]
+
+    # Extract unique documents in order of first appearance
+    seen_docs = set()
+    documents = []
+    for chunk in chunks:
+        doc_id = chunk.document.id
+        if doc_id not in seen_docs:
+            seen_docs.add(doc_id)
+            documents.append(chunk.document)
+
+    return chunks, documents

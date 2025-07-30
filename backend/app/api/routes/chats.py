@@ -162,43 +162,56 @@ async def create_message(
 
 
 def stream_chat_completion(chat_id: str):
-    with SessionLocal() as session:
-        chat = crud.get_chat(session=session, chat_id=chat_id)
+    with SessionLocal() as db:
+        chat = crud.get_chat(session=db, chat_id=chat_id)
 
         if chat is None:
             raise ValueError("Expected chat to exist")
 
         if not chat.title:
-            title = generate_title(chat.messages[0].content)
+            generated_title = generate_title(chat.messages[0].content)
 
-            chat.title = title
-            session.commit()
+            chat.title = generated_title
+            db.commit()
 
             yield format_event("chat_title", chat.title)
 
-        assistant_message = crud.create_assistant_message(
-            session=session, chat_id=chat_id
-        )
+        assistant_message = crud.create_assistant_message(session=db, chat_id=chat_id)
         yield format_event("message_id", assistant_message.id)
 
         search_query = generate_query(chat.messages)
-        search_embedding = create_embedding(search_query)
-        search_results = crud.get_similar_chunks(
-            session=session, embedding=search_embedding
+        yield format_event("search_query", search_query)
+
+        query_embedding = create_embedding(search_query)
+        relevant_chunks, matching_documents = crud.search_similar(
+            session=db, embedding=query_embedding
         )
 
-        answer_stream = generate_answer(
-            messages=chat.messages, search_results=search_results
+        # Send search results event
+        document_results = [
+            {
+                "id": doc.id,
+                "title": doc.title,
+                "source": doc.source,
+                "language": doc.language,
+                "metadata": doc.metadata_,
+            }
+            for doc in matching_documents
+        ]
+        yield format_event("search_results", document_results)
+
+        response_stream = generate_answer(
+            messages=chat.messages, search_results=relevant_chunks
         )
-        answer_text = ""
+        complete_response = ""
 
-        for delta in answer_stream:
-            answer_text += delta
-            yield format_event("message_delta", delta)
+        for text_delta in response_stream:
+            complete_response += text_delta
+            yield format_event("message_delta", text_delta)
 
-        assistant_message.content = answer_text
-        session.commit()
+        assistant_message.content = complete_response
+        db.commit()
 
 
-def format_event(event_type: str, data: str):
+def format_event(event_type: str, data: str | dict | list[dict]):
     return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"

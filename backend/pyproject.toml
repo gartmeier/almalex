@@ -12,6 +12,7 @@ dependencies = [
     "nanoid>=2.0.0",
     "openai>=1.76.0",
     "pgvector>=0.4.0",
+    "pre-commit>=4.2.0",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.9.0",
     "pyjwt>=2.10.1",
@@ -25,6 +26,7 @@ dependencies = [
 dev = [
     "alembic>=1.15.2",
     "ipython>=9.2.0",
+    "pre-commit>=4.2.0",
     "ruff>=0.11.6",
 ]
 
