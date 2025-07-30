@@ -9,10 +9,10 @@ from app.db.session import SessionLocal
 @click.command()
 @click.argument("question")
 def prompt(question):
-    with SessionLocal() as session:
+    with SessionLocal() as db:
         question_embedding = create_embedding(question)
 
-        context_chunks = session.execute(
+        context_chunks = db.execute(
             select(Document.title, DocumentChunk.text)
             .join(DocumentChunk)
             .order_by(DocumentChunk.embedding.l2_distance(question_embedding))

@@ -45,11 +45,11 @@ async def get_rate_limit(
 @router.post("/", response_model=ChatListItem, status_code=201)
 async def create_chat(
     chat_create: ChatCreate,
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
 ):
     chat = crud.create_user_chat(
-        session=session,
+        db=db,
         chat_id=chat_create.id,
         user_id=current_user_id,
     )
@@ -58,19 +58,19 @@ async def create_chat(
 
 @router.get("/", response_model=list[ChatListItem])
 async def list_chats(
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    return crud.get_user_chats(session=session, user_id=current_user_id)
+    return crud.get_user_chats(db=db, user_id=current_user_id)
 
 
 @router.get("/{chat_id}", response_model=ChatDetail)
 async def read_chat(
     chat_id: str,
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
+    chat = crud.get_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
 
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
@@ -82,11 +82,11 @@ async def read_chat(
 async def update_chat(
     chat_id: str,
     chat_update: ChatUpdate,
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
 ):
     updated = crud.update_user_chat(
-        session=session,
+        db=db,
         chat_id=chat_id,
         user_id=current_user_id,
         chat_update=chat_update,
@@ -99,12 +99,10 @@ async def update_chat(
 @router.delete("/{chat_id}", status_code=204)
 async def delete_chat(
     chat_id: str,
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
 ):
-    deleted = crud.delete_user_chat(
-        session=session, chat_id=chat_id, user_id=current_user_id
-    )
+    deleted = crud.delete_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Chat not found")
@@ -126,7 +124,7 @@ async def delete_chat(
 async def create_message(
     chat_id: str,
     message_in: MessageRequest,
-    session: SessionDep,
+    db: SessionDep,
     current_user_id: CurrentUserID,
     limiter: WeeklyMessageLimiterDep,
 ):
@@ -138,17 +136,17 @@ async def create_message(
             detail="Weekly message limit exceeded. Try again next week.",
         )
 
-    chat = crud.get_user_chat(session=session, chat_id=chat_id, user_id=current_user_id)
+    chat = crud.get_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
 
     if not chat:
         crud.create_user_chat(
-            session=session,
+            db=db,
             chat_id=chat_id,
             user_id=current_user_id,
         )
 
     crud.create_user_message(
-        session=session,
+        db=db,
         message_in=message_in,
         chat_id=chat_id,
     )
@@ -163,7 +161,7 @@ async def create_message(
 
 def stream_chat_completion(chat_id: str):
     with SessionLocal() as db:
-        chat = crud.get_chat(session=db, chat_id=chat_id)
+        chat = crud.get_chat(db=db, chat_id=chat_id)
 
         if chat is None:
             raise ValueError("Expected chat to exist")
@@ -176,7 +174,7 @@ def stream_chat_completion(chat_id: str):
 
             yield format_event("chat_title", chat.title)
 
-        assistant_message = crud.create_assistant_message(session=db, chat_id=chat_id)
+        assistant_message = crud.create_assistant_message(db=db, chat_id=chat_id)
         yield format_event("message_id", assistant_message.id)
 
         search_query = generate_query(chat.messages)
@@ -184,7 +182,7 @@ def stream_chat_completion(chat_id: str):
 
         query_embedding = create_embedding(search_query)
         relevant_chunks, matching_documents = crud.search_similar(
-            session=db, embedding=query_embedding
+            db=db, embedding=query_embedding
         )
 
         # Send search results event

@@ -10,10 +10,10 @@ Abfrage zu formulieren, die die relevantesten Gesetzesartikel und Gerichtsentsch
 """
 
 
-def get_relevant_context(session: Session, query: str, limit: int = 10) -> str:
+def get_relevant_context(db: Session, query: str, limit: int = 10) -> str:
     question_embedding = create_embedding(query)
 
-    context_chunks = session.execute(
+    context_chunks = db.execute(
         select(Document.title, DocumentChunk.text)
         .join(DocumentChunk)
         .order_by(DocumentChunk.embedding.l2_distance(question_embedding))

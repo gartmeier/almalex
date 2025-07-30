@@ -8,53 +8,49 @@ from app.api import schemas
 from app.db.models import Chat, ChatMessage, Document, DocumentChunk
 
 
-def get_chat(*, session: Session, chat_id: str) -> Chat | None:
-    return session.scalar(select(Chat).where(Chat.id == chat_id))
+def get_chat(*, db: Session, chat_id: str) -> Chat | None:
+    return db.scalar(select(Chat).where(Chat.id == chat_id))
 
 
-def create_user_chat(*, session: Session, chat_id: str, user_id: str) -> Chat:
+def create_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat:
     db_chat = Chat(id=chat_id, user_id=user_id)
-    session.add(db_chat)
-    session.commit()
-    session.refresh(db_chat)
+    db.add(db_chat)
+    db.commit()
+    db.refresh(db_chat)
     return db_chat
 
 
-def get_user_chat(*, session: Session, chat_id: str, user_id: str) -> Chat | None:
-    return session.scalar(
-        select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id)
-    )
+def get_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat | None:
+    return db.scalar(select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
 
 
-def get_user_chats(*, session: Session, user_id: str) -> Sequence[Chat]:
-    return session.scalars(
+def get_user_chats(*, db: Session, user_id: str) -> Sequence[Chat]:
+    return db.scalars(
         select(Chat).where(Chat.user_id == user_id).order_by(Chat.updated_at.desc())
     ).all()
 
 
 def update_user_chat(
-    *, session: Session, chat_id: str, user_id: str, chat_update: schemas.ChatUpdate
+    *, db: Session, chat_id: str, user_id: str, chat_update: schemas.ChatUpdate
 ) -> bool:
-    result = session.execute(
+    result = db.execute(
         update(Chat)
         .where(Chat.id == chat_id, Chat.user_id == user_id)
         .values(title=chat_update.title)
     )
-    session.commit()
+    db.commit()
     return result.rowcount == 1
 
 
-def delete_user_chat(*, session: Session, chat_id: str, user_id: str) -> bool:
-    result = session.execute(
-        delete(Chat).where(Chat.id == chat_id, Chat.user_id == user_id)
-    )
-    session.commit()
+def delete_user_chat(*, db: Session, chat_id: str, user_id: str) -> bool:
+    result = db.execute(delete(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
+    db.commit()
     return result.rowcount == 1
 
 
 # Message operations
 def create_user_message(
-    *, session: Session, message_in: schemas.MessageRequest, chat_id: str
+    *, db: Session, message_in: schemas.MessageRequest, chat_id: str
 ) -> ChatMessage:
     db_message = ChatMessage(
         id=message_in.id,
@@ -62,29 +58,27 @@ def create_user_message(
         role="user",
         content=message_in.content,
     )
-    session.add(db_message)
-    session.commit()
-    session.refresh(db_message)
+    db.add(db_message)
+    db.commit()
+    db.refresh(db_message)
     return db_message
 
 
-def create_assistant_message(*, session: Session, chat_id: str) -> ChatMessage:
+def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
     db_message = ChatMessage(
         chat_id=chat_id,
         role="assistant",
         content="",
     )
-    session.add(db_message)
-    session.commit()
-    session.refresh(db_message)
+    db.add(db_message)
+    db.commit()
+    db.refresh(db_message)
     return db_message
 
 
-def search(
-    *, session: Session, query: str, top_k: int = 10
-) -> ScalarResult[DocumentChunk]:
+def search(*, db: Session, query: str, top_k: int = 10) -> ScalarResult[DocumentChunk]:
     embedding = create_embedding(query)
-    return session.scalars(
+    return db.scalars(
         select(DocumentChunk)
         .order_by(DocumentChunk.embedding.l2_distance(embedding))
         .limit(top_k)
@@ -92,10 +86,10 @@ def search(
 
 
 def search_similar(
-    *, session: Session, embedding: list[float], top_k: int = 10
+    *, db: Session, embedding: list[float], top_k: int = 10
 ) -> tuple[list[DocumentChunk], list[Document]]:
     """Return document chunks and unique documents from similarity search."""
-    result = session.execute(
+    result = db.execute(
         select(
             DocumentChunk,
             DocumentChunk.embedding.l2_distance(embedding).label("distance"),

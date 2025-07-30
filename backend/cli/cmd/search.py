@@ -8,9 +8,9 @@ from app.db.session import SessionLocal
 @click.argument("query")
 @click.option("--top-k", default=10, help="Number of results to return.")
 def search(query, top_k: int = 10):
-    with SessionLocal() as session:
+    with SessionLocal() as db:
         results = crud.search(
-            session=session,
+            db=db,
             query=query,
             top_k=top_k,
         )
