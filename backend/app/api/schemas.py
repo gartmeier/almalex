@@ -20,7 +20,7 @@ class ChatDetail(BaseModel):
 
     id: str
     title: str | None
-    messages: list["MessageResponse"]
+    messages: list["MessageDetail"]
 
 
 class ChatCreate(BaseModel):
@@ -31,7 +31,7 @@ class ChatUpdate(BaseModel):
     title: str
 
 
-class MessageResponse(BaseModel):
+class MessageDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -39,7 +39,7 @@ class MessageResponse(BaseModel):
     content: str
 
 
-class MessageRequest(BaseModel):
+class MessageCreate(BaseModel):
     id: str
     content: str
 

@@ -50,7 +50,7 @@ def delete_user_chat(*, db: Session, chat_id: str, user_id: str) -> bool:
 
 # Message operations
 def create_user_message(
-    *, db: Session, message_in: schemas.MessageRequest, chat_id: str
+    *, db: Session, message_in: schemas.MessageCreate, chat_id: str
 ) -> ChatMessage:
     db_message = ChatMessage(
         id=message_in.id,

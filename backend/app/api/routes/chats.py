@@ -20,7 +20,7 @@ from app.api.schemas import (
     ChatDetail,
     ChatListItem,
     ChatUpdate,
-    MessageRequest,
+    MessageCreate,
     RateLimit,
 )
 from app.db.session import SessionLocal
@@ -123,7 +123,7 @@ async def delete_chat(
 )
 async def create_message(
     chat_id: str,
-    message_in: MessageRequest,
+    message_in: MessageCreate,
     db: SessionDep,
     current_user_id: CurrentUserID,
     limiter: WeeklyMessageLimiterDep,
