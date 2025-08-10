@@ -46,6 +46,7 @@ export type SearchContentBlock = {
   type: "search";
   query: string;
   results: Array<SearchResult>;
+  status?: "completed" | "in_progress";
 };
 
 export type SearchResult = {

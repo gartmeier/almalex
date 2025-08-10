@@ -1,64 +1,95 @@
-import Markdown from "react-markdown";
+import { ChevronDown, FileText, Loader2, Search } from "lucide-react";
 import { useState } from "react";
-import { Search, ChevronDown, FileText } from "lucide-react";
-import type { MessageDetail, SearchContentBlock, TextContentBlock } from "~/lib/api";
+import Markdown from "react-markdown";
+import type {
+  MessageDetail,
+  SearchContentBlock,
+  TextContentBlock,
+} from "~/lib/api";
 
 type AssistantMessageProps = {
   message: MessageDetail;
 };
 
-function SearchBlock({ block, index }: { block: SearchContentBlock; index: number }) {
+function SearchBlock({
+  block,
+  index,
+}: {
+  block: SearchContentBlock;
+  index: number;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const isLoading = block.status === "in_progress";
 
   return (
-    <div key={index} className="transition-all duration-400 ease-out rounded-lg border flex flex-col font-ui tracking-tight leading-normal my-4 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 min-h-[2.625rem] hover:bg-gray-100 dark:hover:bg-gray-800/50 shadow-sm">
-      <button 
-        className="group/row flex flex-row items-center justify-between gap-4 transition-colors duration-200 rounded-lg text-text-300 hover:text-text-200 h-[2.625rem] py-2 px-3 cursor-pointer hover:text-text-000"
-        onClick={() => setIsExpanded(!isExpanded)}
+    <div
+      key={index}
+      className="font-ui my-4 flex min-h-[2.625rem] flex-col rounded-lg border border-gray-200 bg-gray-50 leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:bg-gray-800/50"
+    >
+      <button
+        className={`group/row text-text-300 hover:text-text-200 flex h-[2.625rem] flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200 ${isLoading ? "cursor-default" : "hover:text-text-000 cursor-pointer"}`}
+        onClick={() => !isLoading && setIsExpanded(!isExpanded)}
+        disabled={isLoading}
       >
-        <div className="flex flex-row items-center gap-2 min-w-0">
-          <div className="w-5 h-5 flex items-center justify-center text-text-100">
-            <Search size={16} />
+        <div className="flex min-w-0 flex-row items-center gap-2">
+          <div className="text-text-100 flex h-5 w-5 items-center justify-center">
+            {isLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Search size={16} />
+            )}
           </div>
-          <div className="relative bottom-[0.5px] font-base text-left leading-tight overflow-hidden overflow-ellipsis whitespace-nowrap flex-grow text-text-300">
-            {block.query}
+          <div className="font-base text-text-300 relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
+            {isLoading ? 
+              "Searching for relevant law and court decisions" : 
+              block.query
+            }
           </div>
         </div>
-        <div className="flex flex-row items-center gap-1.5 min-w-0 shrink-0">
-          <p className="relative bottom-[0.5px] pl-1 text-text-500 font-small leading-tight shrink-0 whitespace-nowrap">
-            {block.results.length} {block.results.length === 1 ? 'result' : 'results'}
-          </p>
-          <div 
-            className={`flex items-center justify-center relative bottom-[0.5px] transform transition-transform duration-400 ease-snappy-out text-text-300 ${isExpanded ? '-rotate-180' : 'rotate-0'}`}
-            style={{ width: '16px', height: '16px' }}
-          >
-            <ChevronDown size={16} />
-          </div>
+        <div className="flex min-w-0 shrink-0 flex-row items-center gap-1.5">
+          {!isLoading && (
+            <>
+              <p className="text-text-500 font-small relative bottom-[0.5px] shrink-0 pl-1 leading-tight whitespace-nowrap">
+                {block.results.length}{" "}
+                {block.results.length === 1 ? "result" : "results"}
+              </p>
+              <div
+                className={`ease-snappy-out text-text-300 relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
+                style={{ width: "16px", height: "16px" }}
+              >
+                <ChevronDown size={16} />
+              </div>
+            </>
+          )}
         </div>
       </button>
-      
-      <div 
-        className="overflow-hidden shrink-0"
-        style={{ 
-          opacity: isExpanded ? 1 : 0, 
-          height: isExpanded ? 'auto' : '0px' 
+
+      <div
+        className="shrink-0 overflow-hidden"
+        style={{
+          opacity: isExpanded ? 1 : 0,
+          height: isExpanded ? "auto" : "0px",
         }}
       >
         <div className="min-h-0">
-          <div className="overflow-y-auto overflow-x-hidden min-h-0 h-full max-h-[238px]">
-            <div className="flex flex-nowrap p-2 pt-0 flex-col">
+          <div className="h-full max-h-[238px] min-h-0 overflow-x-hidden overflow-y-auto">
+            <div className="flex flex-col flex-nowrap p-2 pt-0">
               {block.results.map((result) => (
                 <div key={result.id}>
-                  <a target="_blank" href={result.url} rel="noopener noreferrer">
-                    <button className="flex flex-row gap-4 items-center justify-between rounded-md tracking-tight shrink-0 h-[2rem] px-1 w-full min-w-0 cursor-pointer hover:bg-bg-100">
-                      <div className="flex flex-row items-center gap-2 min-w-0">
-                        <div className="h-5 w-5 flex items-center justify-center shrink-0">
+                  <a
+                    target="_blank"
+                    href={result.url}
+                    rel="noopener noreferrer"
+                  >
+                    <button className="hover:bg-bg-100 flex h-[2rem] w-full min-w-0 shrink-0 cursor-pointer flex-row items-center justify-between gap-4 rounded-md px-1 tracking-tight">
+                      <div className="flex min-w-0 flex-row items-center gap-2">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                           <FileText size={14} className="text-text-400" />
                         </div>
-                        <p className="relative bottom-[1px] text-[0.875rem] whitespace-nowrap overflow-hidden text-ellipsis shrink text-text-000">
+                        <p className="text-text-000 relative bottom-[1px] shrink overflow-hidden text-[0.875rem] text-ellipsis whitespace-nowrap">
                           {result.title}
                         </p>
-                        <p className="relative bottom-[1px] text-[0.75rem] text-text-500 line-clamp-1 shrink-0">
+                        <p className="text-text-500 relative bottom-[1px] line-clamp-1 shrink-0 text-[0.75rem]">
                           Document
                         </p>
                       </div>
@@ -74,26 +105,34 @@ function SearchBlock({ block, index }: { block: SearchContentBlock; index: numbe
   );
 }
 
-function renderContentBlock(block: SearchContentBlock | TextContentBlock, index: number) {
+function renderContentBlock(
+  block: SearchContentBlock | TextContentBlock,
+  index: number,
+) {
   if (block.type === "text") {
     return (
-      <div key={index} className="prose prose-neutral dark:prose-invert inline-block max-w-none">
+      <div
+        key={index}
+        className="prose prose-neutral dark:prose-invert inline-block max-w-none"
+      >
         <Markdown>{block.text}</Markdown>
       </div>
     );
   }
-  
+
   if (block.type === "search") {
     return <SearchBlock key={index} block={block} index={index} />;
   }
-  
+
   return null;
 }
 
 export function AssistantMessage({ message }: AssistantMessageProps) {
   return (
     <div className="py-5">
-      {message.content_blocks?.map((block, index) => renderContentBlock(block, index))}
+      {message.content_blocks?.map((block, index) =>
+        renderContentBlock(block, index),
+      )}
     </div>
   );
 }
