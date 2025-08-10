@@ -9,7 +9,7 @@ import { RateLimitAlert } from "~/components/rate-limit-alert";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
-import { readChat, type MessageResponse } from "~/lib/api";
+import { readChat, type MessageDetail } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents } from "~/lib/sse";
 import type { Route } from "./+types/chat";
@@ -51,11 +51,11 @@ export default function Chat({ params }: Route.ComponentProps) {
     }
   }, [location]);
 
-  function addMessage(message: MessageResponse) {
+  function addMessage(message: MessageDetail) {
     setMessages((prev) => [...prev, message]);
   }
 
-  function updateMessage(id: string, updatedMessage: MessageResponse) {
+  function updateMessage(id: string, updatedMessage: MessageDetail) {
     setMessages((prev) =>
       prev.map((msg) => (msg.id === id ? updatedMessage : msg)),
     );
@@ -68,12 +68,14 @@ export default function Chat({ params }: Route.ComponentProps) {
       id: nanoid(),
       role: "user",
       content: message,
+      content_blocks: [],
     };
 
     let assistantMessage = {
       id: nanoid(),
       role: "assistant",
       content: "",
+      content_blocks: [],
     };
 
     addMessage(userMessage);

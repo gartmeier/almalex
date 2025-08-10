@@ -1,8 +1,8 @@
 import Markdown from "react-markdown";
-import type { MessageResponse } from "~/lib/api";
+import type { MessageDetail } from "~/lib/api";
 
 type UserMessageProps = {
-  message: MessageResponse;
+  message: MessageDetail;
 };
 
 export function UserMessage({ message }: UserMessageProps) {

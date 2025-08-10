@@ -7,7 +7,7 @@ export type ChatCreate = {
 export type ChatDetail = {
   id: string;
   title: string | null;
-  messages: Array<MessageResponse>;
+  messages: Array<MessageDetail>;
 };
 
 export type ChatListItem = {
@@ -24,21 +24,39 @@ export type HttpValidationError = {
   detail?: Array<ValidationError>;
 };
 
-export type MessageRequest = {
+export type MessageCreate = {
   id: string;
   content: string;
 };
 
-export type MessageResponse = {
+export type MessageDetail = {
   id: string;
   role: string;
   content: string;
+  content_blocks: Array<SearchContentBlock | TextContentBlock>;
 };
 
 export type RateLimit = {
   remaining: number;
   used: number;
   max: number;
+};
+
+export type SearchContentBlock = {
+  type?: string;
+  query: string;
+  results: Array<SearchResult>;
+};
+
+export type SearchResult = {
+  id: number;
+  title: string;
+  url: string;
+};
+
+export type TextContentBlock = {
+  type?: string;
+  text: string;
 };
 
 export type TokenResponse = {
@@ -67,6 +85,23 @@ export type CreateTokenResponses = {
 
 export type CreateTokenResponse =
   CreateTokenResponses[keyof CreateTokenResponses];
+
+export type GetRateLimitData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/chats/rate-limit";
+};
+
+export type GetRateLimitResponses = {
+  /**
+   * Successful Response
+   */
+  200: RateLimit;
+};
+
+export type GetRateLimitResponse =
+  GetRateLimitResponses[keyof GetRateLimitResponses];
 
 export type ListChatsData = {
   body?: never;
@@ -191,7 +226,7 @@ export type UpdateChatResponses = {
 export type UpdateChatResponse = UpdateChatResponses[keyof UpdateChatResponses];
 
 export type CreateMessageData = {
-  body: MessageRequest;
+  body: MessageCreate;
   path: {
     chat_id: string;
   };
@@ -217,23 +252,6 @@ export type CreateMessageResponses = {
 
 export type CreateMessageResponse =
   CreateMessageResponses[keyof CreateMessageResponses];
-
-export type GetRateLimitData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/chats/rate-limit";
-};
-
-export type GetRateLimitResponses = {
-  /**
-   * Successful Response
-   */
-  200: RateLimit;
-};
-
-export type GetRateLimitResponse =
-  GetRateLimitResponses[keyof GetRateLimitResponses];
 
 export type ClientOptions = {
   baseUrl: "http://localhost:8000" | (string & {});
