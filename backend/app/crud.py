@@ -57,6 +57,7 @@ def create_user_message(
         chat_id=chat_id,
         role="user",
         content=message_in.content,
+        content_blocks=[{"type": "text", "text": message_in.content}],
     )
     db.add(db_message)
     db.commit()
@@ -69,6 +70,7 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
         chat_id=chat_id,
         role="assistant",
         content="",
+        content_blocks=[],
     )
     db.add(db_message)
     db.commit()

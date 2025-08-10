@@ -154,60 +154,59 @@ async def create_message(
     limiter.use_message(current_user_id)
 
     return StreamingResponse(
-        stream_chat_completion(chat_id),
+        stream_chat_completion(chat_id, message_in.content),
         media_type="text/event-stream",
     )
 
 
-def stream_chat_completion(chat_id: str):
+def stream_chat_completion(chat_id: str, message_content: str):
+    """Stream chat completion with real-time events for title, search, and response."""
     with SessionLocal() as db:
         chat = crud.get_chat(db=db, chat_id=chat_id)
-
         if chat is None:
             raise ValueError("Expected chat to exist")
 
+        # Generate title if needed
         if not chat.title:
-            generated_title = generate_title(chat.messages[0].content)
-
-            chat.title = generated_title
+            chat.title = generate_title(message_content)
             db.commit()
-
             yield format_event("chat_title", chat.title)
 
+        # Create assistant message
         assistant_message = crud.create_assistant_message(db=db, chat_id=chat_id)
         yield format_event("message_id", assistant_message.id)
 
+        # Generate search query and perform document search
         search_query = generate_query(chat.messages)
         yield format_event("search_query", search_query)
 
         query_embedding = create_embedding(search_query)
-        relevant_chunks, matching_documents = crud.search_similar(
+        document_chunks, documents = crud.search_similar(
             db=db, embedding=query_embedding
         )
 
-        # Send search results event
-        document_results = [
-            {
-                "id": doc.id,
-                "title": doc.title,
-                "source": doc.source,
-                "language": doc.language,
-                "metadata": doc.metadata_,
-            }
-            for doc in matching_documents
+        search_results = [
+            {"id": doc.id, "title": doc.title, "url": "https://www.google.com"}
+            for doc in documents
         ]
-        yield format_event("search_results", document_results)
+        yield format_event("search_results", search_results)
 
+        # Stream AI response
         response_stream = generate_answer(
-            messages=chat.messages, search_results=relevant_chunks
+            messages=chat.messages, search_results=document_chunks
         )
-        complete_response = ""
+        complete_text = ""
 
         for text_delta in response_stream:
-            complete_response += text_delta
+            complete_text += text_delta
             yield format_event("message_delta", text_delta)
 
-        assistant_message.content = complete_response
+        # Save complete response with search results
+        assistant_message.content = complete_text  # For backwards compatibility
+        assistant_message.content_blocks = [
+            {"type": "search", "query": search_query, "results": search_results},
+            {"type": "text", "text": complete_text},
+        ]
         db.commit()
 
 
