@@ -44,9 +44,9 @@ export type RateLimit = {
 
 export type SearchContentBlock = {
   type: "search";
+  status?: "completed" | "in_progress";
   query: string;
   results: Array<SearchResult>;
-  status?: "completed" | "in_progress";
 };
 
 export type SearchResult = {

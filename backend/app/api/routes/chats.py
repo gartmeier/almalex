@@ -204,7 +204,12 @@ def stream_chat_completion(chat_id: str, message_content: str):
         # Save complete response with search results
         assistant_message.content = complete_text  # For backwards compatibility
         assistant_message.content_blocks = [
-            {"type": "search", "query": search_query, "results": search_results},
+            {
+                "type": "search",
+                "status": "completed",
+                "query": search_query,
+                "results": search_results,
+            },
             {"type": "text", "text": complete_text},
         ]
         db.commit()

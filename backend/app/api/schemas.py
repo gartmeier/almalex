@@ -23,10 +23,9 @@ class SearchResult(BaseModel):
 
 class SearchContentBlock(BaseModel):
     type: Literal["search"]
+    status: Literal["completed", "in_progress"] = "completed"
     query: str
     results: list[SearchResult]
-    # Future status values: "failed", "cancelled", "queued", "incomplete"
-    status: Literal["completed", "in_progress"] = "in_progress"
 
 
 # Message Schemas

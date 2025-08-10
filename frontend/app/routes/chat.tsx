@@ -9,7 +9,13 @@ import { RateLimitAlert } from "~/components/rate-limit-alert";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { SidebarProvider } from "~/components/ui/sidebar";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
-import { readChat, type MessageDetail } from "~/lib/api";
+import {
+  readChat,
+  type MessageDetail,
+  type SearchContentBlock,
+  type SearchResult,
+  type TextContentBlock,
+} from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents } from "~/lib/sse";
 import type { Route } from "./+types/chat";
@@ -64,18 +70,30 @@ export default function Chat({ params }: Route.ComponentProps) {
   async function handleSubmit(message: string) {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
-    let userMessage = {
+    let userMessage: MessageDetail = {
       id: nanoid(),
       role: "user",
       content: message,
       content_blocks: [],
     };
 
-    let assistantMessage = {
+    let searchBlock: SearchContentBlock = {
+      type: "search",
+      status: "in_progress",
+      query: "",
+      results: [],
+    };
+
+    let textBlock: TextContentBlock = {
+      type: "text",
+      text: "",
+    };
+
+    let assistantMessage: MessageDetail = {
       id: nanoid(),
       role: "assistant",
       content: "",
-      content_blocks: [],
+      content_blocks: [searchBlock, textBlock],
     };
 
     addMessage(userMessage);
@@ -118,11 +136,20 @@ export default function Chat({ params }: Route.ComponentProps) {
             queryClient.invalidateQueries({ queryKey: ["chats"] });
             break;
           case "message_id":
-            assistantMessage.id = event.data;
+            assistantMessage.id = JSON.parse(event.data) as string;
             updateMessage(assistantMessage.id, assistantMessage);
             break;
           case "message_delta":
-            assistantMessage.content += event.data;
+            textBlock.text += JSON.parse(event.data) as string;
+            updateMessage(assistantMessage.id, assistantMessage);
+            break;
+          case "search_query":
+            searchBlock.query = JSON.parse(event.data) as string;
+            updateMessage(assistantMessage.id, assistantMessage);
+            break;
+          case "search_results":
+            searchBlock.results = JSON.parse(event.data) as SearchResult[];
+            searchBlock.status = "completed";
             updateMessage(assistantMessage.id, assistantMessage);
             break;
         }
