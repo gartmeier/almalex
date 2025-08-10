@@ -43,7 +43,7 @@ export type RateLimit = {
 };
 
 export type SearchContentBlock = {
-  type?: string;
+  type: "search";
   query: string;
   results: Array<SearchResult>;
 };
@@ -55,7 +55,7 @@ export type SearchResult = {
 };
 
 export type TextContentBlock = {
-  type?: string;
+  type: "text";
   text: string;
 };
 

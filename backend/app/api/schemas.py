@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,7 +11,7 @@ class TokenResponse(BaseModel):
 
 # Content Block Schemas
 class TextContentBlock(BaseModel):
-    type: str = "text"
+    type: Literal["text"]
     text: str
 
 
@@ -21,7 +22,7 @@ class SearchResult(BaseModel):
 
 
 class SearchContentBlock(BaseModel):
-    type: str = "search"
+    type: Literal["search"]
     query: str
     results: list[SearchResult]
 
