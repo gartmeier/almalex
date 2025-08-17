@@ -165,8 +165,8 @@ export default function Chat({ params }: Route.ComponentProps) {
       <main className="relative w-full">
         <ChatHeader />
         <ScrollToBottomProvider>
-          <div className="absolute bottom-4 w-full">
-            <div className="mx-auto max-w-3xl px-4">
+          <div className="absolute bottom-4 w-full px-4">
+            <div className="mx-auto max-w-3xl">
               <ScrollToBottomButton />
               <RateLimitAlert isRateLimited={isRateLimited} />
               <MessageInput onSubmit={handleSubmit} />
