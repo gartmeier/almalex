@@ -24,7 +24,7 @@ function SearchBlock({
   return (
     <div
       key={index}
-      className="font-ui my-4 flex min-h-[2.625rem] flex-col rounded-lg border leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out bg-muted hover:bg-muted/80"
+      className="font-ui bg-muted hover:bg-muted/80 my-4 flex min-h-[2.625rem] flex-col rounded-lg border leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out"
     >
       <button
         className={`group/row text-muted-foreground hover:text-muted-foreground flex h-[2.625rem] flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200 ${isLoading ? "cursor-default" : "hover:text-foreground cursor-pointer"}`}
@@ -83,7 +83,10 @@ function SearchBlock({
                     <button className="hover:bg-muted/50 flex h-[2rem] w-full min-w-0 shrink-0 cursor-pointer flex-row items-center justify-between gap-4 rounded-md px-1 tracking-tight">
                       <div className="flex min-w-0 flex-row items-center gap-2">
                         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                          <FileText size={14} className="text-muted-foreground" />
+                          <FileText
+                            size={14}
+                            className="text-muted-foreground"
+                          />
                         </div>
                         <p className="text-foreground relative bottom-[1px] shrink overflow-hidden text-[0.875rem] text-ellipsis whitespace-nowrap">
                           {result.title}
