@@ -24,37 +24,36 @@ function SearchBlock({
   return (
     <div
       key={index}
-      className="font-ui my-4 flex min-h-[2.625rem] flex-col rounded-lg border border-gray-200 bg-gray-50 leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:bg-gray-800/50"
+      className="font-ui my-4 flex min-h-[2.625rem] flex-col rounded-lg border leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out bg-muted hover:bg-muted/80"
     >
       <button
-        className={`group/row text-text-300 hover:text-text-200 flex h-[2.625rem] flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200 ${isLoading ? "cursor-default" : "hover:text-text-000 cursor-pointer"}`}
+        className={`group/row text-muted-foreground hover:text-muted-foreground flex h-[2.625rem] flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200 ${isLoading ? "cursor-default" : "hover:text-foreground cursor-pointer"}`}
         onClick={() => !isLoading && setIsExpanded(!isExpanded)}
         disabled={isLoading}
       >
         <div className="flex min-w-0 flex-row items-center gap-2">
-          <div className="text-text-100 flex h-5 w-5 items-center justify-center">
+          <div className="text-muted-foreground flex h-5 w-5 items-center justify-center">
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <Search size={16} />
             )}
           </div>
-          <div className="font-base text-text-300 relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
-            {isLoading ? 
-              "Searching for relevant law and court decisions" : 
-              block.query
-            }
+          <div className="font-base text-muted-foreground relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
+            {isLoading
+              ? "Searching for relevant law and court decisions"
+              : block.query}
           </div>
         </div>
         <div className="flex min-w-0 shrink-0 flex-row items-center gap-1.5">
           {!isLoading && (
             <>
-              <p className="text-text-500 font-small relative bottom-[0.5px] shrink-0 pl-1 leading-tight whitespace-nowrap">
+              <p className="text-muted-foreground font-small relative bottom-[0.5px] shrink-0 pl-1 leading-tight whitespace-nowrap">
                 {block.results.length}{" "}
                 {block.results.length === 1 ? "result" : "results"}
               </p>
               <div
-                className={`ease-snappy-out text-text-300 relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
+                className={`ease-snappy-out text-muted-foreground relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
                 style={{ width: "16px", height: "16px" }}
               >
                 <ChevronDown size={16} />
@@ -81,16 +80,13 @@ function SearchBlock({
                     href={result.url}
                     rel="noopener noreferrer"
                   >
-                    <button className="hover:bg-bg-100 flex h-[2rem] w-full min-w-0 shrink-0 cursor-pointer flex-row items-center justify-between gap-4 rounded-md px-1 tracking-tight">
+                    <button className="hover:bg-muted/50 flex h-[2rem] w-full min-w-0 shrink-0 cursor-pointer flex-row items-center justify-between gap-4 rounded-md px-1 tracking-tight">
                       <div className="flex min-w-0 flex-row items-center gap-2">
                         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                          <FileText size={14} className="text-text-400" />
+                          <FileText size={14} className="text-muted-foreground" />
                         </div>
-                        <p className="text-text-000 relative bottom-[1px] shrink overflow-hidden text-[0.875rem] text-ellipsis whitespace-nowrap">
+                        <p className="text-foreground relative bottom-[1px] shrink overflow-hidden text-[0.875rem] text-ellipsis whitespace-nowrap">
                           {result.title}
-                        </p>
-                        <p className="text-text-500 relative bottom-[1px] line-clamp-1 shrink-0 text-[0.75rem]">
-                          Document
                         </p>
                       </div>
                     </button>
