@@ -186,8 +186,7 @@ def stream_chat_completion(chat_id: str, message_content: str):
         )
 
         search_results = [
-            {"id": doc.id, "title": doc.title, "url": get_document_url(doc)}
-            for doc in documents
+            {"id": doc.id, "title": doc.title, "url": doc.url} for doc in documents
         ]
         yield format_event("search_results", search_results)
 
@@ -213,14 +212,6 @@ def stream_chat_completion(chat_id: str, message_content: str):
             {"type": "text", "text": complete_text},
         ]
         db.commit()
-
-
-def get_document_url(document) -> str:
-    """Extract URL from document metadata based on source type."""
-    if document.source == "bge":
-        return document.metadata_.get("HTML", {}).get("URL", "")
-    else:
-        return document.metadata_.get("law_url", "")
 
 
 def format_event(event_type: str, data: str | dict | list[dict]):

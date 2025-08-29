@@ -16,6 +16,7 @@ class Document(Base):
     title: Mapped[str]
     source: Mapped[str] = mapped_column(index=True)
     language: Mapped[str] = mapped_column(index=True)
+    url: Mapped[str | None] = mapped_column(index=True)
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
 
     chunks = relationship(
