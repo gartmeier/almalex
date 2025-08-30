@@ -74,6 +74,11 @@ def format_chunks(chunks: Sequence[DocumentChunk]) -> str:
     context = ""
 
     for chunk in chunks:
-        context += f"# {chunk.document.title}\n{chunk.text}\n\n"
+        context += f"""\
+Article: {chunk.document.title}
+URL: {chunk.document.url}
+Content: {chunk.text}
+---
+"""
 
     return context.strip()
