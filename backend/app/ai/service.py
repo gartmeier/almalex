@@ -13,7 +13,7 @@ def generate_title(user_message: str) -> str:
     prompt = render("title.md", user_message=user_message)
 
     response = client.responses.create(
-        model=settings.openai_model,
+        model=settings.openai_title_model,
         input=prompt,
     )
     return clean_title(response.output_text)
@@ -43,7 +43,7 @@ def generate_answer(
 
     stream = client.responses.create(
         input=openai_messages,
-        model=settings.openai_model,
+        model=settings.openai_response_model,
         stream=True,
     )
 
@@ -57,7 +57,7 @@ def generate_query(messages: list[ChatMessage]):
 
     response = client.responses.create(
         input=prompt,
-        model=settings.openai_model,
+        model=settings.openai_query_model,
     )
     return response.output_text
 
