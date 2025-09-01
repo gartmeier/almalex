@@ -132,7 +132,7 @@ export default function Chat({ params }: Route.ComponentProps) {
       for (let event of events) {
         switch (event.name) {
           case "chat_title":
-            document.title = `${event.data} | Alma Lex`;
+            document.title = `${JSON.parse(event.data)} | Alma Lex`;
             queryClient.invalidateQueries({ queryKey: ["chats"] });
             break;
           case "message_id":
