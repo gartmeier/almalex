@@ -57,6 +57,9 @@ export default function HomePage() {
           <p>
             <strong>Demo limitations</strong>: 10 messages per week to demonstrate the system.
           </p>
+          <p className="text-sm text-muted-foreground">
+            Conversations stored temporarily for demo purposes. No personal information collected. For informational use only - not legal advice.
+          </p>
 
 
         </article>
