@@ -7,7 +7,7 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content:
-        "Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
+        "Ask legal questions in any language and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
     },
     {
       property: "og:title",
@@ -16,7 +16,7 @@ export const meta: MetaFunction = () => {
     {
       property: "og:description",
       content:
-        "Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
+        "Ask legal questions in any language and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
     },
     { property: "og:type", content: "website" },
   ];
@@ -36,7 +36,7 @@ export default function HomePage() {
         <article className="prose prose-lg dark:prose-invert max-w-none">
           <h2>What It Does</h2>
           <p>
-            Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions.
+            Ask legal questions in any language and get precise answers with citations from Swiss Federal Law and Federal Court decisions.
           </p>
           <p>
             Unlike ChatGPT, Alma Lex searches the actual legal sources:
