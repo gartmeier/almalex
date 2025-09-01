@@ -3,20 +3,20 @@ import { Link } from "react-router";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Alma Lex - AI-Powered Swiss Legal Assistant" },
+    { title: "Alma Lex - Swiss Legal AI Assistant" },
     {
       name: "description",
       content:
-        "AI that provides accurate Swiss legal citations instead of generic answers. Complete RAG system processing the entire Swiss Federal Law corpus.",
+        "Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
     },
     {
       property: "og:title",
-      content: "Alma Lex - AI-Powered Swiss Legal Assistant",
+      content: "Alma Lex - Swiss Legal AI Assistant",
     },
     {
       property: "og:description",
       content:
-        "AI that provides accurate Swiss legal citations instead of generic answers. Try our live demo with 10 free messages per week.",
+        "Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions. Built by Joshua Gartmeier.",
     },
     { property: "og:type", content: "website" },
   ];
