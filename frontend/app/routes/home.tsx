@@ -24,7 +24,7 @@ export const meta: MetaFunction = () => {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen px-4 py-12">
+    <div className="min-h-screen px-4 py-12 pb-20">
       <div className="mx-auto max-w-4xl">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-5xl font-bold">Alma Lex</h1>
@@ -81,7 +81,6 @@ export default function HomePage() {
             embeddings, vector similarity search, prompt engineering, and API
             integration.
           </p>
-
           <h3>Demo Limitations</h3>
           <p>
             Users get <strong>10 messages per week</strong> to experience the AI
@@ -114,22 +113,19 @@ export default function HomePage() {
               Law and court decisions
             </li>
           </ul>
-
-          <div className="not-prose mt-8 text-center">
-            <Link
-              to="/chat/new"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-block rounded-lg px-8 py-3 font-semibold transition-colors"
-            >
-              Try the Live Demo
-            </Link>
-          </div>
         </article>
+      </div>
 
-        <footer className="text-muted-foreground mt-12 text-center text-sm">
-          <p>
-            Created by Alexandra Telychko, Guillaume Ruch, and Joshua Gartmeier
-          </p>
-        </footer>
+      {/* Fixed bottom bar with demo button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 z-50">
+        <div className="mx-auto max-w-4xl text-center">
+          <Link
+            to="/chat/new"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-block rounded-lg px-8 py-3 font-semibold transition-colors"
+          >
+            Try the Live Demo
+          </Link>
+        </div>
       </div>
     </div>
   );
