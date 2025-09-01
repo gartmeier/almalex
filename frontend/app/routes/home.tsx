@@ -7,7 +7,7 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content:
-        "Advanced AI legal assistant built with RAG technology for Swiss Federal Law and court decisions. Created by legal professionals showcasing expertise in AI, embeddings, and modern web development.",
+        "AI that provides accurate Swiss legal citations instead of generic answers. Complete RAG system processing the entire Swiss Federal Law corpus.",
     },
     {
       property: "og:title",
@@ -16,7 +16,7 @@ export const meta: MetaFunction = () => {
     {
       property: "og:description",
       content:
-        "Advanced AI legal assistant built with RAG technology for Swiss Federal Law and court decisions. Try our live demo with 10 free messages per week.",
+        "AI that provides accurate Swiss legal citations instead of generic answers. Try our live demo with 10 free messages per week.",
     },
     { property: "og:type", content: "website" },
   ];
@@ -24,95 +24,41 @@ export const meta: MetaFunction = () => {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen px-4 py-12 pb-20">
+    <div className="min-h-screen px-4 py-12 pb-24">
       <div className="mx-auto max-w-4xl">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-5xl font-bold">Alma Lex</h1>
           <p className="text-muted-foreground text-xl">
-            AI-Powered Swiss Legal Assistant
+            Swiss Legal AI Assistant
           </p>
         </div>
 
         <article className="prose prose-lg dark:prose-invert max-w-none">
-          <h3>The Team</h3>
+          <h2>What It Does</h2>
           <p>
-            <strong>Alexandra Telychko</strong>, a practicing lawyer, identified
-            a gap in legal technology while working on complex Swiss legal
-            cases. She envisioned an AI assistant that could navigate the
-            intricate landscape of Swiss Federal Law and court decisions.{" "}
-            <strong>Guillaume Ruch</strong> brought business acumen and
-            strategic thinking to transform this vision into a viable product
-            concept. <strong>Joshua Gartmeier</strong> architected and built the
-            technical foundation, implementing cutting-edge RAG technology to
-            make this ambitious idea a reality.
+            Ask legal questions in German and get precise answers with citations from Swiss Federal Law and Federal Court decisions.
           </p>
-
-          <h3>The Vision</h3>
           <p>
-            Alma Lex represents our answer to the challenge of making Swiss
-            legal knowledge accessible through AI. We built a sophisticated
-            chatbot that leverages ChatGPT combined with our comprehensive
-            vector store containing the entire Swiss Federal Law and Federal
-            Court Decisions, embedded using OpenAI's latest technology. This
-            Retrieval-Augmented Generation (RAG) system provides accurate legal
-            assistance backed by authoritative Swiss legal sources—a technical
-            achievement that demonstrates our ability to work with complex
-            datasets and modern AI architectures.
-          </p>
-
-          <h3>From Idea to Reality</h3>
-          <p>
-            What excites us most about this project is how we transformed an
-            abstract idea into a working product using cutting-edge AI
-            technology. We strategically chose to release Alma Lex as a live
-            demonstration of our capabilities—proving we can take complex
-            concepts and ship real solutions. This isn't just a prototype; it's
-            a fully functional AI system that users can interact with today.
-          </p>
-
-          <h3>Technical Implementation</h3>
-          <p>
-            Building Alma Lex required deep expertise in modern AI
-            infrastructure. We implemented a complete RAG pipeline: processing
-            and embedding the entire Swiss legal corpus using OpenAI's embedding
-            models, building a vector database with Postgres and pgvector, and
-            integrating OpenAI's completion APIs for contextual responses. This
-            technical stack demonstrates our fluency with AI fundamentals:
-            embeddings, vector similarity search, prompt engineering, and API
-            integration.
-          </p>
-          <h3>Demo Limitations</h3>
-          <p>
-            Users get <strong>10 messages per week</strong> to experience the AI
-            legal assistant. We deliberately chose not to allow users to sign
-            up. These were intentional design decisions to position this as a
-            demonstration rather than a full-featured product—showcasing our
-            technical capabilities while maintaining focus on the core AI
-            functionality.
-          </p>
-
-          <h3>Vision for Enhancement</h3>
-          <p>
-            We envision extending this demonstration with powerful features that
-            would showcase a complete legal research platform:
+            Unlike ChatGPT, Alma Lex searches the actual legal sources:
           </p>
           <ul>
-            <li>
-              <strong>Process Transparency:</strong> Show users what the AI is
-              doing behind the scenes—translating queries, searching the
-              database, and processing results in real-time
-            </li>
-            <li>
-              <strong>Source Document Display:</strong> Present the actual Swiss
-              legal documents and court cases used to generate each response,
-              eliminating the need to manually look up articles and court cases
-            </li>
-            <li>
-              <strong>Interactive References:</strong> Link specific claims in
-              AI responses directly to their source passages in Swiss Federal
-              Law and court decisions
-            </li>
+            <li><strong>Federal laws</strong> from <a href="https://www.fedlex.admin.ch/de/cc/internal-law/1" target="_blank" rel="noopener noreferrer">Fedlex</a></li>
+            <li><strong>Federal court cases</strong> from <a href="https://search.bger.ch/ext/eurospider/live/de/php/clir/http/index_atf.php?lang=de" target="_blank" rel="noopener noreferrer">BGE</a></li>
           </ul>
+
+          <h2>How It Works</h2>
+          <ol>
+            <li><strong>Ask your question</strong> - "Was ist die Verjährungsfrist für Vertragsansprüche?"</li>
+            <li><strong>AI searches</strong> Swiss legal database for relevant articles and cases</li>
+            <li><strong>Get precise answer</strong> with exact citations: "According to Article 127 OR..."</li>
+          </ol>
+
+          <h2>Try It Now</h2>
+          <p>
+            <strong>Demo limitations</strong>: 10 messages per week to demonstrate the system.
+          </p>
+
+
         </article>
       </div>
 
@@ -121,10 +67,13 @@ export default function HomePage() {
         <div className="mx-auto max-w-4xl text-center">
           <Link
             to="/chat/new"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-block rounded-lg px-8 py-3 font-semibold transition-colors"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-block rounded-lg px-8 py-3 font-semibold transition-colors mb-3"
           >
             Try the Live Demo
           </Link>
+          <p className="text-sm text-muted-foreground">
+            Built by <a href="https://www.linkedin.com/in/gartmeier/" target="_blank" rel="noopener noreferrer" className="text-foreground hover:underline font-medium">Joshua Gartmeier</a> • Follow the development story on LinkedIn
+          </p>
         </div>
       </div>
     </div>
