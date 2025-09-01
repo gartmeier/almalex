@@ -73,9 +73,9 @@ def create_embedding(input: str):
 def format_chunks(chunks: Sequence[DocumentChunk]) -> str:
     context = ""
 
-    for chunk in chunks:
+    for idx, chunk in enumerate(chunks):
         context += f"""\
-Article: {chunk.document.title}
+[{idx}] Article: {chunk.document.title}
 URL: {chunk.document.url}
 Content: {chunk.text}
 ---
