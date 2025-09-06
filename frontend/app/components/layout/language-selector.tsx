@@ -14,8 +14,8 @@ export function LanguageSelector() {
 
   let languages = [
     { code: "de", label: "Deutsch" },
-    { code: "en", label: "English" },
     { code: "fr", label: "Français" },
+    { code: "en", label: "English" },
   ];
 
   function handleLanguageChange(newLanguage: string) {
