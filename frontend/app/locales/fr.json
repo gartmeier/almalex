@@ -10,5 +10,24 @@
     "faq": "FAQ",
     "terms": "Conditions d'utilisation",
     "privacy": "Politique de confidentialité"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français"
+  },
+  "pages": {
+    "faq": {
+      "title": "FAQ",
+      "heading": "Questions Fréquemment Posées"
+    },
+    "terms": {
+      "title": "Conditions",
+      "heading": "Conditions d'utilisation"
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "heading": "Politique de confidentialité"
+    }
   }
 }

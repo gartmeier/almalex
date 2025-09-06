@@ -10,5 +10,24 @@
     "faq": "FAQ",
     "terms": "Nutzungsbedingungen",
     "privacy": "Datenschutzerklärung"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français"
+  },
+  "pages": {
+    "faq": {
+      "title": "FAQ",
+      "heading": "Häufig gestellte Fragen"
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "heading": "Nutzungsbedingungen"
+    },
+    "privacy": {
+      "title": "Datenschutz",
+      "heading": "Datenschutzerklärung"
+    }
   }
 }

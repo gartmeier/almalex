@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { Button } from "../ui/button";
 
 export function Navigation() {
-  const { t, i18n } = useTranslation();
-  const language = i18n.language;
+  let { t, i18n } = useTranslation();
+  let language = i18n.language;
 
   const items = [
     { to: `/${language}/faq`, text: t("navigation.faq") },
@@ -14,9 +15,9 @@ export function Navigation() {
   return (
     <nav className="flex gap-6">
       {items.map((item) => (
-        <Link key={item.to} to={item.to} className="text-sm hover:underline">
-          {item.text}
-        </Link>
+        <Button key={item.to} variant="ghost" asChild>
+          <Link to={item.to}>{item.text}</Link>
+        </Button>
       ))}
     </nav>
   );
