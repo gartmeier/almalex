@@ -1,0 +1,14 @@
+{
+  "chat": {
+    "title": "Alma Lex",
+    "subtitle": "Assistant IA Juridique Suisse",
+    "error": {
+      "fetchFailed": "Impossible de charger le chat {{chatId}}"
+    }
+  },
+  "navigation": {
+    "faq": "FAQ",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité"
+  }
+}

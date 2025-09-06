@@ -1,0 +1,14 @@
+{
+  "chat": {
+    "title": "Alma Lex",
+    "subtitle": "Swiss Legal AI Assistant",
+    "error": {
+      "fetchFailed": "Failed to fetch chat {{chatId}}"
+    }
+  },
+  "navigation": {
+    "faq": "FAQ",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  }
+}

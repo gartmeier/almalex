@@ -18,7 +18,7 @@ export function AppSidebar({ activeChatId }: { activeChatId: string }) {
   }
 
   return (
-    <Sidebar className="border-r border-input">
+    <Sidebar className="border-input border-r">
       <SidebarHeader>
         <h1 className="text-center text-xl font-bold">
           <Link to="/">Alma Lex</Link>

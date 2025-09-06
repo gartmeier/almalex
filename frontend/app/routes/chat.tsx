@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useRouteLoaderData } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { ChatHeader } from "~/components/chat-header";
@@ -16,14 +17,25 @@ import {
   type SearchResult,
   type TextContentBlock,
 } from "~/lib/api";
+import { initI18n } from "~/lib/i18n";
 import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents } from "~/lib/sse";
 import type { Route } from "./+types/chat";
 
 export default function Chat({ params }: Route.ComponentProps) {
-  let { token } = useRouteLoaderData("root");
+  let { t } = useTranslation();
+  let rootData = useRouteLoaderData("root") as {
+    token?: string;
+    language?: string;
+  };
   let location = useLocation();
   let queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (rootData?.language) {
+      initI18n(rootData.language);
+    }
+  }, [rootData?.language]);
 
   let chatId = useMemo(() => params.chatId || nanoid(), [params.chatId]);
 
@@ -34,7 +46,7 @@ export default function Chat({ params }: Route.ComponentProps) {
         path: { chat_id: params.chatId! },
       });
       if (error) {
-        throw new Error(`Failed to fetch chat ${params.chatId}`);
+        throw new Error(t("chat.error.fetchFailed", { chatId: params.chatId }));
       }
       return data!;
     },
@@ -102,7 +114,7 @@ export default function Chat({ params }: Route.ComponentProps) {
     let response = await fetch(`/api/chats/${chatId}/messages`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${rootData.token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(userMessage),
