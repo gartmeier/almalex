@@ -1,5 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +12,7 @@ import "~/lib/i18n";
 
 export function LanguageSelector() {
   let { i18n } = useTranslation();
+  let navigate = useNavigate();
 
   let languages = [
     { code: "de", label: "Deutsch" },
@@ -20,6 +22,7 @@ export function LanguageSelector() {
 
   function handleLanguageChange(newLanguage: string) {
     i18n.changeLanguage(newLanguage);
+    navigate("/");
   }
 
   return (
