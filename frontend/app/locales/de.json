@@ -4,6 +4,7 @@
     "subtitle": "Schweizer Rechts-KI"
   },
   "chat": {
+    "new": "Neuer Chat",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
     }

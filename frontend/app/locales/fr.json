@@ -4,6 +4,7 @@
     "subtitle": "IA Juridique Suisse"
   },
   "chat": {
+    "new": "Nouveau Chat",
     "error": {
       "fetchFailed": "Impossible de charger le chat {{chatId}}"
     }

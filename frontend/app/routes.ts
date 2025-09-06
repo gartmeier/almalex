@@ -7,7 +7,10 @@ import {
 
 export default [
   layout("routes/layout.tsx", [
-    index("routes/chat.tsx"),
+    index("routes/home.tsx"),
+    
+    // Chat route
+    route("c/:chatId", "routes/chat.tsx"),
 
     // German routes
     route("de/faq", "routes/de/faq.tsx"),
