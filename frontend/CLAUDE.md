@@ -41,6 +41,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Variable declarations**: Use `let` unless it's a real constant
 - **Function syntax**: Use `function foo() {}` syntax unless it's an inline event handler
 - **Component exports**: Named exports with `export function ComponentName()`
+- **File naming**: ALWAYS use kebab-case for filenames (e.g., `use-language-redirect.ts`, `navigation-menu.tsx`)
 
 ### API Integration
 - **Backend proxy**: `/api/*` routes proxied to `http://localhost:8000` via Vite dev server

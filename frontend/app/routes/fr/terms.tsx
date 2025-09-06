@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
+import { useLanguageRedirect } from "~/hooks/use-language-redirect";
 
 export default function Component() {
-  const { t } = useTranslation();
+  let { t } = useTranslation();
+  useLanguageRedirect("fr");
 
   return (
     <div className="p-4">
