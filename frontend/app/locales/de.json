@@ -1,7 +1,9 @@
 {
-  "chat": {
+  "app": {
     "title": "Alma Lex",
-    "subtitle": "Schweizer Legal AI Assistant",
+    "subtitle": "Schweizer Rechts-KI"
+  },
+  "chat": {
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
     }

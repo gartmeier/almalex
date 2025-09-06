@@ -13,7 +13,7 @@ export function Navigation() {
   let { t, i18n } = useTranslation();
   let language = i18n.language;
 
-  const items = [
+  let items = [
     { to: `/${language}/faq`, text: t("navigation.faq") },
     { to: `/${language}/terms`, text: t("navigation.terms") },
     { to: `/${language}/privacy`, text: t("navigation.privacy") },
