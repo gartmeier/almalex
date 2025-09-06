@@ -6,6 +6,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "~/components/ui/navigation-menu";
+import "~/lib/i18n";
 import { cn } from "~/lib/utils";
 
 export function Navigation() {

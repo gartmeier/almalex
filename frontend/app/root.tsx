@@ -1,25 +1,17 @@
 import {
-  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
-  redirect,
   Scripts,
   ScrollRestoration,
-  useRouteLoaderData,
 } from "react-router";
 
 import * as Sentry from "@sentry/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Negotiator from "negotiator";
-import React, { useMemo } from "react";
+import React from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
-import { LanguageSelector } from "./components/layout/language-selector";
-import { Navigation } from "./components/layout/navigation";
-import i18n from "./lib/i18n";
-import { commitSession, getSession } from "./lib/session";
+import "./lib/i18n";
 
 if (!import.meta.env.DEV) {
   Sentry.init({
@@ -32,37 +24,6 @@ if (!import.meta.env.DEV) {
   });
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  let session = await getSession(request.headers.get("Cookie"));
-
-  let currentLanguage: string;
-
-  if (session.has("language")) {
-    currentLanguage = session.get("language")!;
-  } else {
-    let negotiator = Negotiator(request);
-    let availableLanguages = ["de", "fr", "en"];
-    currentLanguage = negotiator.language(availableLanguages);
-  }
-
-  return data(
-    { language: currentLanguage },
-    { headers: { "Set-Cookie": await commitSession(session) } },
-  );
-}
-
-export async function action({ request }: Route.ActionArgs) {
-  let formData = await request.formData();
-  let language = formData.get("language") as string;
-
-  let session = await getSession(request.headers.get("Cookie"));
-  session.set("language", language);
-
-  return redirect("/", {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
-}
-
 export function meta() {
   return [
     { title: "Alma Lex" },
@@ -71,16 +32,8 @@ export function meta() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  let { language } = useRouteLoaderData<typeof loader>("root")!;
-
-  useMemo(() => {
-    if (language !== i18n.language) {
-      i18n.changeLanguage(language);
-    }
-  }, [language]);
-
   return (
-    <html lang={language} suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -116,19 +69,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           `,
           }}
         />
-        <header className="flex items-center justify-between p-4">
-          <div>
-            <div className="font-semibold">Alma Lex</div>
-            <div className="text-sm text-gray-600">
-              Schweizer AI Rechtsberatung
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Navigation />
-            <LanguageSelector />
-          </div>
-        </header>
-        <main className="flex-1">{children}</main>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -136,14 +77,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
-  const queryClient = useMemo(() => new QueryClient(), []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
-  );
+export default function App() {
+  return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

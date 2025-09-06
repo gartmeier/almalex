@@ -1,6 +1,5 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -8,10 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import "~/lib/i18n";
 
 export function LanguageSelector() {
   let { i18n } = useTranslation();
-  let fetcher = useFetcher();
 
   let languages = [
     { code: "de", label: "Deutsch" },
@@ -20,15 +19,7 @@ export function LanguageSelector() {
   ];
 
   function handleLanguageChange(newLanguage: string) {
-    fetcher.submit(
-      {
-        language: newLanguage,
-      },
-      {
-        method: "post",
-        action: "/",
-      },
-    );
+    i18n.changeLanguage(newLanguage);
   }
 
   return (
