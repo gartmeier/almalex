@@ -4,7 +4,7 @@
     "subtitle": "Swiss Legal AI"
   },
   "chat": {
-    "new": "New Chat",
+    "new": "New chat",
     "error": {
       "fetchFailed": "Failed to fetch chat {{chatId}}"
     }
