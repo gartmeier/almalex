@@ -45,8 +45,7 @@ class Chat(Base):
     __tablename__ = "chat"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(index=True)
-    title: Mapped[str] = mapped_column(index=True)
+    title: Mapped[str | None] = mapped_column(index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         index=True,

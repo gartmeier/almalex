@@ -1,37 +1,11 @@
 from typing import Annotated
 
-import jwt
 import redis
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.core.security import decode_token
 from app.db.session import SessionLocal
 from app.redis import get_redis
-from app.services.rate_limiter import WeeklyMessageLimiter
-
-security = HTTPBearer()
-
-
-def get_current_user_id(
-    credentials: Annotated[
-        HTTPAuthorizationCredentials,
-        Depends(security),
-    ],
-):
-    try:
-        token_data = decode_token(credentials.credentials)
-        return token_data["sub"]
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-CurrentUserID = Annotated[str, Depends(get_current_user_id)]
 
 
 def get_session():
@@ -50,12 +24,3 @@ def get_redis_connection():
 
 
 RedisDep = Annotated[redis.Redis, Depends(get_redis_connection)]
-
-
-def get_weekly_message_limiter(redis_client: RedisDep) -> WeeklyMessageLimiter:
-    return WeeklyMessageLimiter(redis_client)
-
-
-WeeklyMessageLimiterDep = Annotated[
-    WeeklyMessageLimiter, Depends(get_weekly_message_limiter)
-]

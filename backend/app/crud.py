@@ -1,6 +1,4 @@
-from typing import Sequence
-
-from sqlalchemy import ScalarResult, delete, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
@@ -12,40 +10,12 @@ def get_chat(*, db: Session, chat_id: str) -> Chat | None:
     return db.scalar(select(Chat).where(Chat.id == chat_id))
 
 
-def create_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat:
-    db_chat = Chat(id=chat_id, user_id=user_id)
+def create_chat(*, db: Session, chat_id: str) -> Chat:
+    db_chat = Chat(id=chat_id)
     db.add(db_chat)
     db.commit()
     db.refresh(db_chat)
     return db_chat
-
-
-def get_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat | None:
-    return db.scalar(select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
-
-
-def get_user_chats(*, db: Session, user_id: str) -> Sequence[Chat]:
-    return db.scalars(
-        select(Chat).where(Chat.user_id == user_id).order_by(Chat.updated_at.desc())
-    ).all()
-
-
-def update_user_chat(
-    *, db: Session, chat_id: str, user_id: str, chat_update: schemas.ChatUpdate
-) -> bool:
-    result = db.execute(
-        update(Chat)
-        .where(Chat.id == chat_id, Chat.user_id == user_id)
-        .values(title=chat_update.title)
-    )
-    db.commit()
-    return result.rowcount == 1
-
-
-def delete_user_chat(*, db: Session, chat_id: str, user_id: str) -> bool:
-    result = db.execute(delete(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
-    db.commit()
-    return result.rowcount == 1
 
 
 # Message operations
@@ -78,7 +48,7 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
     return db_message
 
 
-def search(*, db: Session, query: str, top_k: int = 10) -> ScalarResult[DocumentChunk]:
+def search(*, db: Session, query: str, top_k: int = 10):
     embedding = create_embedding(query)
     return db.scalars(
         select(DocumentChunk)

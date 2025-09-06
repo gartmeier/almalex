@@ -10,102 +10,36 @@ from app.ai.service import (
     generate_query,
     generate_title,
 )
-from app.api.deps import (
-    CurrentUserID,
-    SessionDep,
-    WeeklyMessageLimiterDep,
-)
-from app.api.schemas import (
-    ChatCreate,
-    ChatDetail,
-    ChatListItem,
-    ChatUpdate,
-    MessageCreate,
-    RateLimit,
-)
+from app.api.deps import SessionDep
+from app.api.schemas import ChatCreate, ChatDetail, MessageCreate
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
-@router.get("/rate-limit", response_model=RateLimit)
-async def get_rate_limit(
-    current_user_id: CurrentUserID,
-    limiter: WeeklyMessageLimiterDep,
-):
-    remaining = limiter.get_remaining_messages(current_user_id)
-    used = limiter.limit - remaining
-    return RateLimit(
-        remaining=remaining,
-        used=used,
-        max=limiter.limit,
-    )
-
-
-@router.post("/", response_model=ChatListItem, status_code=201)
+@router.post("/", response_model=ChatDetail, status_code=201)
 async def create_chat(
     chat_create: ChatCreate,
     db: SessionDep,
-    current_user_id: CurrentUserID,
 ):
-    chat = crud.create_user_chat(
+    chat = crud.create_chat(
         db=db,
         chat_id=chat_create.id,
-        user_id=current_user_id,
     )
     return chat
-
-
-@router.get("/", response_model=list[ChatListItem])
-async def list_chats(
-    db: SessionDep,
-    current_user_id: CurrentUserID,
-):
-    return crud.get_user_chats(db=db, user_id=current_user_id)
 
 
 @router.get("/{chat_id}", response_model=ChatDetail)
 async def read_chat(
     chat_id: str,
     db: SessionDep,
-    current_user_id: CurrentUserID,
 ):
-    chat = crud.get_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
+    chat = crud.get_chat(db=db, chat_id=chat_id)
 
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
     return chat
-
-
-@router.put("/{chat_id}", status_code=204)
-async def update_chat(
-    chat_id: str,
-    chat_update: ChatUpdate,
-    db: SessionDep,
-    current_user_id: CurrentUserID,
-):
-    updated = crud.update_user_chat(
-        db=db,
-        chat_id=chat_id,
-        user_id=current_user_id,
-        chat_update=chat_update,
-    )
-
-    if not updated:
-        raise HTTPException(status_code=404, detail="Chat not found")
-
-
-@router.delete("/{chat_id}", status_code=204)
-async def delete_chat(
-    chat_id: str,
-    db: SessionDep,
-    current_user_id: CurrentUserID,
-):
-    deleted = crud.delete_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
-
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Chat not found")
 
 
 @router.post(
@@ -125,24 +59,13 @@ async def create_message(
     chat_id: str,
     message_in: MessageCreate,
     db: SessionDep,
-    current_user_id: CurrentUserID,
-    limiter: WeeklyMessageLimiterDep,
 ):
-    can_send = limiter.can_send_message(current_user_id)
-
-    if not can_send:
-        raise HTTPException(
-            status_code=429,
-            detail="Weekly message limit exceeded. Try again next week.",
-        )
-
-    chat = crud.get_user_chat(db=db, chat_id=chat_id, user_id=current_user_id)
+    chat = crud.get_chat(db=db, chat_id=chat_id)
 
     if not chat:
-        crud.create_user_chat(
+        crud.create_chat(
             db=db,
             chat_id=chat_id,
-            user_id=current_user_id,
         )
 
     crud.create_user_message(
@@ -150,8 +73,6 @@ async def create_message(
         message_in=message_in,
         chat_id=chat_id,
     )
-
-    limiter.use_message(current_user_id)
 
     return StreamingResponse(
         stream_chat_completion(chat_id, message_in.content),
