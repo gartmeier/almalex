@@ -49,7 +49,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             __html: `
             (function() {
               let darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-              
+
               function updateDarkMode() {
                 if (darkModeQuery.matches) {
                   document.documentElement.classList.add('dark');
@@ -59,10 +59,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   document.documentElement.style.colorScheme = 'light';
                 }
               }
-              
+
               // Set initial dark mode
               updateDarkMode();
-              
+
               // Listen for changes
               darkModeQuery.addEventListener('change', updateDarkMode);
             })();
