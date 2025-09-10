@@ -12,7 +12,9 @@
   "navigation": {
     "faq": "FAQ",
     "policies": "Conditions et politiques",
-    "reportIssue": "Signaler un problème"
+    "reportIssue": "Signaler un problème",
+    "help": "Aide",
+    "selectLanguage": "Sélectionner la langue"
   },
   "languages": {
     "de": "Deutsch",

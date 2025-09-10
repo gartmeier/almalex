@@ -11,7 +11,7 @@ import {
 import "~/lib/i18n";
 
 export function LanguageSelector() {
-  let { i18n } = useTranslation();
+  let { t, i18n } = useTranslation();
 
   let languages = [
     { code: "de", label: "Deutsch" },
@@ -26,7 +26,7 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label={t("navigation.selectLanguage")}>
           <Globe />
         </Button>
       </DropdownMenuTrigger>

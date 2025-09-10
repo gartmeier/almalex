@@ -29,6 +29,7 @@ export function Navigation() {
         className={cn(
           "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
         )}
+        aria-label={t("navigation.help")}
       >
         <HelpCircle className="h-5 w-5" />
       </DropdownMenuTrigger>
