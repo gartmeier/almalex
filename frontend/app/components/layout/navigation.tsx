@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { HelpCircle, Megaphone } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import * as Sentry from "@sentry/react";
 import {
   DropdownMenu,
@@ -45,7 +45,6 @@ export function Navigation() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleReportIssue}>
-          <Megaphone className="h-4 w-4" />
           {t("navigation.reportIssue")}
         </DropdownMenuItem>
       </DropdownMenuContent>

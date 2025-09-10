@@ -4,7 +4,8 @@ import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import "~/lib/i18n";
@@ -30,18 +31,13 @@ export function LanguageSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {languages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            onClick={() => handleLanguageChange(lang.code)}
-            className={lang.code === i18n.language ? "font-semibold" : ""}
-          >
-            <span>{lang.label}</span>
-            {lang.code === i18n.language && (
-              <span className="ml-auto text-xs">✓</span>
-            )}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuRadioGroup value={i18n.language} onValueChange={handleLanguageChange}>
+          {languages.map((lang) => (
+            <DropdownMenuRadioItem key={lang.code} value={lang.code}>
+              {lang.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
