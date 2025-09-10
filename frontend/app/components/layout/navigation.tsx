@@ -1,11 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { HelpCircle } from "lucide-react";
+import * as Sentry from "@sentry/react";
 import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "~/components/ui/navigation-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import "~/lib/i18n";
 import { cn } from "~/lib/utils";
 
@@ -13,30 +16,38 @@ export function Navigation() {
   let { t, i18n } = useTranslation();
   let language = i18n.language;
 
-  let items = [
-    { to: `/${language}/faq`, text: t("navigation.faq") },
-    { to: `/${language}/terms`, text: t("navigation.terms") },
-    { to: `/${language}/privacy`, text: t("navigation.privacy") },
-  ];
+  function handleReportIssue() {
+    let feedback = Sentry.getFeedback();
+    if (feedback) {
+      feedback.openDialog();
+    }
+  }
 
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        {items.map((item) => (
-          <NavigationMenuItem key={item.to}>
-            <NavigationMenuLink asChild>
-              <Link
-                to={item.to}
-                className={cn(
-                  "group hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active]:bg-accent/50 data-[state=open]:bg-accent/50 inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                )}
-              >
-                {item.text}
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        ))}
-      </NavigationMenuList>
-    </NavigationMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(
+          "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+        )}
+      >
+        <HelpCircle className="h-5 w-5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem asChild>
+          <Link to={`/${language}/faq`}>
+            {t("navigation.faq")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/${language}/policies`}>
+            {t("navigation.policies")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleReportIssue}>
+          {t("navigation.reportIssue")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

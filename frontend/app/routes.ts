@@ -14,17 +14,14 @@ export default [
 
     // German routes
     route("de/faq", "routes/de/faq.tsx"),
-    route("de/terms", "routes/de/terms.tsx"),
-    route("de/privacy", "routes/de/privacy.tsx"),
+    route("de/policies", "routes/de/policies.tsx"),
 
     // English routes
     route("en/faq", "routes/en/faq.tsx"),
-    route("en/terms", "routes/en/terms.tsx"),
-    route("en/privacy", "routes/en/privacy.tsx"),
+    route("en/policies", "routes/en/policies.tsx"),
 
     // French routes
     route("fr/faq", "routes/fr/faq.tsx"),
-    route("fr/terms", "routes/fr/terms.tsx"),
-    route("fr/privacy", "routes/fr/privacy.tsx"),
+    route("fr/policies", "routes/fr/policies.tsx"),
   ]),
 ] satisfies RouteConfig;

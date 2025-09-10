@@ -27,8 +27,8 @@ export default function Layout() {
                 {t("chat.new")}
               </Link>
             </Button>
-            <Navigation />
             <LanguageSelector />
+            <Navigation />
           </div>
         </header>
         <main className="flex-1">

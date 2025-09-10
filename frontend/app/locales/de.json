@@ -11,8 +11,8 @@
   },
   "navigation": {
     "faq": "FAQ",
-    "terms": "Nutzungsbedingungen",
-    "privacy": "Datenschutzerklärung"
+    "policies": "AGB und Richtlinien",
+    "reportIssue": "Problem melden"
   },
   "languages": {
     "de": "Deutsch",
@@ -24,13 +24,15 @@
       "title": "FAQ",
       "heading": "Häufig gestellte Fragen"
     },
-    "terms": {
-      "title": "Nutzungsbedingungen",
-      "heading": "Nutzungsbedingungen"
-    },
-    "privacy": {
-      "title": "Datenschutz",
-      "heading": "Datenschutzerklärung"
+    "policies": {
+      "title": "Richtlinien",
+      "heading": "Richtlinien",
+      "privacy": {
+        "heading": "Datenschutzerklärung"
+      },
+      "terms": {
+        "heading": "Nutzungsbedingungen"
+      }
     }
   }
 }

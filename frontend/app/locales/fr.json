@@ -11,8 +11,8 @@
   },
   "navigation": {
     "faq": "FAQ",
-    "terms": "Conditions d'utilisation",
-    "privacy": "Politique de confidentialité"
+    "policies": "Conditions et politiques",
+    "reportIssue": "Signaler un problème"
   },
   "languages": {
     "de": "Deutsch",
@@ -24,13 +24,15 @@
       "title": "FAQ",
       "heading": "Questions Fréquemment Posées"
     },
-    "terms": {
-      "title": "Conditions",
-      "heading": "Conditions d'utilisation"
-    },
-    "privacy": {
-      "title": "Confidentialité",
-      "heading": "Politique de confidentialité"
+    "policies": {
+      "title": "Politiques",
+      "heading": "Politiques",
+      "privacy": {
+        "heading": "Politique de confidentialité"
+      },
+      "terms": {
+        "heading": "Conditions d'utilisation"
+      }
     }
   }
 }
