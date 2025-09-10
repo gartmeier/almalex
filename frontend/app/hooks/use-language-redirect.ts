@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 export function useLanguageRedirect(expectedLanguage: string) {
   let { i18n } = useTranslation();
@@ -12,7 +12,7 @@ export function useLanguageRedirect(expectedLanguage: string) {
       // Replace the language part of the current path
       let newPath = location.pathname.replace(
         `/${expectedLanguage}/`,
-        `/${i18n.language}/`
+        `/${i18n.language}/`,
       );
       navigate(newPath, { replace: true });
     }

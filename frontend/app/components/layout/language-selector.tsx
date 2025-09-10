@@ -23,15 +23,20 @@ export function LanguageSelector() {
     i18n.changeLanguage(newLanguage);
   }
 
+  let currentLanguage = languages.find((lang) => lang.code === i18n.language);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("navigation.selectLanguage")}>
+        <Button variant="ghost" size="icon">
           <Globe />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={i18n.language} onValueChange={handleLanguageChange}>
+        <DropdownMenuRadioGroup
+          value={i18n.language}
+          onValueChange={handleLanguageChange}
+        >
           {languages.map((lang) => (
             <DropdownMenuRadioItem key={lang.code} value={lang.code}>
               {lang.label}

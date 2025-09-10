@@ -8,7 +8,7 @@ import {
 export default [
   layout("routes/layout.tsx", [
     index("routes/home.tsx"),
-    
+
     // Chat route
     route("c/:chatId", "routes/chat.tsx"),
 
