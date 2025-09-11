@@ -5,6 +5,7 @@
   },
   "chat": {
     "new": "Neuer Chat",
+    "placeholder": "Wie kann ich dir heute helfen?",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
     }

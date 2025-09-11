@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "./ui/button";
 
@@ -8,6 +9,7 @@ type MessageInputProps = {
 };
 
 export function MessageInput({ onSubmit }: MessageInputProps) {
+  let { t } = useTranslation();
   let [input, setInput] = useState("");
 
   let isInputEmpty = input.trim() === "";
@@ -35,7 +37,7 @@ export function MessageInput({ onSubmit }: MessageInputProps) {
       <TextareaAutosize
         className="w-full resize-none bg-transparent text-base focus:outline-none"
         value={input}
-        placeholder="How can I help you today?"
+        placeholder={t("chat.placeholder")}
         autoFocus
         onKeyDown={handleKeyDown}
         onChange={handleChange}

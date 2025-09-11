@@ -5,6 +5,7 @@
   },
   "chat": {
     "new": "Nouveau chat",
+    "placeholder": "Comment puis-je vous aider aujourd'hui?",
     "error": {
       "fetchFailed": "Impossible de charger le chat {{chatId}}"
     }
