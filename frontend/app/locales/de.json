@@ -6,6 +6,9 @@
   "chat": {
     "new": "Neuer Chat",
     "placeholder": "Wie kann ich dir heute helfen?",
+    "sendMessage": "Nachricht senden",
+    "pressEnterToSend": "Enter zum Senden",
+    "sending": "Sende...",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
     }

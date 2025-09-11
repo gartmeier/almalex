@@ -6,6 +6,9 @@
   "chat": {
     "new": "New chat",
     "placeholder": "How can I help you today?",
+    "sendMessage": "Send message",
+    "pressEnterToSend": "Press Enter to send",
+    "sending": "Sending...",
     "error": {
       "fetchFailed": "Failed to fetch chat {{chatId}}"
     }
