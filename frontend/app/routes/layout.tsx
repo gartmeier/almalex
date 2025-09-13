@@ -7,6 +7,7 @@ import { Link, Outlet } from "react-router";
 import { HelpMenu } from "~/components/layout/help-menu";
 import { LanguageSelector } from "~/components/layout/language-selector";
 import { Button } from "~/components/ui/button";
+import { Toaster } from "~/components/ui/sonner";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ export default function Layout() {
       <main>
         <Outlet />
       </main>
+      <Toaster position="top-right" />
     </QueryClientProvider>
   );
 }

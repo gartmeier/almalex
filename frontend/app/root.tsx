@@ -11,9 +11,10 @@ import * as Sentry from "@sentry/react";
 import React from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { client } from "./lib/api/client.gen";
 import "./lib/i18n";
 
-if (!import.meta.env.DEV || true) {
+if (!import.meta.env.DEV) {
   Sentry.init({
     dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
     integrations: [
@@ -79,6 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  client.setConfig({ baseUrl: "/" });
   return <Outlet />;
 }
 

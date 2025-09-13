@@ -13,21 +13,12 @@ import type {
   CreateMessageData,
   CreateMessageError,
   CreateMessageResponse,
-  CreateTokenData,
-  CreateTokenResponse,
-  DeleteChatData,
-  DeleteChatError,
-  DeleteChatResponse,
-  GetRateLimitData,
-  GetRateLimitResponse,
-  ListChatsData,
-  ListChatsResponse,
   ReadChatData,
   ReadChatError,
   ReadChatResponse,
-  UpdateChatData,
-  UpdateChatError,
-  UpdateChatResponse,
+  StartChatCompletionData,
+  StartChatCompletionError,
+  StartChatCompletionResponse,
 } from "./types.gen";
 
 export type Options<
@@ -48,66 +39,6 @@ export type Options<
 };
 
 /**
- * Create Token
- */
-export const createToken = <ThrowOnError extends boolean = false>(
-  options?: Options<CreateTokenData, ThrowOnError>,
-) => {
-  return (options?.client ?? _heyApiClient).post<
-    CreateTokenResponse,
-    unknown,
-    ThrowOnError
-  >({
-    url: "/api/auth/token",
-    ...options,
-  });
-};
-
-/**
- * Get Rate Limit
- */
-export const getRateLimit = <ThrowOnError extends boolean = false>(
-  options?: Options<GetRateLimitData, ThrowOnError>,
-) => {
-  return (options?.client ?? _heyApiClient).get<
-    GetRateLimitResponse,
-    unknown,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
-    url: "/api/chats/rate-limit",
-    ...options,
-  });
-};
-
-/**
- * List Chats
- */
-export const listChats = <ThrowOnError extends boolean = false>(
-  options?: Options<ListChatsData, ThrowOnError>,
-) => {
-  return (options?.client ?? _heyApiClient).get<
-    ListChatsResponse,
-    unknown,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
-    url: "/api/chats/",
-    ...options,
-  });
-};
-
-/**
  * Create Chat
  */
 export const createChat = <ThrowOnError extends boolean = false>(
@@ -118,40 +49,12 @@ export const createChat = <ThrowOnError extends boolean = false>(
     CreateChatError,
     ThrowOnError
   >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
     url: "/api/chats/",
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
     },
-  });
-};
-
-/**
- * Delete Chat
- */
-export const deleteChat = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteChatData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).delete<
-    DeleteChatResponse,
-    DeleteChatError,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
-    url: "/api/chats/{chat_id}",
-    ...options,
   });
 };
 
@@ -166,40 +69,24 @@ export const readChat = <ThrowOnError extends boolean = false>(
     ReadChatError,
     ThrowOnError
   >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
     url: "/api/chats/{chat_id}",
     ...options,
   });
 };
 
 /**
- * Update Chat
+ * Start Chat Completion
  */
-export const updateChat = <ThrowOnError extends boolean = false>(
-  options: Options<UpdateChatData, ThrowOnError>,
+export const startChatCompletion = <ThrowOnError extends boolean = false>(
+  options: Options<StartChatCompletionData, ThrowOnError>,
 ) => {
-  return (options.client ?? _heyApiClient).put<
-    UpdateChatResponse,
-    UpdateChatError,
+  return (options.client ?? _heyApiClient).post<
+    StartChatCompletionResponse,
+    StartChatCompletionError,
     ThrowOnError
   >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
-    url: "/api/chats/{chat_id}",
+    url: "/api/chats/{chat_id}/start",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
   });
 };
 
@@ -214,12 +101,6 @@ export const createMessage = <ThrowOnError extends boolean = false>(
     CreateMessageError,
     ThrowOnError
   >({
-    security: [
-      {
-        scheme: "bearer",
-        type: "http",
-      },
-    ],
     url: "/api/chats/{chat_id}/messages",
     ...options,
     headers: {

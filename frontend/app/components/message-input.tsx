@@ -6,18 +6,19 @@ import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
 
 type MessageInputProps = {
+  value: string;
+  onChange: (value: string) => void;
   onSubmit: (message: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
 };
 
-export function MessageInput({ onSubmit, isLoading = false, disabled = false }: MessageInputProps) {
+export function MessageInput({ value, onChange, onSubmit, isLoading = false, disabled = false }: MessageInputProps) {
   let { t } = useTranslation();
-  let [input, setInput] = useState("");
   let [isFocused, setIsFocused] = useState(false);
   let textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  let isInputEmpty = input.trim() === "";
+  let isInputEmpty = value.trim() === "";
   let isDisabled = disabled || isLoading || isInputEmpty;
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -28,14 +29,14 @@ export function MessageInput({ onSubmit, isLoading = false, disabled = false }: 
   }
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value);
+    onChange(e.target.value);
   }
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
     if (!isDisabled) {
       // Preserve intentional line breaks but clean up extra whitespace
-      let cleanedMessage = input
+      let cleanedMessage = value
         .split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0)
@@ -43,7 +44,6 @@ export function MessageInput({ onSubmit, isLoading = false, disabled = false }: 
       
       if (cleanedMessage) {
         onSubmit(cleanedMessage);
-        setInput("");
         textareaRef.current?.focus();
       }
     }
@@ -62,7 +62,7 @@ export function MessageInput({ onSubmit, isLoading = false, disabled = false }: 
         <TextareaAutosize
           ref={textareaRef}
           className="flex-1 resize-none bg-transparent text-base leading-6 py-1 focus:outline-none placeholder:text-muted-foreground/70"
-          value={input}
+          value={value}
           placeholder={t("chat.placeholder")}
           aria-label={t("chat.placeholder")}
           autoFocus
