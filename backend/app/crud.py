@@ -2,32 +2,70 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
-from app.api import schemas
-from app.db.models import Chat, ChatMessage, Document, DocumentChunk
+from app.db.models import Chat, ChatMessage, ChatStatus, Document, DocumentChunk
+from app.utils.helpers import nanoid
 
 
 def get_chat(*, db: Session, chat_id: str) -> Chat | None:
-    return db.scalar(select(Chat).where(Chat.id == chat_id))
+    return db.scalar(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.messages))
+    )
 
 
-def create_chat(*, db: Session, chat_id: str) -> Chat:
-    db_chat = Chat(id=chat_id)
+def create_chat(
+    *, db: Session, chat_id: str, status: ChatStatus = ChatStatus.PENDING
+) -> Chat:
+    db_chat = Chat(id=chat_id, status=status)
     db.add(db_chat)
     db.commit()
     db.refresh(db_chat)
     return db_chat
 
 
-# Message operations
-def create_user_message(
-    *, db: Session, message_in: schemas.MessageCreate, chat_id: str
-) -> ChatMessage:
+def create_chat_with_message(*, db: Session, message_content: str) -> Chat:
+    chat_id = nanoid()
+    message_id = nanoid()
+
+    # Create chat with pending status
+    db_chat = Chat(id=chat_id, status=ChatStatus.PENDING)
+    db.add(db_chat)
+    db.flush()  # Get the chat ID without committing
+
+    # Create the initial user message
     db_message = ChatMessage(
-        id=message_in.id,
+        id=message_id,
         chat_id=chat_id,
         role="user",
-        content=message_in.content,
-        content_blocks=[{"type": "text", "text": message_in.content}],
+        content=message_content,
+        content_blocks=[{"type": "text", "text": message_content}],
+    )
+    db.add(db_message)
+    db.commit()
+    db.refresh(db_chat)
+    return db_chat
+
+
+def update_chat_status(*, db: Session, chat_id: str, status: ChatStatus) -> Chat | None:
+    chat = db.scalar(select(Chat).where(Chat.id == chat_id))
+    if chat:
+        chat.status = status
+        db.commit()
+        db.refresh(chat)
+    return chat
+
+
+# Message operations
+def create_user_message(
+    *, db: Session, message_content: str, chat_id: str
+) -> ChatMessage:
+    from app.utils.helpers import nanoid
+
+    db_message = ChatMessage(
+        id=nanoid(),
+        chat_id=chat_id,
+        role="user",
+        content=message_content,
+        content_blocks=[{"type": "text", "text": message_content}],
     )
     db.add(db_message)
     db.commit()
