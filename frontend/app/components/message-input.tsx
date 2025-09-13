@@ -2,8 +2,8 @@ import { ArrowUp, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextareaAutosize from "react-textarea-autosize";
-import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
+import { Button } from "./ui/button";
 
 type MessageInputProps = {
   value: string;
@@ -13,7 +13,13 @@ type MessageInputProps = {
   disabled?: boolean;
 };
 
-export function MessageInput({ value, onChange, onSubmit, isLoading = false, disabled = false }: MessageInputProps) {
+export function MessageInput({
+  value,
+  onChange,
+  onSubmit,
+  isLoading = false,
+  disabled = false,
+}: MessageInputProps) {
   let { t } = useTranslation();
   let [isFocused, setIsFocused] = useState(false);
   let textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -37,11 +43,11 @@ export function MessageInput({ value, onChange, onSubmit, isLoading = false, dis
     if (!isDisabled) {
       // Preserve intentional line breaks but clean up extra whitespace
       let cleanedMessage = value
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .join('\n');
-      
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .join("\n");
+
       if (cleanedMessage) {
         onSubmit(cleanedMessage);
         textareaRef.current?.focus();
@@ -51,17 +57,17 @@ export function MessageInput({ value, onChange, onSubmit, isLoading = false, dis
 
   return (
     <form onSubmit={handleSubmit}>
-      <div 
+      <div
         className={cn(
-          "relative flex items-end gap-2 rounded-2xl border bg-muted px-3 py-2 transition-all",
+          "bg-muted relative flex items-end gap-2 rounded-2xl border px-3 py-2 transition-all",
           "shadow-sm hover:shadow-md",
-          isFocused && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-          isLoading && "opacity-70"
+          isFocused && "ring-ring ring-offset-background ring-2 ring-offset-2",
+          isLoading && "opacity-70",
         )}
       >
         <TextareaAutosize
           ref={textareaRef}
-          className="flex-1 resize-none bg-transparent text-base leading-6 py-1 focus:outline-none placeholder:text-muted-foreground/70"
+          className="placeholder:text-muted-foreground/70 flex-1 resize-none bg-transparent py-1 text-base leading-6 focus:outline-none"
           value={value}
           placeholder={t("chat.placeholder")}
           aria-label={t("chat.placeholder")}
@@ -80,8 +86,8 @@ export function MessageInput({ value, onChange, onSubmit, isLoading = false, dis
           disabled={isDisabled}
           aria-label={isLoading ? t("chat.sending") : t("chat.sendMessage")}
           className={cn(
-            "h-8 w-8 shrink-0 transition-all self-end",
-            !isInputEmpty && "hover:scale-105"
+            "h-8 w-8 shrink-0 self-end transition-all",
+            !isInputEmpty && "hover:scale-105",
           )}
         >
           {isLoading ? (
