@@ -1,65 +1,142 @@
-import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import {
   readChat,
-  type ChatDetail,
   type MessageDetail,
   type SearchContentBlock,
   type SearchResult,
   type TextContentBlock,
 } from "~/lib/api";
-import { parseServerSentEvents } from "~/lib/sse";
+import { nanoid } from "~/lib/nanoid";
+import { parseServerSentEvents, type ServerSentEvent } from "~/lib/sse";
 import type { Route } from "./+types/chat";
 
 export default function Component({ params }: Route.ComponentProps) {
+  let { chatId } = params;
   let { t } = useTranslation();
-  let [chat, setChat] = useState<ChatDetail | null>(null);
+  let location = useLocation();
+  let navigate = useNavigate();
+
   let [input, setInput] = useState("");
-  let hasStartedCompletionRef = useRef(false);
+  let [messages, setMessages] = useState<MessageDetail[]>([]);
+  let [isLoading, setIsLoading] = useState(false);
+
+  let hasInitialized = useRef(false);
 
   useEffect(() => {
-    async function initChat() {
+    if (hasInitialized.current) {
+      return;
+    }
+
+    hasInitialized.current = true;
+
+    if (location.state?.initialMessage) {
+      handleInitialMessage(location.state.initialMessage);
+      navigate(location.pathname, { replace: true, state: {} });
+    } else {
+      loadExistingMessages();
+    }
+  }, []);
+
+  async function handleInitialMessage(message: string) {
+    setMessages([
+      {
+        id: `tmp-${nanoid()}`,
+        role: "user",
+        content: message,
+        content_blocks: [{ type: "text", text: message }],
+      },
+    ]);
+    setIsLoading(true);
+
+    try {
+      let res = await fetch("/api/chats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: chatId, message }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to start chat");
+      }
+
+      await processStreamingResponse(res);
+    } catch (error) {
+      setMessages([]);
+      setInput(message);
+      toast.error("Failed to start chat");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function loadExistingMessages() {
+    try {
       let res = await readChat({
-        path: { chat_id: params.chatId },
+        path: { chat_id: chatId },
         throwOnError: true,
       });
-      setChat(res.data);
+      setMessages(res.data.messages);
+    } catch (e) {
+      toast.error("Failed to load chat");
+      navigate("/");
+    }
+  }
 
-      // Start completion if chat is pending and we haven't started yet
-      if (res.data.status === "pending" && !hasStartedCompletionRef.current) {
-        hasStartedCompletionRef.current = true;
-        startInitialCompletion(res.data);
+  async function handleSubmit(input: string) {
+    let newMessage: MessageDetail = {
+      id: `temp-${nanoid()}`,
+      role: "user",
+      content: input,
+      content_blocks: [{ type: "text", text: input }],
+    };
+    addMessage(newMessage);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      await new Promise((r) => setTimeout(r, 2000));
+      throw new Error("failed to send message");
+      let res = await fetch(`/api/chats/${chatId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: input }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to send message");
       }
+
+      await processStreamingResponse(res);
+    } catch (error) {
+      setInput(input);
+      setMessages((prev) => prev.slice(0, -1));
+      toast.error("Failed to send message");
+    } finally {
+      setIsLoading(false);
     }
+  }
 
-    // Reset ref for new chat
-    hasStartedCompletionRef.current = false;
-    initChat();
-  }, [params.chatId]);
-
-  useEffect(() => {
-    let title = "New chat";
-
-    if (chat && chat.title) {
-      title = chat.title;
-    }
-
-    document.title = `${title} | Alma Lex`;
-  }, [chat?.title]);
-
-  async function startInitialCompletion(initialChat: ChatDetail) {
-    setChat((prev) => prev && { ...prev, status: "in_progress" });
-
-    let response = await fetch(`/api/chats/${initialChat.id}/start`, {
-      method: "POST",
-    });
-
+  async function processStreamingResponse(response: Response) {
     let reader = response.body!.getReader();
     let decoder = new TextDecoder();
+
+    let eventHandlers: Record<string, (event: ServerSentEvent) => void> = {
+      chat_title: handleChatTitleEvent,
+      message_id: handleMessageIdEvent,
+      message_delta: handleMessageDeltaEvent,
+      search_query: handleSearchQueryEvent,
+      search_results: handleSearchResultsEvent,
+    };
 
     while (true) {
       let { done, value } = await reader.read();
@@ -72,73 +149,63 @@ export default function Component({ params }: Route.ComponentProps) {
       let events = parseServerSentEvents(chunk);
 
       for (let event of events) {
-        switch (event.name) {
-          case "chat_title":
-            setChat(
-              (prev) => prev && { ...prev, title: JSON.parse(event.data) },
-            );
-            break;
-          case "message_id":
-            let newMessage: MessageDetail = {
-              id: JSON.parse(event.data) as string,
-              role: "assistant",
-              content: "",
-              content_blocks: [],
-            };
-            addMessageToChat(newMessage);
-            break;
-          case "search_query":
-            let searchBlock: SearchContentBlock = {
-              type: "search",
-              status: "in_progress",
-              query: JSON.parse(event.data) as string,
-              results: [],
-            };
-            addContentBlockToLastMessage(searchBlock);
-            break;
-          case "search_results":
-            updateLastContentBlock((block) => ({
-              ...(block as SearchContentBlock),
-              status: "completed" as const,
-              results: JSON.parse(event.data) as SearchResult[],
-            }));
-            break;
-          case "message_delta":
-            appendToTextBlock(JSON.parse(event.data));
-            break;
+        let eventHandler = eventHandlers[event.name];
+        if (eventHandler) {
+          eventHandler(event);
         }
       }
     }
-
-    setChat((prev) => prev && { ...prev, status: "completed" });
   }
 
-  function handleSubmit() {
-    if (!chat || chat.status !== "completed") {
-      return;
-    }
+  function handleChatTitleEvent(event: ServerSentEvent) {
+    let title = JSON.parse(event.data);
+    document.title = `${title} | Alma Lex`;
   }
 
-  function addMessageToChat(message: MessageDetail) {
-    setChat((prev) => {
-      if (!prev) return prev;
-      return { ...prev, messages: [...prev.messages, message] };
-    });
+  function handleMessageIdEvent(event: ServerSentEvent) {
+    let newMessage: MessageDetail = {
+      id: JSON.parse(event.data) as string,
+      role: "assistant",
+      content: "",
+      content_blocks: [],
+    };
+    addMessage(newMessage);
+  }
+
+  function handleMessageDeltaEvent(event: ServerSentEvent) {
+    appendToTextBlock(JSON.parse(event.data));
+  }
+
+  function handleSearchQueryEvent(event: ServerSentEvent) {
+    let searchBlock: SearchContentBlock = {
+      type: "search",
+      status: "in_progress",
+      query: JSON.parse(event.data) as string,
+      results: [],
+    };
+    addContentBlockToLastMessage(searchBlock);
+  }
+
+  function handleSearchResultsEvent(event: ServerSentEvent) {
+    updateLastContentBlock((block) => ({
+      ...(block as SearchContentBlock),
+      status: "completed" as const,
+      results: JSON.parse(event.data) as SearchResult[],
+    }));
+  }
+
+  function addMessage(message: MessageDetail) {
+    setMessages((prev) => [...prev, message]);
   }
 
   function updateLastMessage(
     updater: (message: MessageDetail) => MessageDetail,
   ) {
-    setChat((prev) => {
-      if (!prev) return prev;
-
-      let lastMessage = prev.messages.at(-1)!;
+    setMessages((prev) => {
+      let lastMessage = prev.at(-1)!;
       let updatedMessage = updater(lastMessage);
 
-      return {
-        ...prev,
-        messages: [...prev.messages.slice(0, -1), updatedMessage],
-      };
+      return [...prev.slice(0, -1), updatedMessage];
     });
   }
 
@@ -169,14 +236,13 @@ export default function Component({ params }: Route.ComponentProps) {
 
   function appendToTextBlock(text: string) {
     updateLastMessage((message) => {
-      let textBlockIndex = message.content_blocks.findIndex(
-        (block) => block.type === "text",
-      );
+      let lastBlock = message.content_blocks.at(-1)!;
+      console.log(lastBlock);
 
-      if (textBlockIndex === -1) {
+      if (lastBlock.type !== "text") {
         // Add new text block if none exists
-        let textBlock: TextContentBlock = {
-          type: "text",
+        let textBlock = {
+          type: "text" as const,
           text: text,
         };
         return {
@@ -185,15 +251,16 @@ export default function Component({ params }: Route.ComponentProps) {
         };
       } else {
         // Update existing text block
-        let updatedBlocks = [...message.content_blocks];
-        let textBlock = updatedBlocks[textBlockIndex] as TextContentBlock;
-        updatedBlocks[textBlockIndex] = {
-          ...textBlock,
-          text: textBlock.text + text,
+        let updatedTextBlock = {
+          type: "text" as const,
+          text: lastBlock.text + text,
         };
         return {
           ...message,
-          content_blocks: updatedBlocks,
+          content_blocks: [
+            ...message.content_blocks.slice(0, -1),
+            updatedTextBlock,
+          ],
         };
       }
     });
@@ -201,24 +268,17 @@ export default function Component({ params }: Route.ComponentProps) {
 
   return (
     <>
-      {chat && (
-        <ScrollToBottomProvider>
-          <div className="mx-auto max-w-3xl pb-[82px]">
-            <MessageList chat={chat} />
-            {chat.status === "pending" && (
-              <div className="text-muted-foreground flex items-center gap-2 py-4 text-center">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t("chat.preparingResponse")}
-              </div>
-            )}
-          </div>
-        </ScrollToBottomProvider>
-      )}
+      <ScrollToBottomProvider>
+        <div className="mx-auto max-w-3xl pb-[82px]">
+          <MessageList messages={messages} />
+        </div>
+      </ScrollToBottomProvider>
       <div className="fixed right-0 bottom-0 left-0 z-10 p-4">
         <div className="mx-auto max-w-3xl">
           <MessageInput
             value={input}
             onChange={setInput}
+            isLoading={isLoading}
             onSubmit={handleSubmit}
           />
         </div>

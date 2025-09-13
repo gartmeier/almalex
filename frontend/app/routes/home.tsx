@@ -1,29 +1,17 @@
-import * as Sentry from "@sentry/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
-import { createChat } from "~/lib/api";
+import { nanoid } from "~/lib/nanoid";
 
 export default function Component() {
   let navigate = useNavigate();
   let [input, setInput] = useState("");
+  let [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(message: string) {
-    try {
-      let response = await createChat({
-        body: {
-          message: message,
-        },
-        throwOnError: true,
-      });
-
-      setInput("");
-      navigate(`/chat/${response.data.id}`);
-    } catch (error) {
-      toast.error("Failed to create chat. Please try again.");
-      Sentry.captureException(error);
-    }
+    setInput("");
+    setIsLoading(true);
+    navigate(`/chat/${nanoid()}`, { state: { initialMessage: message } });
   }
 
   return (
@@ -32,6 +20,7 @@ export default function Component() {
         <MessageInput
           value={input}
           onChange={setInput}
+          isLoading={isLoading}
           onSubmit={handleSubmit}
         />
       </div>
