@@ -10,7 +10,7 @@ export default [
     index("routes/home.tsx"),
 
     // Chat route
-    route("c/:chatId", "routes/chat.tsx"),
+    route("chat/:chatId", "routes/chat.tsx"),
 
     // German routes
     route("de/faq", "routes/de/faq.tsx"),
