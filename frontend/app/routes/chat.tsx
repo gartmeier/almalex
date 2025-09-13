@@ -102,8 +102,6 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 2000));
-      throw new Error("failed to send message");
       let res = await fetch(`/api/chats/${chatId}/messages`, {
         method: "POST",
         headers: {

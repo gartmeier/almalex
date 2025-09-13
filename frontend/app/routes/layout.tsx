@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Sentry from "@sentry/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SquarePen } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,7 @@ export default function Layout() {
         formRef.current.appendToDom();
       }
     }
-    
+
     if (formRef.current) {
       formRef.current.open();
     }
@@ -32,7 +32,7 @@ export default function Layout() {
   return (
     <QueryClientProvider client={queryClient}>
       <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Link
             to="/"
             className="group flex flex-col justify-center transition-all hover:opacity-90"

@@ -9,6 +9,7 @@
     "sendMessage": "Nachricht senden",
     "pressEnterToSend": "Enter zum Senden",
     "sending": "Sende...",
+    "preparingResponse": "Bereite deine Antwort vor...",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
     }

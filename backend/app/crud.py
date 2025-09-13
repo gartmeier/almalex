@@ -12,20 +12,7 @@ def get_chat(*, db: Session, chat_id: str) -> Chat | None:
     )
 
 
-def create_chat(
-    *, db: Session, chat_id: str, status: ChatStatus = ChatStatus.PENDING
-) -> Chat:
-    db_chat = Chat(id=chat_id, status=status)
-    db.add(db_chat)
-    db.commit()
-    db.refresh(db_chat)
-    return db_chat
-
-
-def create_chat_with_message(*, db: Session, message_content: str) -> Chat:
-    chat_id = nanoid()
-    message_id = nanoid()
-
+def create_chat(*, db: Session, chat_id: str, message: str) -> tuple[Chat, ChatMessage]:
     # Create chat with pending status
     db_chat = Chat(id=chat_id, status=ChatStatus.PENDING)
     db.add(db_chat)
@@ -33,16 +20,16 @@ def create_chat_with_message(*, db: Session, message_content: str) -> Chat:
 
     # Create the initial user message
     db_message = ChatMessage(
-        id=message_id,
+        id=nanoid(),
         chat_id=chat_id,
         role="user",
-        content=message_content,
-        content_blocks=[{"type": "text", "text": message_content}],
+        content=message,
+        content_blocks=[{"type": "text", "text": message}],
     )
     db.add(db_message)
     db.commit()
     db.refresh(db_chat)
-    return db_chat
+    return db_chat, db_message
 
 
 def update_chat_status(*, db: Session, chat_id: str, status: ChatStatus) -> Chat | None:

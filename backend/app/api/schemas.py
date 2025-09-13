@@ -40,6 +40,7 @@ class MessageDetail(BaseModel):
 
 # Chat Schemas
 class ChatCreate(BaseModel):
+    id: str
     message: str
 
 

@@ -9,6 +9,7 @@
     "sendMessage": "Envoyer le message",
     "pressEnterToSend": "Appuyez sur Entrée pour envoyer",
     "sending": "Envoi...",
+    "preparingResponse": "Préparation de votre réponse...",
     "error": {
       "fetchFailed": "Impossible de charger le chat {{chatId}}"
     }

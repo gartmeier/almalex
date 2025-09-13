@@ -9,6 +9,7 @@
     "sendMessage": "Send message",
     "pressEnterToSend": "Press Enter to send",
     "sending": "Sending...",
+    "preparingResponse": "Preparing your response...",
     "error": {
       "fetchFailed": "Failed to fetch chat {{chatId}}"
     }
