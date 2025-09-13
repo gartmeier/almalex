@@ -13,11 +13,12 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import "./lib/i18n";
 
-if (!import.meta.env.DEV) {
+if (!import.meta.env.DEV || true) {
   Sentry.init({
     dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
     integrations: [
       Sentry.feedbackIntegration({
+        autoInject: false,
         colorScheme: "system",
       }),
     ],

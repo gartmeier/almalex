@@ -10,15 +10,18 @@ import {
 } from "~/components/ui/dropdown-menu";
 import "~/lib/i18n";
 import { Button } from "../ui/button";
-import { ReportIssueButton } from "./report-issue-button";
 
-export function HelpMenu() {
+interface HelpMenuProps {
+  onOpenFeedback: () => void;
+}
+
+export function HelpMenu({ onOpenFeedback }: HelpMenuProps) {
   let { t, i18n } = useTranslation();
   let language = i18n.language;
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
           <HelpCircle />
         </Button>
@@ -31,7 +34,9 @@ export function HelpMenu() {
           <Link to={`/${language}/policies`}>{t("navigation.policies")}</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <ReportIssueButton />
+        <DropdownMenuItem onClick={onOpenFeedback}>
+          {t("navigation.reportIssue")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

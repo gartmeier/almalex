@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Sentry from "@sentry/react";
 import { SquarePen } from "lucide-react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet } from "react-router";
 import { HelpMenu } from "~/components/layout/help-menu";
@@ -10,6 +12,22 @@ const queryClient = new QueryClient();
 
 export default function Layout() {
   let { t } = useTranslation();
+  let formRef = useRef<any>(null);
+
+  async function openFeedback() {
+    if (!formRef.current) {
+      let feedback = Sentry.getFeedback();
+      if (feedback) {
+        formRef.current = await feedback.createForm();
+        formRef.current.appendToDom();
+      }
+    }
+    
+    if (formRef.current) {
+      formRef.current.open();
+    }
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur">
@@ -46,7 +64,7 @@ export default function Layout() {
               </Link>
             </Button>
             <LanguageSelector />
-            <HelpMenu />
+            <HelpMenu onOpenFeedback={openFeedback} />
           </nav>
         </div>
       </header>
