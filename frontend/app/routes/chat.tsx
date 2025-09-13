@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
@@ -18,7 +17,6 @@ import type { Route } from "./+types/chat";
 
 export default function Component({ params }: Route.ComponentProps) {
   let { chatId } = params;
-  let { t } = useTranslation();
   let location = useLocation();
   let navigate = useNavigate();
 
