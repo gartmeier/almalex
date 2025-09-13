@@ -235,7 +235,6 @@ export default function Component({ params }: Route.ComponentProps) {
   function appendToTextBlock(text: string) {
     updateLastMessage((message) => {
       let lastBlock = message.content_blocks.at(-1)!;
-      console.log(lastBlock);
 
       if (lastBlock.type !== "text") {
         // Add new text block if none exists
