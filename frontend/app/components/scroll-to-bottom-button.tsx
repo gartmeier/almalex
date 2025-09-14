@@ -10,16 +10,14 @@ export function ScrollToBottomButton() {
   }
 
   return (
-    <div className="mb-2 flex justify-center">
-      <Button
-        onClick={() => scrollToBottom()}
-        variant="secondary"
-        size="icon"
-        className="rounded-full shadow-lg"
-        aria-label="Scroll to bottom"
-      >
-        <ChevronDown size={20} />
-      </Button>
-    </div>
+    <Button
+      onClick={() => scrollToBottom()}
+      variant="secondary"
+      size="icon"
+      className="rounded-full shadow-lg"
+      aria-label="Scroll to bottom"
+    >
+      <ChevronDown size={20} />
+    </Button>
   );
 }

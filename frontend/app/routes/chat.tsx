@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
+import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import {
   readChat,
@@ -25,6 +26,7 @@ export default function Component({ params }: Route.ComponentProps) {
   let [isLoading, setIsLoading] = useState(false);
 
   let hasInitialized = useRef(false);
+  let shouldScrollRef = useRef(false);
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -40,6 +42,14 @@ export default function Component({ params }: Route.ComponentProps) {
       loadExistingMessages();
     }
   }, []);
+
+  // Scroll to bottom after messages are rendered (React's equivalent of Vue's nextTick)
+  useEffect(() => {
+    if (shouldScrollRef.current && messages.length > 0) {
+      window.scrollTo({ top: document.body.scrollHeight });
+      shouldScrollRef.current = false;
+    }
+  }, [messages]);
 
   async function handleInitialMessage(message: string) {
     setMessages([
@@ -82,6 +92,7 @@ export default function Component({ params }: Route.ComponentProps) {
         throwOnError: true,
       });
       setMessages(res.data.messages);
+      shouldScrollRef.current = true;
     } catch (e) {
       toast.error("Failed to load chat");
       navigate("/");
@@ -262,22 +273,25 @@ export default function Component({ params }: Route.ComponentProps) {
   }
 
   return (
-    <>
-      <ScrollToBottomProvider>
-        <div className="mx-auto max-w-3xl px-4 pb-[82px]">
-          <MessageList messages={messages} />
+    <ScrollToBottomProvider>
+      <div className="mx-auto max-w-3xl px-4 pb-[82px]">
+        <MessageList messages={messages} />
+      </div>
+      <div className="fixed right-0 bottom-0 left-0 z-10">
+        <div className="mb-2 flex justify-center">
+          <ScrollToBottomButton />
         </div>
-      </ScrollToBottomProvider>
-      <div className="fixed right-0 bottom-0 left-0 z-10 bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t backdrop-blur p-4">
-        <div className="mx-auto max-w-3xl">
-          <MessageInput
-            value={input}
-            onChange={setInput}
-            isLoading={isLoading}
-            onSubmit={handleSubmit}
-          />
+        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t p-4 backdrop-blur">
+          <div className="mx-auto max-w-3xl">
+            <MessageInput
+              value={input}
+              onChange={setInput}
+              isLoading={isLoading}
+              onSubmit={handleSubmit}
+            />
+          </div>
         </div>
       </div>
-    </>
+    </ScrollToBottomProvider>
   );
 }
