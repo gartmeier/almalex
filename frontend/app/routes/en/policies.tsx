@@ -71,7 +71,7 @@ export default function Component() {
             <h3 className="text-lg font-semibold mt-6 mb-3">8. Contact</h3>
             <p className="mb-4">
               For questions about privacy, contact us at:<br />
-              Email: hello@gartmeier.dev<br />
+              Email: hello@almalex.ch<br />
               Joshua Gartmeier, Burgdorf, Switzerland
             </p>
           </div>
@@ -152,7 +152,7 @@ export default function Component() {
             <h3 className="text-lg font-semibold mt-6 mb-3">10. Contact</h3>
             <p className="mb-4">
               For questions about these terms:<br />
-              Email: hello@gartmeier.dev<br />
+              Email: hello@almalex.ch<br />
               Joshua Gartmeier, Burgdorf, Switzerland
             </p>
           </div>
