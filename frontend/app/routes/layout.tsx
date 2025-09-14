@@ -54,13 +54,13 @@ export default function Layout() {
               variant="outline"
               className="hidden sm:inline-flex"
             >
-              <Link to="/" aria-label={t("chat.new")}>
+              <Link to="/chat/new" aria-label={t("chat.new")}>
                 <SquarePen className="mr-2 h-4 w-4" aria-hidden="true" />
                 <span>{t("chat.new")}</span>
               </Link>
             </Button>
             <Button asChild size="icon" variant="outline" className="sm:hidden">
-              <Link to="/" aria-label={t("chat.new")}>
+              <Link to="/chat/new" aria-label={t("chat.new")}>
                 <SquarePen className="h-4 w-4" />
               </Link>
             </Button>
