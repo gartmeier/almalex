@@ -72,7 +72,7 @@ export default function Component() {
             <p className="mb-4">
               Pour toute question concernant la confidentialité, contactez-nous à :<br />
               E-mail : hello@gartmeier.dev<br />
-              Joshua Gartmeier, Suisse
+              Joshua Gartmeier, Burgdorf, Suisse
             </p>
           </div>
         </section>
@@ -153,7 +153,7 @@ export default function Component() {
             <p className="mb-4">
               Pour toute question concernant ces conditions :<br />
               E-mail : hello@gartmeier.dev<br />
-              Joshua Gartmeier, Suisse
+              Joshua Gartmeier, Burgdorf, Suisse
             </p>
           </div>
         </section>
