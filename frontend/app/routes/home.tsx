@@ -15,7 +15,7 @@ export default function Component() {
   }
 
   return (
-    <div className="fixed right-0 bottom-0 left-0 z-10 p-4">
+    <div className="fixed right-0 bottom-0 left-0 z-10 bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t backdrop-blur p-4">
       <div className="mx-auto max-w-3xl">
         <MessageInput
           value={input}
