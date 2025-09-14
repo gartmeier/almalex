@@ -264,7 +264,7 @@ export default function Component({ params }: Route.ComponentProps) {
   return (
     <>
       <ScrollToBottomProvider>
-        <div className="mx-auto max-w-3xl pb-[82px]">
+        <div className="mx-auto max-w-3xl px-4 pb-[82px]">
           <MessageList messages={messages} />
         </div>
       </ScrollToBottomProvider>
