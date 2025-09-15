@@ -24,22 +24,19 @@ export function LanguageSelector() {
 
   function handleLanguageChange(newLanguage: string) {
     i18n.changeLanguage(newLanguage);
-    
+
     // Navigate to the same page in the new language
     let currentPath = location.pathname;
     let supportedLanguages = ["de", "fr", "en"];
-    
+
     // Check if current path has a language prefix
     let pathParts = currentPath.split("/").filter(Boolean);
     let firstPart = pathParts[0];
-    
+
     if (supportedLanguages.includes(firstPart)) {
       // Replace existing language prefix
       pathParts[0] = newLanguage;
       navigate("/" + pathParts.join("/"));
-    } else if (currentPath === "/" || currentPath === "") {
-      // Root path - redirect to language home
-      navigate(`/${newLanguage}`);
     } else {
       // Path without language prefix (like /chat/*) - don't change
       // Just change the i18n language
