@@ -27,8 +27,9 @@ i18n
     },
 
     detection: {
-      order: ["localStorage", "navigator"],
-      caches: ["localStorage"],
+      order: ["cookie", "navigator"],
+      caches: ["cookie"],
+      lookupCookie: "lang",
     },
 
     interpolation: {
