@@ -70,7 +70,6 @@ export function MessageInput({
           className="placeholder:text-muted-foreground/70 flex-1 resize-none bg-transparent py-1 text-base leading-6 focus:outline-none"
           value={value}
           placeholder={t("chat.placeholder")}
-          aria-label={t("chat.placeholder")}
           autoFocus
           disabled={disabled || isLoading}
           onKeyDown={handleKeyDown}
@@ -84,7 +83,6 @@ export function MessageInput({
           size="icon"
           type="submit"
           disabled={isDisabled}
-          aria-label={isLoading ? t("chat.sending") : t("chat.sendMessage")}
           className={cn(
             "h-8 w-8 shrink-0 self-end transition-all",
             !isInputEmpty && "hover:scale-105",

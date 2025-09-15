@@ -15,7 +15,6 @@ export function ScrollToBottomButton() {
       variant="secondary"
       size="icon"
       className="rounded-full shadow-lg"
-      aria-label="Scroll to bottom"
     >
       <ChevronDown size={20} />
     </Button>

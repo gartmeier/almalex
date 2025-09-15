@@ -26,6 +26,64 @@
     "fr": "Français"
   },
   "pages": {
+    "home": {
+      "hero": {
+        "badge": "Demo-Projekt von Joshua Gartmeier",
+        "title": "Alma Lex",
+        "subtitle": "Schweizer KI-Rechtsassistent",
+        "description": "Erleben Sie, wie KI die Rechtsrecherche transformieren kann. Stellen Sie Fragen in jeder Sprache und erhalten Sie präzise Antworten mit Zitaten aus dem Schweizer Bundesrecht und Gerichtsentscheiden.",
+        "tryDemo": "Live-Demo ausprobieren",
+        "multiLanguage": "Mehrsprachig",
+        "noLogin": "Keine Anmeldung nötig",
+        "freeDemo": "100% kostenlose Demo"
+      },
+      "howItWorks": {
+        "title": "So funktioniert's",
+        "step1": {
+          "title": "Frage stellen",
+          "description": "Geben Sie Ihre Rechtsfrage auf Deutsch, Französisch oder Englisch ein"
+        },
+        "step2": {
+          "title": "KI durchsucht Quellen",
+          "description": "Durchsucht offizielle Schweizer Rechtsdatenbanken in Echtzeit"
+        },
+        "step3": {
+          "title": "Präzise Antwort erhalten",
+          "description": "Erhalten Sie Antworten mit exakten Artikelzitaten und Fallverweisen"
+        }
+      },
+      "features": {
+        "title": "Echte Rechtsquellen",
+        "federalLaws": {
+          "title": "Bundesgesetze",
+          "description": "Direkter Zugriff auf die vollständige Systematische Rechtssammlung (SR) von Fedlex"
+        },
+        "courtDecisions": {
+          "title": "Gerichtsentscheide",
+          "description": "Bundesgerichtsurteile und Präzedenzfälle (BGE) für Fallrecht-Einblicke"
+        }
+      },
+      "quickStart": {
+        "title": "Sofort loslegen",
+        "examples": {
+          "title": "Beispielfragen",
+          "example1": "Was sind die Voraussetzungen für eine Ehescheidung in der Schweiz?",
+          "example2": "Welche Rechte habe ich als Mieter bei Mängeln?",
+          "example3": "Wie gründe ich eine GmbH in der Schweiz?"
+        },
+        "tips": {
+          "title": "Tipps für beste Ergebnisse",
+          "tip1": "Stellen Sie spezifische Fragen",
+          "tip2": "Nennen Sie relevante Details",
+          "tip3": "Fragen Sie nach Gesetzesartikeln"
+        }
+      },
+      "cta": {
+        "title": "Bereit zum Ausprobieren?",
+        "description": "Erleben Sie die Zukunft der Rechtsrecherche mit KI",
+        "button": "Demo-Chat starten"
+      }
+    },
     "faq": {
       "title": "FAQ",
       "heading": "Häufig gestellte Fragen"
