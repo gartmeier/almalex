@@ -95,10 +95,13 @@ def stream_subsequent_completion(chat: Chat):
 
 
 def stream_completion(db: Session, chat: Chat):
+    # Get existing messages before creating the assistant message
+    existing_messages = list(chat.messages)
+
     assistant_message = crud.create_assistant_message(db=db, chat_id=chat.id)
     yield format_event("message_id", assistant_message.id)
 
-    search_query = generate_query(chat.messages)
+    search_query = generate_query(existing_messages)
     yield format_event("search_query", search_query)
 
     query_embedding = create_embedding(search_query)
@@ -110,7 +113,7 @@ def stream_completion(db: Session, chat: Chat):
     yield format_event("search_results", search_results)
 
     response_stream = generate_answer(
-        messages=chat.messages, search_results=document_chunks
+        messages=existing_messages, search_results=document_chunks
     )
     complete_text = ""
 
