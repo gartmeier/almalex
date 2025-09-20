@@ -62,6 +62,7 @@ class Chat(Base):
         "ChatMessage",
         back_populates="chat",
         cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
     )
 
 
