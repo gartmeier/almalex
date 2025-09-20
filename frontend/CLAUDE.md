@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### React Router v7 Configuration
 
-- **SSR disabled**: `ssr: false` in react-router.config.ts - this is a client-side only application
+- **Client-side only**: `ssr: false` in react-router.config.ts - no server-side rendering
 - **Layout routing pattern**: Uses `layout()` wrapper in app/routes.ts with nested routes
 - **Route structure**: All user-facing routes are nested under `routes/layout.tsx` layout component
 - **File-based routing**: Routes defined explicitly in app/routes.ts, not convention-based
@@ -56,10 +56,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Build and Deployment
 
-- **Build output**: Uses React Router's build system generating `build/client/` and `build/server/`
+- **Build output**: Client-side bundle in `build/client/` with minimal static server in `build/server/index.js`
 - **Container ready**: Includes Docker configuration
 - **Static assets**: Handled by Vite with sourcemap generation enabled
-- **Start command**: `pnpm start` serves the built application
+- **Start command**: `pnpm start` serves the static client application (no SSR)
 
 ### Development Workflow
 
