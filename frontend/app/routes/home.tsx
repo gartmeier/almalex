@@ -31,20 +31,20 @@ export default function Component() {
 
   return (
     <>
-      <div className="fixed inset-0 flex flex-col items-center justify-center px-4 pb-[80px] pt-[64px]">
+      <div className="fixed inset-0 flex flex-col px-4 pb-[80px] pt-[80px] sm:pt-[64px] sm:items-center sm:justify-center">
         <div className="mx-auto w-full max-w-3xl">
-          <h1 className="text-center text-4xl font-normal mb-12">
+          <h1 className="text-2xl sm:text-4xl font-normal mb-6 sm:mb-12 sm:text-center">
             {t("chat.homeTitle")}
           </h1>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {exampleMessages.map((example, index) => (
               <button
                 key={index}
                 onClick={() => handleExampleClick(example)}
-                className="text-left px-4 py-3 hover:bg-accent/50 hover:rounded-xl transition-all duration-200"
+                className="text-left py-4 sm:py-3 sm:px-4 hover:bg-accent/50 sm:hover:rounded-xl transition-all duration-200 border-b border-border last:border-b-0 sm:border-0"
               >
-                <p className="text-base text-foreground/70 hover:text-foreground">{example}</p>
+                <p className="text-sm sm:text-base text-foreground/70 hover:text-foreground">{example}</p>
               </button>
             ))}
           </div>
