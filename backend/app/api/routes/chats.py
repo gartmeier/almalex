@@ -40,7 +40,7 @@ async def create_chat(chat_create: ChatCreate, db: SessionDep):
     )
 
     return StreamingResponse(
-        stream_initial_completion(chat, message),
+        stream_initial_completion(chat.id, message.id),
         media_type="text/event-stream",
     )
 
@@ -81,15 +81,18 @@ async def create_message(chat_id: str, message_in: MessageCreate, db: SessionDep
     )
 
     return StreamingResponse(
-        stream_subsequent_completion(chat),
+        stream_subsequent_completion(chat.id),
         media_type="text/event-stream",
     )
 
 
-def stream_initial_completion(chat: Chat, message: ChatMessage):
+def stream_initial_completion(chat_id: str, message_id: str):
     with SessionLocal() as db:
-        db.add(chat)
-        db.add(message)
+        chat = crud.get_chat(db=db, chat_id=chat_id)
+        message = db.get(ChatMessage, message_id)
+
+        if not chat or not message:
+            return
 
         title = generate_title(message.content)
         chat.title = title
@@ -99,9 +102,11 @@ def stream_initial_completion(chat: Chat, message: ChatMessage):
         yield from stream_completion(db, chat)
 
 
-def stream_subsequent_completion(chat: Chat):
+def stream_subsequent_completion(chat_id: str):
     with SessionLocal() as db:
-        db.add(chat)
+        chat = crud.get_chat(db=db, chat_id=chat_id)
+        if not chat:
+            return
 
         yield from stream_completion(db, chat)
 
