@@ -1,44 +1,27 @@
 import { motion } from "framer-motion";
-import { useEffect } from "react";
 import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
 import type { MessageDetail } from "~/lib/api";
 import { AssistantMessage } from "./assistant-message";
 import { UserMessage } from "./user-message";
 
-type MessageListProps = {
-  chatId: string;
-  messages: MessageDetail[];
-};
-
-export function MessageList({ chatId, messages }: MessageListProps) {
+export function MessageList({ messages }: { messages: MessageDetail[] }) {
   const { endRef, onViewportEnter, onViewportLeave, scrollToBottom } =
     useScrollToBottom();
 
-  useEffect(() => {
-    if (chatId) {
-      scrollToBottom("instant");
-    }
-  }, [chatId, scrollToBottom]);
-
   return (
-    <div
-      className="h-dvh w-full overflow-y-auto px-3 pb-[120px]"
-      style={{ scrollbarGutter: "stable both-edges" }}
-    >
-      <div className="mx-auto max-w-3xl">
-        {messages.map((message) => {
-          if (message.role === "user") {
-            return <UserMessage key={message.id} message={message} />;
-          } else {
-            return <AssistantMessage key={message.id} message={message} />;
-          }
-        })}
-      </div>
+    <>
+      {messages.map((message) => {
+        if (message.role === "user") {
+          return <UserMessage key={message.id} message={message} />;
+        } else {
+          return <AssistantMessage key={message.id} message={message} />;
+        }
+      })}
       <motion.div
         ref={endRef}
         onViewportEnter={onViewportEnter}
         onViewportLeave={onViewportLeave}
       />
-    </div>
+    </>
   );
 }

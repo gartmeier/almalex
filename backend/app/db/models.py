@@ -45,8 +45,7 @@ class Chat(Base):
     __tablename__ = "chat"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(index=True)
-    title: Mapped[str] = mapped_column(index=True)
+    title: Mapped[str | None] = mapped_column(index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         index=True,
@@ -59,10 +58,11 @@ class Chat(Base):
         server_default=func.now(),
     )
 
-    messages = relationship(
+    messages: Mapped[list["ChatMessage"]] = relationship(
         "ChatMessage",
         back_populates="chat",
         cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
     )
 
 

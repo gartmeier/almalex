@@ -1,0 +1,111 @@
+{
+  "app": {
+    "title": "Alma Lex",
+    "subtitle": "IA Juridique Suisse"
+  },
+  "chat": {
+    "new": "Nouveau chat",
+    "placeholder": "Comment puis-je vous aider aujourd'hui?",
+    "sendMessage": "Envoyer le message",
+    "pressEnterToSend": "Appuyez sur Entrée pour envoyer",
+    "sending": "Envoi...",
+    "preparingResponse": "Préparation de votre réponse...",
+    "error": {
+      "fetchFailed": "Impossible de charger le chat {{chatId}}"
+    },
+    "homeTitle": "Comment puis-je vous aider?",
+    "examples": {
+      "landlord": "Mon propriétaire peut-il augmenter le loyer s'il rénove l'appartement?",
+      "divorce": "Quelles sont les conditions légales pour un divorce?",
+      "will": "Comment puis-je contester un testament?",
+      "business": "Quelle est la différence entre une SA et une Sàrl?",
+      "flight": "Quels sont mes droits en cas de retard de vol?",
+      "employment": "Puis-je résilier mon contrat de travail sans préavis?"
+    }
+  },
+  "navigation": {
+    "faq": "FAQ",
+    "policies": "Conditions et politiques",
+    "reportIssue": "Signaler un problème",
+    "help": "Aide"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français"
+  },
+  "pages": {
+    "home": {
+      "hero": {
+        "badge": "Projet de démonstration de Joshua Gartmeier",
+        "title": "Alma Lex",
+        "subtitle": "Assistant Juridique Suisse IA",
+        "description": "Découvrez comment l'IA peut transformer la recherche juridique. Posez des questions dans n'importe quelle langue et obtenez des réponses précises avec des citations du droit fédéral suisse et des décisions de justice.",
+        "tryDemo": "Essayer la démo en direct",
+        "multiLanguage": "DE / FR / EN",
+        "noLogin": "Aucune inscription requise",
+        "freeDemo": "Démo 100% gratuite"
+      },
+      "howItWorks": {
+        "title": "Comment ça marche",
+        "step1": {
+          "title": "Posez votre question",
+          "description": "Tapez votre question juridique en allemand, français ou anglais"
+        },
+        "step2": {
+          "title": "L'IA recherche les sources",
+          "description": "Recherche dans les bases de données juridiques suisses officielles en temps réel"
+        },
+        "step3": {
+          "title": "Obtenez une réponse précise",
+          "description": "Recevez des réponses avec des citations d'articles exacts et des références de cas"
+        }
+      },
+      "features": {
+        "title": "Sources juridiques réelles",
+        "federalLaws": {
+          "title": "Lois fédérales",
+          "description": "Accès direct au Recueil systématique complet du droit suisse (RS) de Fedlex"
+        },
+        "courtDecisions": {
+          "title": "Décisions de justice",
+          "description": "Arrêts du Tribunal fédéral et précédents (ATF) pour des aperçus de jurisprudence"
+        }
+      },
+      "quickStart": {
+        "title": "Démarrage rapide",
+        "examples": {
+          "title": "Exemples de questions",
+          "example1": "Quelles sont les conditions pour un divorce en Suisse ?",
+          "example2": "Quels sont mes droits en tant que locataire en cas de défauts ?",
+          "example3": "Comment créer une Sàrl en Suisse ?"
+        },
+        "tips": {
+          "title": "Conseils pour de meilleurs résultats",
+          "tip1": "Posez des questions spécifiques",
+          "tip2": "Mentionnez les détails pertinents",
+          "tip3": "Demandez des articles de loi"
+        }
+      },
+      "cta": {
+        "title": "Prêt à l'essayer ?",
+        "description": "Découvrez l'avenir de la recherche juridique avec l'IA",
+        "button": "Démarrer le chat démo"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "heading": "Questions Fréquemment Posées"
+    },
+    "policies": {
+      "title": "Politiques",
+      "heading": "Politiques",
+      "privacy": {
+        "heading": "Politique de confidentialité"
+      },
+      "terms": {
+        "heading": "Conditions d'utilisation"
+      }
+    }
+  }
+}

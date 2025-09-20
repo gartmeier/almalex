@@ -1,13 +1,9 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useRouteLoaderData } from "react-router";
-import { AppSidebar } from "~/components/app-sidebar";
-import { ChatHeader } from "~/components/chat-header";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
-import { RateLimitAlert } from "~/components/rate-limit-alert";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
-import { SidebarProvider } from "~/components/ui/sidebar";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import {
   readChat,
@@ -17,107 +13,137 @@ import {
   type TextContentBlock,
 } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
-import { parseServerSentEvents } from "~/lib/sse";
+import { parseServerSentEvents, type ServerSentEvent } from "~/lib/sse";
 import type { Route } from "./+types/chat";
 
-export default function Chat({ params }: Route.ComponentProps) {
-  let { token } = useRouteLoaderData("root");
+export default function Component({ params }: Route.ComponentProps) {
+  let { chatId } = params;
   let location = useLocation();
-  let queryClient = useQueryClient();
+  let navigate = useNavigate();
 
-  let chatId = useMemo(() => params.chatId || nanoid(), [params.chatId]);
+  let [input, setInput] = useState("");
+  let [messages, setMessages] = useState<MessageDetail[]>([]);
+  let [isLoading, setIsLoading] = useState(false);
 
-  let { data } = useQuery({
-    queryKey: ["chat", params.chatId],
-    queryFn: async () => {
-      let { data, error } = await readChat({
-        path: { chat_id: params.chatId! },
-      });
-      if (error) {
-        throw new Error(`Failed to fetch chat ${params.chatId}`);
-      }
-      return data!;
-    },
-    enabled: !!params.chatId,
-    staleTime: 30 * 1000,
-  });
-
-  let [messages, setMessages] = useState(data?.messages || []);
-  let [isRateLimited, setIsRateLimited] = useState(false);
+  let hasInitialized = useRef(false);
+  let shouldScrollRef = useRef(false);
 
   useEffect(() => {
-    if (data?.messages) {
-      setMessages(data.messages);
-    }
-  }, [data?.messages]);
-
-  useEffect(() => {
-    if (location.state?.timestamp) {
-      setMessages([]);
-    }
-  }, [location]);
-
-  function addMessage(message: MessageDetail) {
-    setMessages((prev) => [...prev, message]);
-  }
-
-  function updateMessage(id: string, updatedMessage: MessageDetail) {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? updatedMessage : msg)),
-    );
-  }
-
-  async function handleSubmit(message: string) {
-    window.history.replaceState({}, "", `/chat/${chatId}`);
-
-    let userMessage: MessageDetail = {
-      id: nanoid(),
-      role: "user",
-      content: message,
-      content_blocks: [],
-    };
-
-    let searchBlock: SearchContentBlock = {
-      type: "search",
-      status: "in_progress",
-      query: "",
-      results: [],
-    };
-
-    let textBlock: TextContentBlock = {
-      type: "text",
-      text: "",
-    };
-
-    let assistantMessage: MessageDetail = {
-      id: nanoid(),
-      role: "assistant",
-      content: "",
-      content_blocks: [searchBlock, textBlock],
-    };
-
-    addMessage(userMessage);
-    addMessage(assistantMessage);
-
-    let response = await fetch(`/api/chats/${chatId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userMessage),
-    });
-
-    if (response.status === 429) {
-      setIsRateLimited(true);
-      setMessages((prev) => prev.slice(0, -2));
+    if (hasInitialized.current) {
       return;
     }
 
-    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    hasInitialized.current = true;
 
+    if (location.state?.initialMessage) {
+      handleInitialMessage(location.state.initialMessage);
+      navigate(location.pathname, { replace: true, state: {} });
+    } else {
+      loadExistingMessages();
+    }
+  }, []);
+
+  // Scroll to bottom after messages are rendered (React's equivalent of Vue's nextTick)
+  useEffect(() => {
+    if (shouldScrollRef.current && messages.length > 0) {
+      window.scrollTo({ top: document.body.scrollHeight });
+      shouldScrollRef.current = false;
+    }
+  }, [messages]);
+
+  async function handleInitialMessage(message: string) {
+    setMessages([
+      {
+        id: `tmp-${nanoid()}`,
+        role: "user",
+        content: message,
+        content_blocks: [{ type: "text", text: message }],
+      },
+    ]);
+    setIsLoading(true);
+
+    try {
+      let res = await fetch("/api/chats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: chatId, message }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to start chat");
+      }
+
+      await processStreamingResponse(res);
+    } catch (error) {
+      setMessages([]);
+      setInput(message);
+      toast.error("Failed to start chat");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function loadExistingMessages() {
+    try {
+      let res = await readChat({
+        path: { chat_id: chatId },
+        throwOnError: true,
+      });
+      setMessages(res.data.messages);
+      shouldScrollRef.current = true;
+    } catch (e) {
+      toast.error("Failed to load chat");
+      navigate("/");
+    }
+  }
+
+  async function handleSubmit(input: string) {
+    let newMessage: MessageDetail = {
+      id: `temp-${nanoid()}`,
+      role: "user",
+      content: input,
+      content_blocks: [{ type: "text", text: input }],
+    };
+    addMessage(newMessage);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      let res = await fetch(`/api/chats/${chatId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: input }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      await processStreamingResponse(res);
+    } catch (error) {
+      setInput(input);
+      setMessages((prev) => prev.slice(0, -1));
+      toast.error("Failed to send message");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function processStreamingResponse(response: Response) {
     let reader = response.body!.getReader();
     let decoder = new TextDecoder();
+
+    let eventHandlers: Record<string, (event: ServerSentEvent) => void> = {
+      chat_title: handleChatTitleEvent,
+      message_id: handleMessageIdEvent,
+      message_delta: handleMessageDeltaEvent,
+      search_query: handleSearchQueryEvent,
+      search_results: handleSearchResultsEvent,
+    };
 
     while (true) {
       let { done, value } = await reader.read();
@@ -130,51 +156,142 @@ export default function Chat({ params }: Route.ComponentProps) {
       let events = parseServerSentEvents(chunk);
 
       for (let event of events) {
-        switch (event.name) {
-          case "chat_title":
-            document.title = `${JSON.parse(event.data)} | Alma Lex`;
-            queryClient.invalidateQueries({ queryKey: ["chats"] });
-            break;
-          case "message_id":
-            assistantMessage.id = JSON.parse(event.data) as string;
-            updateMessage(assistantMessage.id, assistantMessage);
-            break;
-          case "message_delta":
-            textBlock.text += JSON.parse(event.data) as string;
-            updateMessage(assistantMessage.id, assistantMessage);
-            break;
-          case "search_query":
-            searchBlock.query = JSON.parse(event.data) as string;
-            updateMessage(assistantMessage.id, assistantMessage);
-            break;
-          case "search_results":
-            searchBlock.results = JSON.parse(event.data) as SearchResult[];
-            searchBlock.status = "completed";
-            updateMessage(assistantMessage.id, assistantMessage);
-            break;
+        let eventHandler = eventHandlers[event.name];
+        if (eventHandler) {
+          eventHandler(event);
         }
       }
     }
+  }
 
-    queryClient.invalidateQueries({ queryKey: ["rateLimit"] });
+  function handleChatTitleEvent(event: ServerSentEvent) {
+    let title = JSON.parse(event.data);
+    document.title = `${title} | Alma Lex`;
+  }
+
+  function handleMessageIdEvent(event: ServerSentEvent) {
+    let newMessage: MessageDetail = {
+      id: JSON.parse(event.data) as string,
+      role: "assistant",
+      content: "",
+      content_blocks: [],
+    };
+    addMessage(newMessage);
+  }
+
+  function handleMessageDeltaEvent(event: ServerSentEvent) {
+    appendToTextBlock(JSON.parse(event.data));
+  }
+
+  function handleSearchQueryEvent(event: ServerSentEvent) {
+    let searchBlock: SearchContentBlock = {
+      type: "search",
+      status: "in_progress",
+      query: JSON.parse(event.data) as string,
+      results: [],
+    };
+    addContentBlockToLastMessage(searchBlock);
+  }
+
+  function handleSearchResultsEvent(event: ServerSentEvent) {
+    updateLastContentBlock((block) => ({
+      ...(block as SearchContentBlock),
+      status: "completed" as const,
+      results: JSON.parse(event.data) as SearchResult[],
+    }));
+  }
+
+  function addMessage(message: MessageDetail) {
+    setMessages((prev) => [...prev, message]);
+  }
+
+  function updateLastMessage(
+    updater: (message: MessageDetail) => MessageDetail,
+  ) {
+    setMessages((prev) => {
+      let lastMessage = prev.at(-1)!;
+      let updatedMessage = updater(lastMessage);
+
+      return [...prev.slice(0, -1), updatedMessage];
+    });
+  }
+
+  function addContentBlockToLastMessage(
+    block: SearchContentBlock | TextContentBlock,
+  ) {
+    updateLastMessage((message) => ({
+      ...message,
+      content_blocks: [...message.content_blocks, block],
+    }));
+  }
+
+  function updateLastContentBlock(
+    updater: (
+      block: SearchContentBlock | TextContentBlock,
+    ) => SearchContentBlock | TextContentBlock,
+  ) {
+    updateLastMessage((message) => {
+      let lastBlock = message.content_blocks.at(-1)!;
+      let updatedBlock = updater(lastBlock);
+
+      return {
+        ...message,
+        content_blocks: [...message.content_blocks.slice(0, -1), updatedBlock],
+      };
+    });
+  }
+
+  function appendToTextBlock(text: string) {
+    updateLastMessage((message) => {
+      let lastBlock = message.content_blocks.at(-1)!;
+
+      if (lastBlock.type !== "text") {
+        // Add new text block if none exists
+        let textBlock = {
+          type: "text" as const,
+          text: text,
+        };
+        return {
+          ...message,
+          content_blocks: [...message.content_blocks, textBlock],
+        };
+      } else {
+        // Update existing text block
+        let updatedTextBlock = {
+          type: "text" as const,
+          text: lastBlock.text + text,
+        };
+        return {
+          ...message,
+          content_blocks: [
+            ...message.content_blocks.slice(0, -1),
+            updatedTextBlock,
+          ],
+        };
+      }
+    });
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar activeChatId={chatId} />
-      <main className="relative w-full">
-        <ChatHeader />
-        <ScrollToBottomProvider>
-          <div className="absolute bottom-4 w-full px-4">
-            <div className="mx-auto max-w-3xl">
-              <ScrollToBottomButton />
-              <RateLimitAlert isRateLimited={isRateLimited} />
-              <MessageInput onSubmit={handleSubmit} />
-            </div>
+    <ScrollToBottomProvider>
+      <div className="mx-auto max-w-3xl px-4 pb-[82px]">
+        <MessageList messages={messages} />
+      </div>
+      <div className="fixed right-0 bottom-0 left-0 z-10">
+        <div className="mb-2 flex justify-center">
+          <ScrollToBottomButton />
+        </div>
+        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t p-4 backdrop-blur">
+          <div className="mx-auto max-w-3xl">
+            <MessageInput
+              value={input}
+              onChange={setInput}
+              isLoading={isLoading}
+              onSubmit={handleSubmit}
+            />
           </div>
-          <MessageList chatId={chatId} messages={messages} />
-        </ScrollToBottomProvider>
-      </main>
-    </SidebarProvider>
+        </div>
+      </div>
+    </ScrollToBottomProvider>
   );
 }

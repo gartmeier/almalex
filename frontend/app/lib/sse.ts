@@ -1,5 +1,10 @@
+export type ServerSentEvent = {
+  name: string;
+  data: string;
+};
+
 export function parseServerSentEvents(rawEvents: string) {
-  let parsedEvents: { name: string; data: string }[] = [];
+  let parsedEvents: ServerSentEvent[] = [];
 
   for (let rawEvent of rawEvents.split("\n\n")) {
     if (rawEvent) {

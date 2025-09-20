@@ -2,6 +2,7 @@
 
 export type ChatCreate = {
   id: string;
+  message: string;
 };
 
 export type ChatDetail = {
@@ -10,22 +11,11 @@ export type ChatDetail = {
   messages: Array<MessageDetail>;
 };
 
-export type ChatListItem = {
-  id: string;
-  title: string | null;
-  created_at: string;
-};
-
-export type ChatUpdate = {
-  title: string;
-};
-
 export type HttpValidationError = {
   detail?: Array<ValidationError>;
 };
 
 export type MessageCreate = {
-  id: string;
   content: string;
 };
 
@@ -34,12 +24,6 @@ export type MessageDetail = {
   role: string;
   content: string;
   content_blocks: Array<SearchContentBlock | TextContentBlock>;
-};
-
-export type RateLimit = {
-  remaining: number;
-  used: number;
-  max: number;
 };
 
 export type SearchContentBlock = {
@@ -60,71 +44,17 @@ export type TextContentBlock = {
   text: string;
 };
 
-export type TokenResponse = {
-  access_token: string;
-};
-
 export type ValidationError = {
   loc: Array<string | number>;
   msg: string;
   type: string;
 };
 
-export type CreateTokenData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/auth/token";
-};
-
-export type CreateTokenResponses = {
-  /**
-   * Successful Response
-   */
-  200: TokenResponse;
-};
-
-export type CreateTokenResponse =
-  CreateTokenResponses[keyof CreateTokenResponses];
-
-export type GetRateLimitData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/chats/rate-limit";
-};
-
-export type GetRateLimitResponses = {
-  /**
-   * Successful Response
-   */
-  200: RateLimit;
-};
-
-export type GetRateLimitResponse =
-  GetRateLimitResponses[keyof GetRateLimitResponses];
-
-export type ListChatsData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/chats/";
-};
-
-export type ListChatsResponses = {
-  /**
-   * Successful Response
-   */
-  200: Array<ChatListItem>;
-};
-
-export type ListChatsResponse = ListChatsResponses[keyof ListChatsResponses];
-
 export type CreateChatData = {
   body: ChatCreate;
   path?: never;
   query?: never;
-  url: "/api/chats/";
+  url: "/api/chats";
 };
 
 export type CreateChatErrors = {
@@ -138,39 +68,12 @@ export type CreateChatError = CreateChatErrors[keyof CreateChatErrors];
 
 export type CreateChatResponses = {
   /**
-   * Successful Response
+   * Event stream
    */
-  201: ChatListItem;
+  200: Blob | File;
 };
 
 export type CreateChatResponse = CreateChatResponses[keyof CreateChatResponses];
-
-export type DeleteChatData = {
-  body?: never;
-  path: {
-    chat_id: string;
-  };
-  query?: never;
-  url: "/api/chats/{chat_id}";
-};
-
-export type DeleteChatErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type DeleteChatError = DeleteChatErrors[keyof DeleteChatErrors];
-
-export type DeleteChatResponses = {
-  /**
-   * Successful Response
-   */
-  204: void;
-};
-
-export type DeleteChatResponse = DeleteChatResponses[keyof DeleteChatResponses];
 
 export type ReadChatData = {
   body?: never;
@@ -198,33 +101,6 @@ export type ReadChatResponses = {
 };
 
 export type ReadChatResponse = ReadChatResponses[keyof ReadChatResponses];
-
-export type UpdateChatData = {
-  body: ChatUpdate;
-  path: {
-    chat_id: string;
-  };
-  query?: never;
-  url: "/api/chats/{chat_id}";
-};
-
-export type UpdateChatErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type UpdateChatError = UpdateChatErrors[keyof UpdateChatErrors];
-
-export type UpdateChatResponses = {
-  /**
-   * Successful Response
-   */
-  204: void;
-};
-
-export type UpdateChatResponse = UpdateChatResponses[keyof UpdateChatResponses];
 
 export type CreateMessageData = {
   body: MessageCreate;

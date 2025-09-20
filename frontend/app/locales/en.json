@@ -1,0 +1,111 @@
+{
+  "app": {
+    "title": "Alma Lex",
+    "subtitle": "Swiss Legal AI"
+  },
+  "chat": {
+    "new": "New chat",
+    "placeholder": "How can I help you today?",
+    "sendMessage": "Send message",
+    "pressEnterToSend": "Press Enter to send",
+    "sending": "Sending...",
+    "preparingResponse": "Preparing your response...",
+    "error": {
+      "fetchFailed": "Failed to fetch chat {{chatId}}"
+    },
+    "homeTitle": "What can I help with?",
+    "examples": {
+      "landlord": "Can my landlord increase rent if they renovate the apartment?",
+      "divorce": "What are the legal requirements for a divorce?",
+      "will": "How can I contest a will?",
+      "business": "What is the difference between an AG and a GmbH?",
+      "flight": "What rights do I have in case of a flight delay?",
+      "employment": "Can I terminate my employment contract without notice?"
+    }
+  },
+  "navigation": {
+    "faq": "FAQ",
+    "policies": "Terms & Policies",
+    "reportIssue": "Report Issue",
+    "help": "Help"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français"
+  },
+  "pages": {
+    "home": {
+      "hero": {
+        "badge": "Demo Project by Joshua Gartmeier",
+        "title": "Alma Lex",
+        "subtitle": "Swiss Legal AI Assistant",
+        "description": "Experience how AI can transform legal research. Ask questions in any language and get precise answers with citations from Swiss Federal Law and Court decisions.",
+        "tryDemo": "Try the Live Demo",
+        "multiLanguage": "DE / FR / EN",
+        "noLogin": "No Login Required",
+        "freeDemo": "100% Free Demo"
+      },
+      "howItWorks": {
+        "title": "How It Works",
+        "step1": {
+          "title": "Ask Your Question",
+          "description": "Type your legal question in German, French, or English"
+        },
+        "step2": {
+          "title": "AI Searches Sources",
+          "description": "Searches official Swiss legal databases in real-time"
+        },
+        "step3": {
+          "title": "Get Precise Answer",
+          "description": "Receive answers with exact article citations and case references"
+        }
+      },
+      "features": {
+        "title": "Real Legal Sources",
+        "federalLaws": {
+          "title": "Federal Laws",
+          "description": "Direct access to the complete Swiss legal code from Fedlex (SR)"
+        },
+        "courtDecisions": {
+          "title": "Court Decisions",
+          "description": "Federal Court rulings and precedents (BGE) for case law insights"
+        }
+      },
+      "quickStart": {
+        "title": "Quick Start",
+        "examples": {
+          "title": "Example Questions",
+          "example1": "What are the requirements for divorce in Switzerland?",
+          "example2": "What are my rights as a tenant with defects?",
+          "example3": "How do I establish a GmbH in Switzerland?"
+        },
+        "tips": {
+          "title": "Tips for Best Results",
+          "tip1": "Ask specific questions",
+          "tip2": "Mention relevant details",
+          "tip3": "Request specific law articles"
+        }
+      },
+      "cta": {
+        "title": "Ready to Try It?",
+        "description": "Experience the future of legal research with AI",
+        "button": "Start Demo Chat"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "heading": "Frequently Asked Questions"
+    },
+    "policies": {
+      "title": "Policies",
+      "heading": "Policies",
+      "privacy": {
+        "heading": "Privacy Policy"
+      },
+      "terms": {
+        "heading": "Terms of Service"
+      }
+    }
+  }
+}

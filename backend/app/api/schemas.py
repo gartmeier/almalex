@@ -1,12 +1,6 @@
-from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
-
-
-# Authentication Schemas
-class TokenResponse(BaseModel):
-    access_token: str
 
 
 # Content Block Schemas
@@ -30,7 +24,6 @@ class SearchContentBlock(BaseModel):
 
 # Message Schemas
 class MessageCreate(BaseModel):
-    id: str
     content: str
 
 
@@ -46,18 +39,7 @@ class MessageDetail(BaseModel):
 # Chat Schemas
 class ChatCreate(BaseModel):
     id: str
-
-
-class ChatUpdate(BaseModel):
-    title: str
-
-
-class ChatListItem(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
-    title: str | None
-    created_at: datetime
+    message: str
 
 
 class ChatDetail(BaseModel):
@@ -66,10 +48,3 @@ class ChatDetail(BaseModel):
     id: str
     title: str | None
     messages: list[MessageDetail]
-
-
-# Rate Limiting Schemas
-class RateLimit(BaseModel):
-    remaining: int
-    used: int
-    max: int

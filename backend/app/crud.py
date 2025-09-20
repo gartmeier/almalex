@@ -1,63 +1,49 @@
-from typing import Sequence
-
-from sqlalchemy import ScalarResult, delete, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
-from app.api import schemas
 from app.db.models import Chat, ChatMessage, Document, DocumentChunk
+from app.utils.helpers import nanoid
 
 
 def get_chat(*, db: Session, chat_id: str) -> Chat | None:
-    return db.scalar(select(Chat).where(Chat.id == chat_id))
+    return db.scalar(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.messages))
+    )
 
 
-def create_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat:
-    db_chat = Chat(id=chat_id, user_id=user_id)
+def create_chat(*, db: Session, chat_id: str, message: str) -> tuple[Chat, ChatMessage]:
+    # Create chat
+    db_chat = Chat(id=chat_id)
     db.add(db_chat)
+    db.flush()  # Get the chat ID without committing
+
+    # Create the initial user message
+    db_message = ChatMessage(
+        id=nanoid(),
+        chat_id=chat_id,
+        role="user",
+        content=message,
+        content_blocks=[{"type": "text", "text": message}],
+    )
+    db.add(db_message)
     db.commit()
     db.refresh(db_chat)
-    return db_chat
-
-
-def get_user_chat(*, db: Session, chat_id: str, user_id: str) -> Chat | None:
-    return db.scalar(select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
-
-
-def get_user_chats(*, db: Session, user_id: str) -> Sequence[Chat]:
-    return db.scalars(
-        select(Chat).where(Chat.user_id == user_id).order_by(Chat.updated_at.desc())
-    ).all()
-
-
-def update_user_chat(
-    *, db: Session, chat_id: str, user_id: str, chat_update: schemas.ChatUpdate
-) -> bool:
-    result = db.execute(
-        update(Chat)
-        .where(Chat.id == chat_id, Chat.user_id == user_id)
-        .values(title=chat_update.title)
-    )
-    db.commit()
-    return result.rowcount == 1
-
-
-def delete_user_chat(*, db: Session, chat_id: str, user_id: str) -> bool:
-    result = db.execute(delete(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
-    db.commit()
-    return result.rowcount == 1
+    return db_chat, db_message
 
 
 # Message operations
 def create_user_message(
-    *, db: Session, message_in: schemas.MessageCreate, chat_id: str
+    *, db: Session, message_content: str, chat_id: str
 ) -> ChatMessage:
+    from app.utils.helpers import nanoid
+
     db_message = ChatMessage(
-        id=message_in.id,
+        id=nanoid(),
         chat_id=chat_id,
         role="user",
-        content=message_in.content,
-        content_blocks=[{"type": "text", "text": message_in.content}],
+        content=message_content,
+        content_blocks=[{"type": "text", "text": message_content}],
     )
     db.add(db_message)
     db.commit()
@@ -78,7 +64,7 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
     return db_message
 
 
-def search(*, db: Session, query: str, top_k: int = 10) -> ScalarResult[DocumentChunk]:
+def search(*, db: Session, query: str, top_k: int = 10):
     embedding = create_embedding(query)
     return db.scalars(
         select(DocumentChunk)

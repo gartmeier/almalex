@@ -8,25 +8,23 @@ import {
 } from "react-router";
 
 import * as Sentry from "@sentry/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { createToken } from "~/lib/api";
-import { client as apiClient } from "~/lib/api/client.gen";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { client } from "./lib/api/client.gen";
+import "./lib/i18n";
 
 if (!import.meta.env.DEV) {
   Sentry.init({
     dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
     integrations: [
       Sentry.feedbackIntegration({
+        autoInject: false,
         colorScheme: "system",
       }),
     ],
   });
 }
-
-let queryClient = new QueryClient();
 
 export function meta() {
   return [
@@ -37,7 +35,7 @@ export function meta() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -53,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             __html: `
             (function() {
               let darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-              
+
               function updateDarkMode() {
                 if (darkModeQuery.matches) {
                   document.documentElement.classList.add('dark');
@@ -63,10 +61,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   document.documentElement.style.colorScheme = 'light';
                 }
               }
-              
+
               // Set initial dark mode
               updateDarkMode();
-              
+
               // Listen for changes
               darkModeQuery.addEventListener('change', updateDarkMode);
             })();
@@ -81,40 +79,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export async function clientLoader() {
-  apiClient.setConfig({ baseUrl: "/" });
-
-  let token = await getOrCreateToken();
-
-  apiClient.setConfig({
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return { token };
-}
-
-async function getOrCreateToken() {
-  let token = localStorage.getItem("token");
-  if (!token) {
-    let { data } = await createToken();
-    token = data!.access_token;
-    localStorage.setItem("token", token);
-  }
-  return token;
-}
-
-export function HydrateFallback() {
-  return null;
-}
-
 export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
-  );
+  client.setConfig({ baseUrl: "/" });
+  return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
