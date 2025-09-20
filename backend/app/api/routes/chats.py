@@ -33,6 +33,10 @@ router = APIRouter(prefix="/chats", tags=["chats"])
     response_model=None,
 )
 async def create_chat(chat_create: ChatCreate, db: SessionDep):
+    # Check if chat ID already exists
+    if db.get(Chat, chat_create.id):
+        raise HTTPException(status_code=409, detail="Chat ID already exists")
+
     chat, message = crud.create_chat(
         db=db,
         chat_id=chat_create.id,
