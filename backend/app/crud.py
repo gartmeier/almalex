@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
-from app.db.models import Chat, ChatMessage, ChatStatus, Document, DocumentChunk
+from app.db.models import Chat, ChatMessage, Document, DocumentChunk
 from app.utils.helpers import nanoid
 
 
@@ -13,8 +13,8 @@ def get_chat(*, db: Session, chat_id: str) -> Chat | None:
 
 
 def create_chat(*, db: Session, chat_id: str, message: str) -> tuple[Chat, ChatMessage]:
-    # Create chat with pending status
-    db_chat = Chat(id=chat_id, status=ChatStatus.PENDING)
+    # Create chat
+    db_chat = Chat(id=chat_id)
     db.add(db_chat)
     db.flush()  # Get the chat ID without committing
 
@@ -30,15 +30,6 @@ def create_chat(*, db: Session, chat_id: str, message: str) -> tuple[Chat, ChatM
     db.commit()
     db.refresh(db_chat)
     return db_chat, db_message
-
-
-def update_chat_status(*, db: Session, chat_id: str, status: ChatStatus) -> Chat | None:
-    chat = db.scalar(select(Chat).where(Chat.id == chat_id))
-    if chat:
-        chat.status = status
-        db.commit()
-        db.refresh(chat)
-    return chat
 
 
 # Message operations

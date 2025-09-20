@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, ForeignKey, func
@@ -8,12 +7,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
 from app.utils.helpers import nanoid
-
-
-class ChatStatus(str, Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
 
 
 class Document(Base):
@@ -53,7 +46,6 @@ class Chat(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str | None] = mapped_column(index=True)
-    status: Mapped[ChatStatus] = mapped_column(default=ChatStatus.PENDING, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         index=True,

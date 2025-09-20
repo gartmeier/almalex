@@ -2,8 +2,6 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.db.models import ChatStatus
-
 
 # Content Block Schemas
 class TextContentBlock(BaseModel):
@@ -49,5 +47,4 @@ class ChatDetail(BaseModel):
 
     id: str
     title: str | None
-    status: ChatStatus
     messages: list[MessageDetail]
