@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { MessageInput } from "~/components/message-input";
 import { nanoid } from "~/lib/nanoid";
 
@@ -31,9 +31,9 @@ export default function Component() {
 
   return (
     <>
-      <div className="fixed inset-0 flex flex-col px-4 pb-[80px] pt-[80px] sm:pt-[64px] sm:items-center sm:justify-center">
+      <div className="fixed inset-0 flex flex-col px-4 pt-[80px] pb-[80px] sm:items-center sm:justify-center sm:pt-[64px]">
         <div className="mx-auto w-full max-w-3xl">
-          <h1 className="text-2xl sm:text-4xl font-normal mb-6 sm:mb-12 sm:text-center">
+          <h1 className="mb-6 text-2xl font-normal sm:mb-12 sm:text-center sm:text-4xl">
             {t("chat.homeTitle")}
           </h1>
 
@@ -42,9 +42,11 @@ export default function Component() {
               <button
                 key={index}
                 onClick={() => handleExampleClick(example)}
-                className="text-left py-4 sm:py-3 sm:px-4 hover:bg-accent/50 sm:hover:rounded-xl transition-all duration-200 border-b border-border last:border-b-0 sm:border-0"
+                className="hover:bg-accent/50 border-border border-b py-4 text-left transition-all duration-200 last:border-b-0 sm:border-0 sm:px-4 sm:py-3 sm:hover:rounded-xl"
               >
-                <p className="text-sm sm:text-base text-foreground/70 hover:text-foreground">{example}</p>
+                <p className="text-foreground/70 hover:text-foreground text-sm sm:text-base">
+                  {example}
+                </p>
               </button>
             ))}
           </div>
