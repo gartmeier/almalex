@@ -50,9 +50,6 @@ importers:
       '@sentry/vite-plugin':
         specifier: ^3.6.1
         version: 3.6.1
-      '@tanstack/react-query':
-        specifier: ^5.89.0
-        version: 5.89.0(react@19.1.1)
       axios:
         specifier: ^1.12.2
         version: 1.12.2
@@ -1334,14 +1331,6 @@ packages:
     resolution: {integrity: sha512-0PmqLQ010N58SbMTJ7BVJ4I2xopiQn/5i6nlb4JmxzQf8zcS5+m2Cv6tqh+sfDwtIdjoEnOvwsGQ1hkUi8QEHQ==}
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
-
-  '@tanstack/query-core@5.89.0':
-    resolution: {integrity: sha512-joFV1MuPhSLsKfTzwjmPDrp8ENfZ9N23ymFu07nLfn3JCkSHy0CFgsyhHTJOmWaumC/WiNIKM0EJyduCF/Ih/Q==}
-
-  '@tanstack/react-query@5.89.0':
-    resolution: {integrity: sha512-SXbtWSTSRXyBOe80mszPxpEbaN4XPRUp/i0EfQK1uyj3KCk/c8FuPJNIRwzOVe/OU3rzxrYtiNabsAmk1l714A==}
-    peerDependencies:
-      react: ^18 || ^19
 
   '@types/d3-hierarchy@1.1.11':
     resolution: {integrity: sha512-lnQiU7jV+Gyk9oQYk0GGYccuexmQPTp08E0+4BidgFdiJivjEvf+esPSdZqCZ2C7UwTWejWpqetVaU8A+eX3FA==}
@@ -4623,13 +4612,6 @@ snapshots:
       '@tailwindcss/oxide': 4.1.13
       tailwindcss: 4.1.13
       vite: 5.4.20(@types/node@20.19.17)(lightningcss@1.30.1)
-
-  '@tanstack/query-core@5.89.0': {}
-
-  '@tanstack/react-query@5.89.0(react@19.1.1)':
-    dependencies:
-      '@tanstack/query-core': 5.89.0
-      react: 19.1.1
 
   '@types/d3-hierarchy@1.1.11': {}
 

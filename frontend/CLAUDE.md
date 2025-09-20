@@ -37,7 +37,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Key Dependencies
 
 - **React Router v7**: Latest routing solution, replacing Remix
-- **React Query**: @tanstack/react-query for server state management
 - **Sentry**: Error tracking and performance monitoring
 - **OpenAPI client**: @hey-api/client-fetch for type-safe API calls
 

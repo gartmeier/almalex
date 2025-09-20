@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SquarePen } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,8 +7,6 @@ import { HelpMenu } from "~/components/layout/help-menu";
 import { LanguageSelector } from "~/components/layout/language-selector";
 import { Button } from "~/components/ui/button";
 import { Toaster } from "~/components/ui/sonner";
-
-const queryClient = new QueryClient();
 
 export default function Layout() {
   let { t } = useTranslation();
@@ -30,7 +27,7 @@ export default function Layout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Link
@@ -68,6 +65,6 @@ export default function Layout() {
         <Outlet />
       </main>
       <Toaster position="top-right" />
-    </QueryClientProvider>
+    </>
   );
 }
