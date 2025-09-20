@@ -16,9 +16,6 @@ import type {
   ReadChatData,
   ReadChatError,
   ReadChatResponse,
-  StartChatCompletionData,
-  StartChatCompletionError,
-  StartChatCompletionResponse,
 } from "./types.gen";
 
 export type Options<
@@ -49,7 +46,7 @@ export const createChat = <ThrowOnError extends boolean = false>(
     CreateChatError,
     ThrowOnError
   >({
-    url: "/api/chats/",
+    url: "/api/chats",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -70,22 +67,6 @@ export const readChat = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/chats/{chat_id}",
-    ...options,
-  });
-};
-
-/**
- * Start Chat Completion
- */
-export const startChatCompletion = <ThrowOnError extends boolean = false>(
-  options: Options<StartChatCompletionData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).post<
-    StartChatCompletionResponse,
-    StartChatCompletionError,
-    ThrowOnError
-  >({
-    url: "/api/chats/{chat_id}/start",
     ...options,
   });
 };

@@ -19,7 +19,19 @@ from app.db.session import SessionLocal
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
-@router.post("", response_model=ChatDetail, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_class=StreamingResponse,
+    responses={
+        200: {
+            "description": "Event stream",
+            "content": {
+                "text/event-stream": {"schema": {"type": "string", "format": "binary"}}
+            },
+        }
+    },
+    response_model=None,
+)
 async def create_chat(chat_create: ChatCreate, db: SessionDep):
     chat, message = crud.create_chat(
         db=db,
