@@ -8,11 +8,8 @@ export type ChatCreate = {
 export type ChatDetail = {
   id: string;
   title: string | null;
-  status: ChatStatus;
   messages: Array<MessageDetail>;
 };
-
-export type ChatStatus = "pending" | "in_progress" | "completed";
 
 export type HttpValidationError = {
   detail?: Array<ValidationError>;
