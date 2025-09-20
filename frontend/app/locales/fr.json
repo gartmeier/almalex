@@ -12,6 +12,15 @@
     "preparingResponse": "Préparation de votre réponse...",
     "error": {
       "fetchFailed": "Impossible de charger le chat {{chatId}}"
+    },
+    "homeTitle": "Comment puis-je vous aider?",
+    "examples": {
+      "landlord": "Mon propriétaire peut-il augmenter le loyer s'il rénove l'appartement?",
+      "divorce": "Quelles sont les conditions légales pour un divorce?",
+      "will": "Comment puis-je contester un testament?",
+      "business": "Quelle est la différence entre une SA et une Sàrl?",
+      "flight": "Quels sont mes droits en cas de retard de vol?",
+      "employment": "Puis-je résilier mon contrat de travail sans préavis?"
     }
   },
   "navigation": {

@@ -12,6 +12,15 @@
     "preparingResponse": "Bereite deine Antwort vor...",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden"
+    },
+    "homeTitle": "Wobei kann ich helfen?",
+    "examples": {
+      "landlord": "Kann mein Vermieter die Miete erhöhen, wenn er die Wohnung renoviert?",
+      "divorce": "Was sind die rechtlichen Voraussetzungen für eine Ehescheidung?",
+      "will": "Wie kann ich mein Testament anfechten?",
+      "business": "Was ist der Unterschied zwischen einer AG und einer GmbH?",
+      "flight": "Welche Rechte habe ich bei einer Flugverspätung?",
+      "employment": "Kann ich meinen Arbeitsvertrag fristlos kündigen?"
     }
   },
   "navigation": {
