@@ -6,11 +6,12 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.main import api_router
+from app.core.config import settings
 from app.limiter import limiter
 
-sentry_sdk.init(
-    dsn="https://663ebeb669ce01927244f8b53f424cea@o4507063971020800.ingest.us.sentry.io/4509672278786048",
-)
+# Initialize Sentry only if DSN is configured
+if settings.sentry_dsn:
+    sentry_sdk.init(dsn=settings.sentry_dsn)
 
 app = FastAPI()
 
