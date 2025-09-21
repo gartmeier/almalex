@@ -33,7 +33,7 @@ router = APIRouter(prefix="/chats", tags=["chats"])
     },
     response_model=None,
 )
-@limiter.limit("1/hour")
+@limiter.limit("20/hour")
 async def create_chat(request: Request, chat_create: ChatCreate, db: SessionDep):
     # Check if chat ID already exists
     if db.get(Chat, chat_create.id):
@@ -74,7 +74,7 @@ async def read_chat(chat_id: str, db: SessionDep):
     },
     response_model=None,
 )
-@limiter.limit("1/hour")
+@limiter.limit("60/hour")
 async def create_message(
     request: Request, chat_id: str, message_in: MessageCreate, db: SessionDep
 ):
