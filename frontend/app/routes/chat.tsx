@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
@@ -20,6 +21,7 @@ export default function Component({ params }: Route.ComponentProps) {
   let { chatId } = params;
   let location = useLocation();
   let navigate = useNavigate();
+  let { t } = useTranslation();
 
   let [input, setInput] = useState("");
   let [messages, setMessages] = useState<MessageDetail[]>([]);
@@ -71,6 +73,13 @@ export default function Component({ params }: Route.ComponentProps) {
         body: JSON.stringify({ id: chatId, message }),
       });
 
+      if (res.status === 429) {
+        setMessages([]);
+        setInput(message);
+        toast.error(t("chat.error.rateLimited"));
+        return;
+      }
+
       if (!res.ok) {
         throw new Error("Failed to start chat");
       }
@@ -118,6 +127,13 @@ export default function Component({ params }: Route.ComponentProps) {
         },
         body: JSON.stringify({ content: input }),
       });
+
+      if (res.status === 429) {
+        setInput(input);
+        setMessages((prev) => prev.slice(0, -1));
+        toast.error(t("chat.error.rateLimited"));
+        return;
+      }
 
       if (!res.ok) {
         throw new Error("Failed to send message");
