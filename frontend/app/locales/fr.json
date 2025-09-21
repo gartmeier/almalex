@@ -11,7 +11,8 @@
     "sending": "Envoi...",
     "preparingResponse": "Préparation de votre réponse...",
     "error": {
-      "fetchFailed": "Impossible de charger le chat {{chatId}}"
+      "fetchFailed": "Impossible de charger le chat {{chatId}}",
+      "rateLimited": "Trop de demandes. Veuillez patienter un moment et réessayer."
     },
     "homeTitle": "Comment puis-je vous aider?",
     "examples": {

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     secret_key: str = None
     database_url: str = None
     redis_url: str = "redis://localhost:6379/0"
+    sentry_dsn: str = None
     openai_api_key: str = None
     openai_title_model: str = "gpt-5-nano"
     openai_query_model: str = "gpt-5-nano"

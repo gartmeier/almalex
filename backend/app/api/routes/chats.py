@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from app.api.deps import SessionDep
 from app.api.schemas import ChatCreate, ChatDetail, MessageCreate
 from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
+from app.limiter import limiter
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -32,7 +33,8 @@ router = APIRouter(prefix="/chats", tags=["chats"])
     },
     response_model=None,
 )
-async def create_chat(chat_create: ChatCreate, db: SessionDep):
+@limiter.limit("20/hour")
+async def create_chat(request: Request, chat_create: ChatCreate, db: SessionDep):
     # Check if chat ID already exists
     if db.get(Chat, chat_create.id):
         raise HTTPException(status_code=409, detail="Chat ID already exists")
@@ -72,7 +74,10 @@ async def read_chat(chat_id: str, db: SessionDep):
     },
     response_model=None,
 )
-async def create_message(chat_id: str, message_in: MessageCreate, db: SessionDep):
+@limiter.limit("60/hour")
+async def create_message(
+    request: Request, chat_id: str, message_in: MessageCreate, db: SessionDep
+):
     chat = crud.get_chat(db=db, chat_id=chat_id)
 
     if not chat:
