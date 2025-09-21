@@ -1,93 +1,32 @@
-# Almalex
+# Alma Lex
 
-A modern RAG (Retrieval-Augmented Generation) system for Swiss legal documents, built with FastAPI and React Router.
+**Swiss Legal AI** - An AI-powered platform for exploring Swiss law through natural language conversations.
 
-## Architecture
+## About
 
-### Backend
-- **FastAPI** with PostgreSQL and pgvector for vector similarity search
-- **OpenAI API** integration for embeddings and chat completion
-- **Redis** for caching
-- **Alembic** for database migrations
-- **CLI tools** for document loading and management
+Alma Lex is a demo project by [Joshua Gartmeier](https://www.linkedin.com/in/gartmeier/) showcasing how AI can democratize access to Swiss legal information. The platform uses RAG (Retrieval-Augmented Generation) to search and analyze official Swiss legal sources, including:
 
-### Frontend
-- **React Router** 7 with TypeScript
-- **Tailwind CSS** with DaisyUI components
-- **Radix UI** primitives
-- **React Query** for state management
+- Systematic Collection of Swiss Federal Law (SR)
+- Federal Court decisions
 
-## Quick Start
+## Who is this for?
 
-### Prerequisites
-- Python 3.13+
-- Node.js 18+
-- PostgreSQL with pgvector extension
-- Redis
-- OpenAI API key
+- **Legal professionals** exploring AI applications in law
+- **Developers** interested in RAG systems and legal tech
+- **Students & researchers** needing quick Swiss legal references
+- **Anyone** curious about Swiss law and AI capabilities
 
-### Backend Setup
+## ⚠️ Important Disclaimers
 
-```bash
-cd backend
-pip install -e .
-```
+- **Demo only**: This is a technical demonstration, not legal advice
+- **Public chats**: All conversations are accessible via URL - avoid sharing sensitive data
+- **Auto-deletion**: Chats expire 30 days after last activity
+- **Professional consultation**: For actual legal matters, consult qualified lawyers
 
-Create `.env` file:
-```env
-DATABASE_URL=postgresql://user:password@localhost/almalex
-REDIS_URL=redis://localhost:6379
-OPENAI_API_KEY=your_openai_api_key
-SECRET_KEY=your_secret_key
-```
+## Project Structure
 
-Run migrations and start server:
-```bash
-alembic upgrade head
-fastapi dev app/main.py
-```
+This monorepo contains:
 
-### Frontend Setup
+- **[`/backend`](backend/README.md)** - FastAPI application with PostgreSQL, pgvector, and OpenAI integration
+- **[`/frontend`](frontend/README.md)** - React Router v7 application with TypeScript and Tailwind CSS
 
-```bash
-cd frontend
-pnpm install
-pnpm dev
-```
-
-### Load Documents
-
-```bash
-cd backend
-python -m cli.main load-fedlex
-```
-
-## Development
-
-### Backend Commands
-- `ruff check` - Lint code
-- `ruff format` - Format code
-- `alembic revision --autogenerate -m "description"` - Create migration
-- `python -m cli.main search "query"` - Search documents
-
-### Frontend Commands
-- `pnpm dev` - Development server
-- `pnpm build` - Production build
-- `pnpm typecheck` - Type checking
-- `pnpm generate-client` - Generate API client
-
-## Features
-
-- **Vector Search**: Semantic search through Swiss legal documents using pgvector
-- **Chat Interface**: Interactive chat with AI assistant for legal queries
-- **Document RAG**: Retrieval-augmented generation for contextual responses
-- **Rate Limiting**: Request throttling with Redis
-- **Authentication**: JWT-based auth system
-- **Real-time Updates**: Server-sent events for streaming responses
-
-## API Endpoints
-
-- `GET /api/chats` - List user chats
-- `POST /api/chats` - Create new chat
-- `POST /api/chats/{id}/messages` - Send message (streaming)
-- `POST /api/auth/login` - User authentication
