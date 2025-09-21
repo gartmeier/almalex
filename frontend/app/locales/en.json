@@ -12,7 +12,7 @@
     "preparingResponse": "Preparing your response...",
     "error": {
       "fetchFailed": "Failed to fetch chat {{chatId}}",
-      "rateLimited": "Too many requests. Please wait a minute and try again."
+      "rateLimited": "Too many requests. Please wait a moment and try again."
     },
     "homeTitle": "What can I help with?",
     "examples": {

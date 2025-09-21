@@ -12,7 +12,7 @@
     "preparingResponse": "Bereite deine Antwort vor...",
     "error": {
       "fetchFailed": "Chat {{chatId}} konnte nicht geladen werden",
-      "rateLimited": "Zu viele Anfragen. Bitte warten Sie eine Minute und versuchen Sie es erneut."
+      "rateLimited": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
     },
     "homeTitle": "Wobei kann ich helfen?",
     "examples": {
