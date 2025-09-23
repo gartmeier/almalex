@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Multi-language Support (i18n)
 
-- **Client-side detection**: Uses i18next with browser language detection (localStorage → navigator)
+- **Client-side detection**: Uses i18next with browser language detection (cookie → navigator)
 - **Supported languages**: German (de, fallback), French (fr), English (en)
 - **Language-specific routes**: Each language has its own route structure (`/de/faq`, `/en/faq`, `/fr/faq`)
 - **Translation files**: Located in `app/locales/*.json`

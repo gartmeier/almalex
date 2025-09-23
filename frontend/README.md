@@ -1,87 +1,140 @@
-# Welcome to React Router!
+# Almalex Frontend
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+React-based web application providing an intuitive chat interface for exploring Swiss legal information.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- **Chat Interface**: Streaming responses with markdown support
+- **Multi-language**: German (default), French, and English interfaces
+- **Real-time Updates**: Server-sent events for streaming AI responses
+- **Responsive Design**: Mobile-optimized with Tailwind CSS
+- **Error Tracking**: Integrated Sentry monitoring
+- **Type Safety**: Full TypeScript with auto-generated API client
 
-## Getting Started
+## Tech Stack
 
-### Installation
+- **Framework**: React Router v7 (client-side only)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4 with Radix UI components
+- **State**: React hooks with context providers
+- **i18n**: i18next for internationalization
+- **Build**: Vite
+- **Monitoring**: Sentry
 
-Install the dependencies:
+## Prerequisites
 
+- Node.js 20+
+- pnpm package manager
+- Backend API running on http://localhost:8000
+
+## Installation
+
+1. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
-### Development
-
-Start the development server with HMR:
-
+2. Generate API client (requires backend running):
 ```bash
-npm run dev
+pnpm generate-client
 ```
 
-Your application will be available at `http://localhost:5173`.
+## Development
 
-## Building for Production
-
-Create a production build:
-
+### Start development server
 ```bash
-npm run build
+# Start with hot module replacement at http://localhost:5173
+pnpm dev
 ```
 
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
+### Build for production
 ```bash
-docker build -t my-app .
+# Type checking
+pnpm typecheck
 
-# Run the container
-docker run -p 3000:3000 my-app
+# Create production build
+pnpm build
+
+# Serve production build
+pnpm start
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+### Code quality
+```bash
+# Format code with Prettier
+pnpm format
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+# Type checking with React Router type generation
+pnpm typecheck
 ```
 
-## Styling
+## Architecture
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+### Routing Structure
+- Client-side routing without SSR (`ssr: false`)
+- All routes nested under `layout.tsx` wrapper
+- Language-specific routes: `/de/*`, `/en/*`, `/fr/*`
+- Dynamic chat routes: `/chat/:chatId`
 
----
+### Key Components
 
-Built with ❤️ using React Router.
+- **Layout** (`routes/layout.tsx`): Main app wrapper with header
+- **Chat** (`routes/chat.tsx`): Chat interface with SSE streaming
+- **MessageList**: Renders chat messages with markdown
+- **MessageInput**: Text input with auto-resize
+- **LanguageSelector**: Language switcher component
+
+### API Integration
+
+- Auto-generated TypeScript client from OpenAPI spec
+- Proxied through Vite dev server (`/api/*` → `http://localhost:8000`)
+- Server-sent events for streaming responses
+- Type-safe API calls with `@hey-api/client-fetch`
+
+### Internationalization
+
+- Browser language detection (cookie → navigator)
+- Supported languages: German (default), French, English
+- Translation files in `app/locales/*.json`
+- Dynamic route updates based on selected language
+
+## Project Structure
+
+```
+frontend/
+├── app/
+│   ├── components/      # React components
+│   │   ├── ui/          # Radix UI primitives
+│   │   └── layout/      # Layout components
+│   ├── contexts/        # React contexts
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utilities and API client
+│   │   └── api/         # Generated API client
+│   ├── locales/         # Translation files
+│   └── routes/          # React Router routes
+├── build/               # Production build output
+├── public/              # Static assets
+└── CLAUDE.md           # AI assistant instructions
+```
+
+## Docker Deployment
+
+Build and run with Docker:
+```bash
+# Build image
+docker build -t almalex-frontend .
+
+# Run container
+docker run -p 3000:3000 almalex-frontend
+```
+
+## Environment Variables
+
+The frontend uses these environment variables (set at build time):
+
+- `VITE_SENTRY_DSN`: Sentry error tracking DSN (optional)
+- API proxy is configured in `vite.config.ts` for development
+
+## License
+
+See parent repository for license information.
