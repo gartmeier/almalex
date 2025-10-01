@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Cookie, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -13,9 +13,9 @@ from app.ai.service import (
 )
 from app.api.deps import SessionDep
 from app.api.schemas import ChatCreate, ChatDetail, MessageCreate
+from app.core.types import Language
 from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
-from app.limiter import limiter
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -33,8 +33,9 @@ router = APIRouter(prefix="/chats", tags=["chats"])
     },
     response_model=None,
 )
-@limiter.limit("20/hour")
-async def create_chat(request: Request, chat_create: ChatCreate, db: SessionDep):
+async def create_chat(
+    chat_create: ChatCreate, db: SessionDep, lang: Language = Cookie(default="de")
+):
     # Check if chat ID already exists
     if db.get(Chat, chat_create.id):
         raise HTTPException(status_code=409, detail="Chat ID already exists")
@@ -46,7 +47,7 @@ async def create_chat(request: Request, chat_create: ChatCreate, db: SessionDep)
     )
 
     return StreamingResponse(
-        stream_initial_completion(chat.id, message.id),
+        stream_initial_completion(chat.id, message.id, lang),
         media_type="text/event-stream",
     )
 
@@ -74,9 +75,11 @@ async def read_chat(chat_id: str, db: SessionDep):
     },
     response_model=None,
 )
-@limiter.limit("60/hour")
 async def create_message(
-    request: Request, chat_id: str, message_in: MessageCreate, db: SessionDep
+    chat_id: str,
+    message_in: MessageCreate,
+    db: SessionDep,
+    lang: Language = Cookie(default="de"),
 ):
     chat = crud.get_chat(db=db, chat_id=chat_id)
 
@@ -90,12 +93,12 @@ async def create_message(
     )
 
     return StreamingResponse(
-        stream_subsequent_completion(chat.id),
+        stream_subsequent_completion(chat.id, lang),
         media_type="text/event-stream",
     )
 
 
-def stream_initial_completion(chat_id: str, message_id: str):
+def stream_initial_completion(chat_id: str, message_id: str, lang: Language = "de"):
     with SessionLocal() as db:
         chat = crud.get_chat(db=db, chat_id=chat_id)
         message = db.get(ChatMessage, message_id)
@@ -108,19 +111,19 @@ def stream_initial_completion(chat_id: str, message_id: str):
         db.commit()
         yield format_event("chat_title", title)
 
-        yield from stream_completion(db, chat)
+        yield from stream_completion(db, chat, lang)
 
 
-def stream_subsequent_completion(chat_id: str):
+def stream_subsequent_completion(chat_id: str, lang: Language = "de"):
     with SessionLocal() as db:
         chat = crud.get_chat(db=db, chat_id=chat_id)
         if not chat:
             return
 
-        yield from stream_completion(db, chat)
+        yield from stream_completion(db, chat, lang)
 
 
-def stream_completion(db: Session, chat: Chat):
+def stream_completion(db: Session, chat: Chat, lang: Language = "de"):
     # Get existing messages before creating the assistant message
     existing_messages = list(chat.messages)
 
@@ -139,7 +142,7 @@ def stream_completion(db: Session, chat: Chat):
     yield format_event("search_results", search_results)
 
     response_stream = generate_answer(
-        messages=existing_messages, search_results=document_chunks
+        messages=existing_messages, search_results=document_chunks, lang=lang
     )
     complete_text = ""
 

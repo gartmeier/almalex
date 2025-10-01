@@ -4,6 +4,7 @@ from openai import OpenAI
 
 from app.ai.prompts import render
 from app.core.config import settings
+from app.core.types import Language
 from app.db.models import ChatMessage, DocumentChunk
 
 client = OpenAI(api_key=settings.openai_api_key)
@@ -24,13 +25,24 @@ def clean_title(title: str) -> str:
 
 
 def generate_answer(
-    *, messages: list[ChatMessage], search_results: Sequence[DocumentChunk]
+    *,
+    messages: list[ChatMessage],
+    search_results: Sequence[DocumentChunk],
+    lang: Language = "de",
 ):
     question = messages[-1].content
     context = format_chunks(search_results)
 
+    # Map language code to template file
+    template_map = {
+        "de": "response_de.md",
+        "fr": "response_fr.md",
+        "en": "response_en.md",
+    }
+    template = template_map[lang]
+
     prompt = render(
-        "answer.md",
+        template,
         question=question,
         context=context,
     )
