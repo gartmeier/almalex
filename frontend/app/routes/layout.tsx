@@ -7,6 +7,7 @@ import { HelpMenu } from "~/components/layout/help-menu";
 import { LanguageSelector } from "~/components/layout/language-selector";
 import { Button } from "~/components/ui/button";
 import { Toaster } from "~/components/ui/sonner";
+import logoSrc from "~/assets/logo.svg";
 
 export default function Layout() {
   let { t } = useTranslation();
@@ -32,12 +33,15 @@ export default function Layout() {
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Link
             to="/"
-            className="group flex flex-col justify-center transition-all hover:opacity-90"
+            className="group flex items-center gap-3 transition-all hover:opacity-90"
           >
-            <h1 className="text-lg leading-tight font-semibold">
-              {t("app.title")}
-            </h1>
-            <p className="text-muted-foreground text-xs">{t("app.subtitle")}</p>
+            <img src={logoSrc} alt="" className="h-10 w-10" />
+            <div className="flex flex-col justify-center">
+              <h1 className="text-lg leading-tight font-semibold">
+                {t("app.title")}
+              </h1>
+              <p className="text-muted-foreground text-xs">{t("app.subtitle")}</p>
+            </div>
           </Link>
           <nav className="flex items-center gap-2" role="navigation">
             <Button
