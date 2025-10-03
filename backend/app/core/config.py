@@ -6,11 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
-    secret_key: str = None
-    database_url: str = None
+    secret_key: str
+    database_url: str
     redis_url: str = "redis://localhost:6379/0"
-    sentry_dsn: str = None
-    openai_api_key: str = None
+    sentry_dsn: str | None = None
+    openai_api_key: str
     openai_title_model: str = "gpt-5-nano"
     openai_query_model: str = "gpt-5-nano"
     openai_response_model: str = "gpt-5-mini"
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
-    return Settings()
+    return Settings()  # type: ignore
 
 
 settings = get_settings()
