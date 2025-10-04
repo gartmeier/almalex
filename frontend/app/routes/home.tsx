@@ -42,11 +42,9 @@ export default function Component() {
               <button
                 key={index}
                 onClick={() => handleExampleClick(example)}
-                className="hover:bg-accent/50 border-border border-b py-4 text-left transition-all duration-200 last:border-b-0 sm:border-0 sm:px-4 sm:py-3 sm:hover:rounded-xl"
+                className="hover:bg-accent/50 border-border text-foreground/70 hover:text-foreground border-b py-4 text-left text-sm transition-all duration-200 last:border-b-0 sm:border-0 sm:px-4 sm:py-3 sm:text-base sm:hover:rounded-xl"
               >
-                <p className="text-foreground/70 hover:text-foreground text-sm sm:text-base">
-                  {example}
-                </p>
+                {example}
               </button>
             ))}
           </div>
