@@ -99,3 +99,7 @@ def search_similar(
             documents.append(chunk.document)
 
     return chunks, documents
+
+
+def get_document(db: Session, document_id: int):
+    return db.scalar(select(Document).where(Document.id == document_id))
