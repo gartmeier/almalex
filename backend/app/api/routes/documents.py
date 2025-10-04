@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app import crud
 from app.api.deps import SessionDep
@@ -8,6 +8,8 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 
 
 class DocumentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     title: str
     url: str | None
