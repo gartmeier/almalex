@@ -1,9 +1,11 @@
+import * as Sentry from "@sentry/react";
 import { ChevronDown, FileText, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
 import type {
   MessageDetail,
   SearchContentBlock,
+  SearchResult,
   TextContentBlock,
 } from "~/lib/api";
 
@@ -107,6 +109,7 @@ function SearchBlock({
 function renderContentBlock(
   block: SearchContentBlock | TextContentBlock,
   index: number,
+  searchResults: SearchResult[],
 ) {
   if (block.type === "text") {
     return (
@@ -114,7 +117,48 @@ function renderContentBlock(
         key={index}
         className="prose prose-neutral dark:prose-invert inline-block max-w-none"
       >
-        <Markdown>{block.text}</Markdown>
+        <Markdown
+          components={{
+            a: ({ href, children, ...props }) => {
+              // Check if this is a citation link (e.g., #1234)
+              if (href?.match(/^#\d+$/)) {
+                let documentId = parseInt(href.slice(1)); // Remove the # prefix and convert to number
+                // Find the document in search results
+                let document = searchResults.find((result) => result.id === documentId);
+                if (document) {
+                  return (
+                    <a href={document.url} target="_blank" rel="noopener noreferrer" {...props}>
+                      {children}
+                    </a>
+                  );
+                }
+                // Document not found - AI hallucinated the citation
+                Sentry.captureMessage("AI cited non-existent document", {
+                  level: "warning",
+                  extra: {
+                    documentId,
+                    citationText: children?.toString(),
+                    availableDocumentIds: searchResults.map(r => r.id),
+                  },
+                });
+                // Fallback if document not found in search results
+                return (
+                  <a href={href} {...props}>
+                    {children}
+                  </a>
+                );
+              }
+              // Regular external links
+              return (
+                <a href={href} {...props}>
+                  {children}
+                </a>
+              );
+            },
+          }}
+        >
+          {block.text}
+        </Markdown>
       </div>
     );
   }
@@ -127,10 +171,18 @@ function renderContentBlock(
 }
 
 export function AssistantMessage({ message }: AssistantMessageProps) {
+  // Collect all search results from search blocks
+  let searchResults: SearchResult[] = [];
+  for (let block of message.content_blocks) {
+    if (block.type === "search") {
+      searchResults.push(...block.results);
+    }
+  }
+
   return (
     <div className="py-5">
       {message.content_blocks?.map((block, index) =>
-        renderContentBlock(block, index),
+        renderContentBlock(block, index, searchResults),
       )}
     </div>
   );
