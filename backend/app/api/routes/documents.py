@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from openai import BaseModel
+from pydantic import BaseModel
 
 from app import crud
 from app.api.deps import SessionDep
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 class DocumentRead(BaseModel):
     id: int
     title: str
-    url: str
+    url: str | None
 
 
 @router.get("/{document_id}", response_model=DocumentRead)

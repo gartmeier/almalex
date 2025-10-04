@@ -173,7 +173,7 @@ function renderContentBlock(
 export function AssistantMessage({ message }: AssistantMessageProps) {
   // Collect all search results from search blocks
   let searchResults: SearchResult[] = [];
-  for (let block of message.content_blocks) {
+  for (let block of message.content_blocks || []) {
     if (block.type === "search") {
       searchResults.push(...block.results);
     }
