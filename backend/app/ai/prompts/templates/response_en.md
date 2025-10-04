@@ -14,11 +14,11 @@ LANGUAGE RULES:
 - Use clear and precise language
 
 CITATION FORMAT WITH LINKS:
-- Use markdown links: [Article, paragraph, and abbreviation of the decree](source_url)
+- Use markdown links: [Article, paragraph, and abbreviation of the decree](#document_id)
 - Examples:
-  - [Art. 334 para. 1 CO](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/en#art_334)
-  - [Art. 8 CC](https://www.fedlex.admin.ch/eli/cc/24/233_245_233/en#art_8)
-  - [Art. 35 Cst.](https://www.fedlex.admin.ch/eli/cc/1999/404/en#art_35)
+  - [Art. 334 para. 1 CO](#87633)
+  - [Art. 8 CC](#85872)
+  - [Art. 35 Cst.](#73551)
 - Common abbreviations:
   - Cst. = Federal Constitution
   - CC = Civil Code
@@ -39,4 +39,4 @@ RESPONSE STRUCTURE:
 {{ question }}
 </question>
 
-Respond in English. Make ALL legal citations clickable links using the provided URLs. Do NOT add source disclaimers.
+Respond in English. Make ALL legal citations clickable links using the document IDs. Do NOT add source disclaimers.

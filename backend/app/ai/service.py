@@ -87,8 +87,8 @@ def format_chunks(chunks: Sequence[DocumentChunk]) -> str:
 
     for chunk in chunks:
         context += f"""\
-Article: {chunk.document.title}
-URL: {chunk.document.url}
+ID: {chunk.document.id}
+Title: {chunk.document.title}
 Content: {chunk.text}
 ---
 """
