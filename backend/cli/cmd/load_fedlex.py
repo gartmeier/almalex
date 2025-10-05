@@ -1,6 +1,10 @@
+from datetime import datetime
+from typing import cast
+
 import click
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
+from sqlalchemy import update
 
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
@@ -82,6 +86,7 @@ LANGUAGE_URI_MAPPING = {
 @click.option("--language", default="de", help="Language of documents to import")
 def load_fedlex(language):
     db = SessionLocal()
+    import_start_time = datetime.utcnow()
 
     click.secho("Starting Fedlex import...", fg="green")
 
@@ -117,12 +122,15 @@ def load_fedlex(language):
         xml_content = xml_response.text
         xml_root = BeautifulSoup(xml_content, "xml")
 
-        law_url_el = xml_root.find("FRBRWork").find("FRBRuri")
-        law_url = law_url_el["value"]
+        frbr_work_tag = cast(Tag, xml_root.find("FRBRWork"))
+        frbr_url_tag = cast(Tag, frbr_work_tag.find("FRBRuri"))
+        frbr_url_value = frbr_url_tag["value"]
 
-        for article_index, article_xml_el in enumerate(xml_root.find_all("article")):
-            article_id = article_xml_el["eId"]
-            article_num_el = article_xml_el.find("num", recursive=False)
+        article_tags = cast(list[Tag], xml_root.find_all("article"))
+
+        for article_index, article_tag in enumerate(article_tags):
+            article_id = article_tag["eId"]
+            article_num_el = cast(Tag, article_tag.find("num", recursive=False))
 
             # Drop authorial notes
             for note_el in article_num_el.find_all("authorialNote"):
@@ -145,18 +153,18 @@ def load_fedlex(language):
                     "sr_number": sr_number,
                     "law_title": law_title,
                     "law_abbr": law_abbr,
-                    "law_url": law_url,
+                    "law_url": frbr_url_value,
                     "article_index": article_index,
                     "article_id": article_id,
                     "article_num": article_num,
                     "article_html": str(article_html_el),
-                    "article_xml": str(article_xml_el),
+                    "article_xml": str(article_tag),
                 },
             )
             db.add(search_document)
-            db.commit()
+            db.flush()
 
-            text = akn_to_text(article_xml_el)
+            text = akn_to_text(article_tag)
             text = normalize_text(text)
             text_chunks = split_text(text)
 
@@ -167,4 +175,14 @@ def load_fedlex(language):
                     order=chunk_index,
                 )
                 db.add(chunk)
-            db.commit()
+
+    db.execute(
+        update(Document)
+        .where(
+            Document.source == "fedlex_article",
+            Document.language == language,
+            Document.updated_at < import_start_time,
+        )
+        .values(is_active=False)
+    )
+    db.commit()

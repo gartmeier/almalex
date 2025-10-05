@@ -21,6 +21,12 @@ class Document(Base):
     is_active: Mapped[bool] = mapped_column(
         default=True, server_default=true(), index=True
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        index=True,
+        onupdate=func.now(),
+        server_default=func.now(),
+    )
 
     chunks = relationship(
         "DocumentChunk",
