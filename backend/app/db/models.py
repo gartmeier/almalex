@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, ForeignKey, func
+from sqlalchemy import DateTime, ForeignKey, func, true
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -18,6 +18,9 @@ class Document(Base):
     language: Mapped[str] = mapped_column(index=True)
     url: Mapped[str | None] = mapped_column(index=True)
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
+    is_active: Mapped[bool] = mapped_column(
+        default=True, server_default=true(), index=True
+    )
 
     chunks = relationship(
         "DocumentChunk",
