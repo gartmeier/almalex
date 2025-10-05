@@ -59,7 +59,7 @@ export function MessageInput({
     <form onSubmit={handleSubmit}>
       <div
         className={cn(
-          "bg-muted relative flex items-end gap-2 rounded-2xl border px-3 py-2 transition-all",
+          "bg-muted border-input relative flex items-end gap-2 rounded-2xl border px-3 py-2 transition-all",
           "shadow-sm hover:shadow-md",
           isFocused && "ring-ring ring-offset-background ring-2 ring-offset-2",
           isLoading && "opacity-70",
@@ -67,7 +67,7 @@ export function MessageInput({
       >
         <TextareaAutosize
           ref={textareaRef}
-          className="placeholder:text-muted-foreground/70 flex-1 resize-none bg-transparent py-1 text-base leading-6 focus:outline-none"
+          className="placeholder:text-muted-foreground/70 selection:bg-primary selection:text-primary-foreground flex-1 resize-none bg-transparent py-1 text-base leading-6 focus:outline-none"
           value={value}
           placeholder={t("chat.placeholder")}
           autoFocus
