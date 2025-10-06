@@ -1,10 +1,8 @@
-from datetime import datetime
 from typing import cast
 
 import click
 import requests
 from bs4 import BeautifulSoup, Tag
-from sqlalchemy import update
 
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
@@ -86,7 +84,6 @@ LANGUAGE_URI_MAPPING = {
 @click.option("--language", default="de", help="Language of documents to import")
 def load_fedlex(language):
     db = SessionLocal()
-    import_start_time = datetime.utcnow()
 
     click.secho("Starting Fedlex import...", fg="green")
 
@@ -176,13 +173,4 @@ def load_fedlex(language):
                 )
                 db.add(chunk)
 
-    db.execute(
-        update(Document)
-        .where(
-            Document.source == "fedlex_article",
-            Document.language == language,
-            Document.updated_at < import_start_time,
-        )
-        .values(is_active=False)
-    )
     db.commit()
