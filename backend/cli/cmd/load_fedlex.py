@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import cast
 
 import click
@@ -17,7 +18,7 @@ PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl
+SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
 WHERE {{
   # Define language filter
   BIND(<{language_uri}> AS ?languageUri)
@@ -102,6 +103,16 @@ def load_fedlex(language):
         law_title = row["title"]["value"]
         law_abbr = row.get("abbreviation", {}).get("value")
 
+        # Parse applicability dates
+        valid_from = datetime.fromisoformat(
+            row["applicabilityDate"]["value"].replace("Z", "+00:00")
+        )
+        valid_to = None
+        if "endApplicabilityDate" in row:
+            valid_to = datetime.fromisoformat(
+                row["endApplicabilityDate"]["value"].replace("Z", "+00:00")
+            )
+
         if law_abbr:
             click.echo(f"Processing document: {law_abbr} ({sr_number})")
         else:
@@ -142,10 +153,16 @@ def load_fedlex(language):
 
             article_html_el = html_root.find(id=article_id)
 
+            # Create composite external_id: sr_number/language/article_num
+            external_id = f"{sr_number}/{language}/{article_num}"
+
             search_document = Document(
                 title=article_title,
                 source="fedlex_article",
                 language=language,
+                external_id=external_id,
+                valid_from=valid_from,
+                valid_to=valid_to,
                 metadata={
                     "sr_number": sr_number,
                     "law_title": law_title,

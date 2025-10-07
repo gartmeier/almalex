@@ -17,6 +17,13 @@ class Document(Base):
     source: Mapped[str] = mapped_column(index=True)
     language: Mapped[str] = mapped_column(index=True)
     url: Mapped[str | None] = mapped_column(index=True)
+    external_id: Mapped[str | None] = mapped_column(index=True)
+    valid_from: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), index=True
+    )
+    valid_to: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), index=True
+    )
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
 
     chunks = relationship(
