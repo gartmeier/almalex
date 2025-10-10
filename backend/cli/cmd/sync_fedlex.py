@@ -113,9 +113,12 @@ WHERE {{
                 jolux:dateApplicability ?dateApplicabilityNode ;
                 jolux:isMemberOf ?cc .
 
-  # Filter for consolidations that expired after the since date
-  ?consolidation jolux:dateEndApplicability ?dateEndApplicabilityNode .
-  FILTER(xsd:date(?dateEndApplicabilityNode) > ?sinceDate && xsd:date(?dateEndApplicabilityNode) <= xsd:date(NOW()))
+  # Filter for consolidations that became applicable after since date and are already in effect
+  FILTER(xsd:date(?dateApplicabilityNode) > ?sinceDate && xsd:date(?dateApplicabilityNode) <= xsd:date(NOW()))
+
+  # Check if still applicable (no end date or end date in future)
+  OPTIONAL {{ ?consolidation jolux:dateEndApplicability ?dateEndApplicabilityNode }}
+  FILTER(!BOUND(?dateEndApplicabilityNode) || xsd:date(?dateEndApplicabilityNode) >= xsd:date(NOW()))
 
   # Get ConsolidationAbstract details
   ?cc jolux:classifiedByTaxonomyEntry/skos:notation ?srNotation .
