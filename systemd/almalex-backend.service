@@ -1,0 +1,18 @@
+[Unit]
+Description=FastAPI backend service for almalex.ch
+After=network.target
+
+[Service]
+Type=exec
+User=joshua
+Group=joshua
+WorkingDirectory=/var/www/almalex.ch/backend
+Environment=PATH=/var/www/almalex.ch/backend/.venv/bin
+ExecStart=/var/www/almalex.ch/backend/.venv/bin/fastapi run --workers 4 --host 0.0.0.0 --port 8010 app/main.py
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=React Router frontend service for almalex.ch
+After=network.target
+
+[Service]
+Type=exec
+User=joshua
+Group=joshua
+WorkingDirectory=/var/www/almalex.ch/frontend
+Environment=NODE_ENV=production
+Environment=PORT=8011
+Environment=PATH=/home/joshua/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/joshua/.npm-packages/bin/pnpm start
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
