@@ -1,28 +1,18 @@
-from datetime import datetime
-from typing import cast
-
 import click
-import requests
-from bs4 import BeautifulSoup, Tag
-from sqlalchemy import update
 
-from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
-from cli.utils.akn import akn_to_text
-from cli.utils.text import normalize_text, split_text
+from cli.utils.fedlex import process_fedlex_articles
+from cli.utils.sparql import exec_sparql
 
-SPARQL_ENDPOINT = "https://fedlex.data.admin.ch/sparqlendpoint"
-
-# noinspection HttpUrlsUsage
-SPARQL_QUERY = """
+CURRENT_QUERY = """
 PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl
+SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
 WHERE {{
-  # Define language filter
-  BIND(<{language_uri}> AS ?languageUri)
+  # Configuration: language
+  BIND(<http://publications.europa.eu/resource/authority/language/{language}> AS ?languageUri)
 
   # Get consolidation that is currently applicable
   ?consolidation a jolux:Consolidation ;
@@ -73,34 +63,16 @@ WHERE {{
 ORDER BY ?srNumber
 """
 
-# noinspection HttpUrlsUsage
-LANGUAGE_URI_MAPPING = {
-    "de": "http://publications.europa.eu/resource/authority/language/DEU",
-    "fr": "http://publications.europa.eu/resource/authority/language/FRA",
-    "it": "http://publications.europa.eu/resource/authority/language/ITA",
-    "en": "http://publications.europa.eu/resource/authority/language/ENG",
-}
-
 
 @click.command(help="Import legal documents from Fedlex (Swiss federal law)")
-@click.option("--language", default="de", help="Language of documents to import")
-def load_fedlex(language):
+def load_fedlex():
     db = SessionLocal()
-    import_start_time = datetime.utcnow()
 
     click.secho("Starting Fedlex import...", fg="green")
 
-    language_uri = LANGUAGE_URI_MAPPING[language]
+    rows = exec_sparql(CURRENT_QUERY.format(language="DEU"))
 
-    sparql_query = SPARQL_QUERY.format(language_uri=language_uri)
-    sparql_response = requests.post(
-        SPARQL_ENDPOINT,
-        data={"query": sparql_query},
-        headers={"accept": "application/sparql-results+json"},
-    )
-    sparql_response.raise_for_status()
-
-    for row in sparql_response.json()["results"]["bindings"]:
+    for row in rows:
         sr_number = row["srNumber"]["value"]
         law_title = row["title"]["value"]
         law_abbr = row.get("abbreviation", {}).get("value")
@@ -110,79 +82,15 @@ def load_fedlex(language):
         else:
             click.echo(f"Processing document: {law_title} ({sr_number})")
 
-        html_response = requests.get(row["htmlUrl"]["value"])
-        html_response.raise_for_status()
-        html_response.encoding = html_response.apparent_encoding
-        html_content = html_response.text
-        html_root = BeautifulSoup(html_content, "html.parser")
-
-        xml_response = requests.get(row["xmlUrl"]["value"])
-        xml_response.raise_for_status()
-        xml_response.encoding = xml_response.apparent_encoding
-        xml_content = xml_response.text
-        xml_root = BeautifulSoup(xml_content, "xml")
-
-        frbr_work_tag = cast(Tag, xml_root.find("FRBRWork"))
-        frbr_url_tag = cast(Tag, frbr_work_tag.find("FRBRuri"))
-        frbr_url_value = frbr_url_tag["value"]
-
-        article_tags = cast(list[Tag], xml_root.find_all("article"))
-
-        for article_index, article_tag in enumerate(article_tags):
-            article_id = article_tag["eId"]
-            article_num_el = cast(Tag, article_tag.find("num", recursive=False))
-
-            # Drop authorial notes
-            for note_el in article_num_el.find_all("authorialNote"):
-                note_el.extract()
-
-            article_num = normalize_text(article_num_el.get_text())
-
-            if law_abbr:
-                article_title = f"{article_num} {law_abbr}"
-            else:
-                article_title = f"{article_num} {law_title}"
-
-            article_html_el = html_root.find(id=article_id)
-
-            search_document = Document(
-                title=article_title,
-                source="fedlex_article",
-                language=language,
-                metadata={
-                    "sr_number": sr_number,
-                    "law_title": law_title,
-                    "law_abbr": law_abbr,
-                    "law_url": frbr_url_value,
-                    "article_index": article_index,
-                    "article_id": article_id,
-                    "article_num": article_num,
-                    "article_html": str(article_html_el),
-                    "article_xml": str(article_tag),
-                },
-            )
-            db.add(search_document)
-            db.flush()
-
-            text = akn_to_text(article_tag)
-            text = normalize_text(text)
-            text_chunks = split_text(text)
-
-            for chunk_index, chunk_text in enumerate(text_chunks):
-                chunk = DocumentChunk(
-                    document_id=search_document.id,
-                    text=chunk_text.strip(),
-                    order=chunk_index,
-                )
-                db.add(chunk)
-
-    db.execute(
-        update(Document)
-        .where(
-            Document.source == "fedlex_article",
-            Document.language == language,
-            Document.updated_at < import_start_time,
+        articles_added = process_fedlex_articles(
+            db=db,
+            html_url=row["htmlUrl"]["value"],
+            xml_url=row["xmlUrl"]["value"],
+            sr_number=sr_number,
+            law_title=law_title,
+            law_abbr=law_abbr,
         )
-        .values(is_active=False)
-    )
+
+        click.echo(f"  Added {articles_added} articles")
+
     db.commit()

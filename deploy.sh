@@ -36,6 +36,17 @@ uv pip install -r pyproject.toml
 echo "🗄️  Running database migrations..."
 uv run alembic upgrade head
 
+# Systemd services
+echo ""
+echo "⚡ Installing systemd services"
+echo "----------------------------------------"
+cd /var/www/almalex.ch
+echo "📋 Copying systemd files..."
+sudo cp systemd/*.service systemd/*.timer /etc/systemd/system/
+
+echo "🔄 Reloading systemd daemon..."
+sudo systemctl daemon-reload
+
 # Service restart
 echo ""
 echo "🔄 Restarting services"
