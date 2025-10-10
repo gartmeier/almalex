@@ -50,19 +50,16 @@ def process_fedlex_articles(
             note_el.extract()
 
         article_num = normalize_text(article_num_el.get_text())
-
-        if law_abbr:
-            article_title = f"{article_num} {law_abbr}"
-        else:
-            article_title = f"{article_num} {law_title}"
-
+        article_title = f"{article_num} {law_abbr or law_title}"
+        article_url = f"{law_url}#{article_id}"
         article_html_el = html_root.find(id=article_id)
 
         doc = Document(
             title=article_title,
             source="fedlex_article",
             language="de",
-            metadata={
+            url=article_url,
+            metadata_={
                 "sr_number": sr_number,
                 "law_title": law_title,
                 "law_abbr": law_abbr,
@@ -72,7 +69,7 @@ def process_fedlex_articles(
                 "article_num": article_num,
                 "article_html": str(article_html_el),
                 "article_xml": str(article_tag),
-                "article_url": f"{law_url}#{article_id}",
+                "article_url": article_url,
             },
         )
         db.add(doc)
