@@ -17,13 +17,6 @@ class Document(Base):
     source: Mapped[str] = mapped_column(index=True)
     language: Mapped[str] = mapped_column(index=True)
     url: Mapped[str | None] = mapped_column(index=True)
-    external_id: Mapped[str | None] = mapped_column(index=True)
-    valid_from: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), index=True
-    )
-    valid_to: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), index=True
-    )
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
 
     chunks = relationship(
@@ -43,7 +36,7 @@ class DocumentChunk(Base):
     )
     text: Mapped[str]
     order: Mapped[int] = mapped_column(index=True)
-    embedding: Mapped[Vector] = mapped_column(Vector(1536))
+    embedding: Mapped[Vector | None] = mapped_column(Vector(1536))
 
     document = relationship("Document", back_populates="chunks")
 

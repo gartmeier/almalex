@@ -1,283 +1,225 @@
-from datetime import datetime, timedelta
-from typing import cast
+from datetime import datetime, timedelta, timezone
 
 import click
-import requests
-from bs4 import BeautifulSoup, Tag
-from sqlalchemy import and_
+from openai import OpenAI
+from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
-from cli.utils.akn import akn_to_text
-from cli.utils.text import normalize_text, split_text
+from cli.utils.fedlex import process_fedlex_articles
+from cli.utils.sparql import exec_sparql
 
-SPARQL_ENDPOINT = "https://fedlex.data.admin.ch/sparqlendpoint"
 
-# Query for consolidations with applicability changes since a given date
-SPARQL_QUERY_INCREMENTAL = """
+@click.command()
+@click.option("--since", help="Start date for sync (YYYY-MM-DD)")
+@click.option("--embed", is_flag=True, help="Create embeddings for new documents")
+def sync_fedlex(since, embed):
+    with SessionLocal() as db:
+        if since:
+            since = datetime.strptime(since, "%Y-%m-%d")
+        else:
+            since = datetime.now(timezone.utc) - timedelta(days=1)
+
+        since = since.date().isoformat()
+
+        delete_expired(db, since)
+        import_latest(db, since)
+
+        if embed:
+            create_embeddings(db)
+
+
+EXPIRED_QUERY = """
 PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
+SELECT DISTINCT ?srNumber ?dateEndApplicability
 WHERE {{
-  # Define language filter
-  BIND(<{language_uri}> AS ?languageUri)
+  BIND(xsd:date("{since}") as ?since)
 
-  # Get consolidation with applicability changes since last sync
-  ?consolidation a jolux:Consolidation ;
-                jolux:dateApplicability ?applicabilityDate ;
-                jolux:isRealizedBy ?consoExpr ;
-                jolux:isMemberOf ?collection .
-
-  # Filter for consolidations that became applicable or expired since last sync
-  FILTER(
-    (xsd:date(?applicabilityDate) >= xsd:date("{since_date}")) ||
-    (EXISTS {{ ?consolidation jolux:dateEndApplicability ?endDate .
-              FILTER(xsd:date(?endDate) >= xsd:date("{since_date}")) }})
-  )
-
-  # Get language-specific expression
-  ?consoExpr jolux:language ?languageUri .
-
-  # Get HTML format
-  ?consoExpr jolux:isEmbodiedBy ?htmlManif .
-  ?htmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/html> ;
-             jolux:isExemplifiedBy ?htmlUrl .
-
-  # Get XML format
-  ?consoExpr jolux:isEmbodiedBy ?xmlManif .
-  ?xmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/xml> ;
-            jolux:isExemplifiedBy ?xmlUrl .
+  # Get ConsolidationAbstract (the collection/law)
+  ?cc a jolux:ConsolidationAbstract .
 
   # Get SR Number from collection
-  ?collection jolux:classifiedByTaxonomyEntry/skos:notation ?srNotationRaw .
-  FILTER(datatype(?srNotationRaw) = <https://fedlex.data.admin.ch/vocabulary/notation-type/id-systematique>)
+  ?cc jolux:classifiedByTaxonomyEntry/skos:notation ?srNotation .
+  FILTER(datatype(?srNotation) = <https://fedlex.data.admin.ch/vocabulary/notation-type/id-systematique>)
+  BIND(STR(?srNotation) AS ?srNumber)
 
-  # Get end applicability date if it exists
-  OPTIONAL {{ ?consolidation jolux:dateEndApplicability ?endApplicabilityDate }}
+  # Get consolidation that belongs to this collection
+  ?conso jolux:isMemberOf ?cc ;
+         a jolux:Consolidation ;
+         jolux:dateApplicability ?dateApplicability .
 
-  # Get title and abbreviation
-  OPTIONAL {{
-    ?collection jolux:isRealizedBy ?collectionExpr .
-    ?collectionExpr jolux:language ?languageUri ;
-                    jolux:title ?title .
-    OPTIONAL {{ ?collectionExpr jolux:titleShort ?abbreviation }}
-  }}
-
-  # Reformat output values
-  BIND(STR(?srNotationRaw) AS ?srNumber)
+  # Check if consolidation has expired since last sync date
+  OPTIONAL {{ ?conso jolux:dateEndApplicability ?dateEndApplicability }}
+  FILTER(BOUND(?dateEndApplicability) &&
+         xsd:date(?dateEndApplicability) >= ?since &&
+         xsd:date(?dateEndApplicability) < xsd:date(NOW()))
 }}
 ORDER BY ?srNumber
 """
 
-LANGUAGE_URI_MAPPING = {
-    "de": "http://publications.europa.eu/resource/authority/language/DEU",
-    "fr": "http://publications.europa.eu/resource/authority/language/FRA",
-    "it": "http://publications.europa.eu/resource/authority/language/ITA",
-    "en": "http://publications.europa.eu/resource/authority/language/ENG",
-}
 
+def delete_expired(db: Session, since: str):
+    sr_numbers = [
+        row["srNumber"]["value"]
+        for row in exec_sparql(EXPIRED_QUERY.format(since=since))
+    ]
 
-@click.command(help="Incrementally sync legal documents from Fedlex")
-@click.option("--language", default="de", help="Language of documents to sync")
-@click.option("--days-back", default=1, help="Number of days to look back for changes")
-@click.option(
-    "--dry-run", is_flag=True, help="Show what would be synced without applying changes"
-)
-def sync_fedlex(language, days_back, dry_run):
-    db = SessionLocal()
-    sync_start_time = datetime.utcnow()
-    since_date = (sync_start_time - timedelta(days=days_back)).date().isoformat()
-
-    if dry_run:
-        click.secho(
-            f"DRY RUN: Checking for Fedlex changes since {since_date}...", fg="yellow"
-        )
-    else:
-        click.secho(
-            f"Starting Fedlex incremental sync since {since_date}...", fg="green"
-        )
-
-    language_uri = LANGUAGE_URI_MAPPING[language]
-    sparql_query = SPARQL_QUERY_INCREMENTAL.format(
-        language_uri=language_uri, since_date=since_date
-    )
-
-    sparql_response = requests.post(
-        SPARQL_ENDPOINT,
-        data={"query": sparql_query},
-        headers={"accept": "application/sparql-results+json"},
-    )
-    sparql_response.raise_for_status()
-
-    results = sparql_response.json()["results"]["bindings"]
-
-    if not results:
-        click.secho("No changes found since last sync.", fg="green")
+    if not sr_numbers:
+        click.echo("No expired documents found")
         return
 
-    click.echo(f"Found {len(results)} consolidations with changes")
+    docs = (
+        db.query(Document)
+        .filter(Document.metadata_["sr_number"].astext.in_(sr_numbers))
+        .order_by(Document.metadata_["sr_number"], Document.metadata_["article_index"])
+        .all()
+    )
 
-    stats = {"updated": 0, "deactivated": 0, "new": 0, "skipped": 0}
+    click.echo(
+        f"Deleting {len(docs)} documents for {len(sr_numbers)} expired SR numbers"
+    )
+    for doc in docs:
+        click.echo(f"  - {doc.title} (SR {doc.metadata_.get('sr_number')})")
 
+    for doc in docs:
+        db.delete(doc)
+    db.commit()
+
+
+LATEST_QUERY = """
+PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT
+  (str(?srNotation) as ?srNumber)
+  (str(?dateApplicabilityNode) as ?applicabilityDate)
+  (str(?dateEndApplicabilityNode) as ?endApplicabilityDate)
+  ?title
+  ?abbreviation
+  ?htmlUrl
+  ?xmlUrl
+WHERE {{
+  # Configuration: language and since date
+  BIND(<http://publications.europa.eu/resource/authority/language/{language}> AS ?languageUri)
+  BIND(xsd:date("{since}") AS ?sinceDate)
+
+  # Get consolidations
+  ?consolidation a jolux:Consolidation ;
+                jolux:dateApplicability ?dateApplicabilityNode ;
+                jolux:isMemberOf ?cc .
+
+  # Filter for consolidations that expired after the since date
+  ?consolidation jolux:dateEndApplicability ?dateEndApplicabilityNode .
+  FILTER(xsd:date(?dateEndApplicabilityNode) > ?sinceDate && xsd:date(?dateEndApplicabilityNode) <= xsd:date(NOW()))
+
+  # Get ConsolidationAbstract details
+  ?cc jolux:classifiedByTaxonomyEntry/skos:notation ?srNotation .
+  FILTER(datatype(?srNotation) = <https://fedlex.data.admin.ch/vocabulary/notation-type/id-systematique>)
+
+  # Get language-specific expression from consolidation
+  ?consolidation jolux:isRealizedBy ?consoExpr .
+  ?consoExpr jolux:language ?languageUri .
+
+  # Get ConsolidationAbstract metadata (title and abbreviation)
+  OPTIONAL {{
+    ?cc jolux:isRealizedBy ?ccExpr .
+    ?ccExpr jolux:language ?languageUri ;
+            jolux:title ?title .
+    OPTIONAL {{ ?ccExpr jolux:titleShort ?abbreviation }}
+  }}
+
+  # Get file URLs in HTML format
+  ?consoExpr jolux:isEmbodiedBy ?htmlManif .
+  ?htmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/html> ;
+             jolux:isExemplifiedBy ?htmlUrl .
+
+  # Get file URLs in XML format
+  ?consoExpr jolux:isEmbodiedBy ?xmlManif .
+  ?xmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/xml> ;
+            jolux:isExemplifiedBy ?xmlUrl .
+}}
+ORDER BY ?srNotation ?dateEndApplicabilityNode
+"""
+
+
+def import_latest(db: Session, since: str):
+    results = exec_sparql(LATEST_QUERY.format(language="DEU", since=since))
+
+    if not results:
+        click.echo("No new or updated documents found")
+        return
+
+    click.echo(f"Found {len(results)} laws to import")
+
+    total_articles = 0
     for row in results:
         sr_number = row["srNumber"]["value"]
         law_title = row["title"]["value"]
         law_abbr = row.get("abbreviation", {}).get("value")
 
-        # Parse applicability dates
-        valid_from = datetime.fromisoformat(
-            row["applicabilityDate"]["value"].replace("Z", "+00:00")
-        )
-        valid_to = None
-        if "endApplicabilityDate" in row:
-            valid_to = datetime.fromisoformat(
-                row["endApplicabilityDate"]["value"].replace("Z", "+00:00")
-            )
-
-        # Check if this consolidation is currently applicable
-        now = datetime.utcnow().replace(tzinfo=valid_from.tzinfo)
-        is_currently_applicable = valid_from <= now and (
-            valid_to is None or valid_to >= now
-        )
-
         if law_abbr:
-            click.echo(
-                f"Checking: {law_abbr} ({sr_number}) - {'active' if is_currently_applicable else 'expired'}"
-            )
+            click.echo(f"Processing: {law_abbr} ({sr_number})")
         else:
-            click.echo(
-                f"Checking: {law_title} ({sr_number}) - {'active' if is_currently_applicable else 'expired'}"
-            )
+            click.echo(f"Processing: {law_title} ({sr_number})")
 
-        # Check if we already have articles for this consolidation version (using dateApplicability as version)
-        pattern = f"{sr_number}/{language}/%"
-        existing_articles = (
-            db.query(Document)
-            .filter(
-                and_(
-                    Document.source == "fedlex_article",
-                    Document.external_id.like(pattern),
-                    Document.valid_from == valid_from,
-                )
-            )
-            .first()
+        articles_added = process_fedlex_articles(
+            db=db,
+            html_url=row["htmlUrl"]["value"],
+            xml_url=row["xmlUrl"]["value"],
+            sr_number=sr_number,
+            law_title=law_title,
+            law_abbr=law_abbr,
+        )
+        total_articles += articles_added
+        click.echo(f"  Added {articles_added} articles")
+
+    db.commit()
+
+    click.secho(
+        f"Import completed: {total_articles} articles from {len(results)} laws",
+        fg="green",
+    )
+
+
+def create_embeddings(db: Session):
+    chunks = (
+        db.query(DocumentChunk)
+        .join(Document)
+        .filter(
+            Document.source == "fedlex_article",
+            DocumentChunk.embedding.is_(None),
+        )
+        .order_by(DocumentChunk.id)
+        .all()
+    )
+
+    if not chunks:
+        click.echo("No chunks without embeddings found")
+        return
+
+    click.echo(f"Creating embeddings for {len(chunks)} chunks")
+
+    client = OpenAI(api_key=settings.openai_api_key)
+    batch_size = 100
+
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i : i + batch_size]
+        texts = [chunk.text for chunk in batch]
+
+        response = client.embeddings.create(
+            input=texts,
+            model=settings.openai_embedding_model,
         )
 
-        if existing_articles:
-            click.echo(
-                f"  Skipping - consolidation version already exists (dateApplicability: {valid_from})"
-            )
-            stats["skipped"] += 1
-            continue
+        for chunk, embedding_data in zip(batch, response.data):
+            chunk.embedding = embedding_data.embedding
 
-        click.echo(
-            f"  Processing - new consolidation version (dateApplicability: {valid_from})"
-        )
-
-        # Process articles for this consolidation version
-        if not dry_run:
-            articles_added = _process_consolidation_articles(
-                db, row, sr_number, law_title, law_abbr, language, valid_from, valid_to
-            )
-            stats["new"] += articles_added
-            click.echo(f"  Added {articles_added} articles for version {valid_from}")
-        else:
-            click.echo(
-                f"  Would process articles for consolidation version {valid_from}"
-            )
-
-    if not dry_run:
         db.commit()
-        click.secho(
-            f"Sync completed: {stats['new']} new articles, {stats['skipped']} versions skipped",
-            fg="green",
-        )
-    else:
-        click.secho(
-            f"DRY RUN completed - no changes made: {stats['skipped']} versions would be skipped",
-            fg="yellow",
-        )
+        click.echo(f"  Processed {i + len(batch)}/{len(chunks)} chunks")
 
-
-def _process_consolidation_articles(
-    db, row, sr_number, law_title, law_abbr, language, valid_from, valid_to
-):
-    """Process all articles for a consolidation"""
-    html_response = requests.get(row["htmlUrl"]["value"])
-    html_response.raise_for_status()
-    html_response.encoding = html_response.apparent_encoding
-    html_content = html_response.text
-    html_root = BeautifulSoup(html_content, "html.parser")
-
-    xml_response = requests.get(row["xmlUrl"]["value"])
-    xml_response.raise_for_status()
-    xml_response.encoding = xml_response.apparent_encoding
-    xml_content = xml_response.text
-    xml_root = BeautifulSoup(xml_content, "xml")
-
-    frbr_work_tag = cast(Tag, xml_root.find("FRBRWork"))
-    frbr_url_tag = cast(Tag, frbr_work_tag.find("FRBRuri"))
-    frbr_url_value = frbr_url_tag["value"]
-
-    article_tags = cast(list[Tag], xml_root.find_all("article"))
-    articles_added = 0
-
-    for article_index, article_tag in enumerate(article_tags):
-        article_id = article_tag["eId"]
-        article_num_el = cast(Tag, article_tag.find("num", recursive=False))
-
-        # Drop authorial notes
-        for note_el in article_num_el.find_all("authorialNote"):
-            note_el.extract()
-
-        article_num = normalize_text(article_num_el.get_text())
-
-        if law_abbr:
-            article_title = f"{article_num} {law_abbr}"
-        else:
-            article_title = f"{article_num} {law_title}"
-
-        article_html_el = html_root.find(id=article_id)
-
-        # Create composite external_id: sr_number/language/article_num
-        external_id = f"{sr_number}/{language}/{article_num}"
-
-        search_document = Document(
-            title=article_title,
-            source="fedlex_article",
-            language=language,
-            external_id=external_id,
-            valid_from=valid_from,
-            valid_to=valid_to,
-            metadata={
-                "sr_number": sr_number,
-                "law_title": law_title,
-                "law_abbr": law_abbr,
-                "law_url": frbr_url_value,
-                "article_index": article_index,
-                "article_id": article_id,
-                "article_num": article_num,
-                "article_html": str(article_html_el),
-                "article_xml": str(article_tag),
-            },
-        )
-        db.add(search_document)
-        db.flush()
-
-        text = akn_to_text(article_tag)
-        text = normalize_text(text)
-        text_chunks = split_text(text)
-
-        for chunk_index, chunk_text in enumerate(text_chunks):
-            chunk = DocumentChunk(
-                document_id=search_document.id,
-                text=chunk_text.strip(),
-                order=chunk_index,
-            )
-            db.add(chunk)
-
-        articles_added += 1
-
-    return articles_added
+    click.secho(f"Created {len(chunks)} embeddings", fg="green")
