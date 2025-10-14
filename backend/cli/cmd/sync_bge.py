@@ -28,9 +28,20 @@ def sync_bge(db: Session):
         if Path(file_path).suffix != ".json":
             continue
 
-        # Skip if already processed (last_change has job sequence in format "446973/47/2584")
-        file_sequence = int(file_info["last_change"].split("/")[-1])
-        if last_job_sequence is not None and file_sequence <= last_job_sequence:
+        # Check if already processed
+        if "last_change" in file_info:
+            # Skip if already processed (last_change has job sequence in format "446973/47/2584")
+            file_sequence = int(file_info["last_change"].split("/")[-1])
+            if last_job_sequence is not None and file_sequence <= last_job_sequence:
+                continue
+        elif file_info.get("status") == "update":
+            # Files with status "update" but no last_change should be processed
+            click.echo(f"Processing updated file: {file_path}")
+        else:
+            # Skip files without last_change that aren't marked as update
+            click.echo(
+                f"Skipping {file_path}: no last_change field and not marked as update"
+            )
             continue
 
         metadata = fetch_json(file_path)
