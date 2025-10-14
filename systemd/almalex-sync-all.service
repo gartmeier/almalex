@@ -1,5 +1,5 @@
 [Unit]
-Description=Sync Fedlex documents for almalex.ch
+Description=Sync all documents for almalex.ch
 After=network.target
 
 [Service]
@@ -8,7 +8,7 @@ User=joshua
 Group=joshua
 WorkingDirectory=/var/www/almalex.ch/backend
 Environment=PATH=/var/www/almalex.ch/backend/.venv/bin
-ExecStart=/var/www/almalex.ch/backend/.venv/bin/python -m cli.main sync-fedlex --embed
+ExecStart=/var/www/almalex.ch/backend/.venv/bin/python -m cli.main sync-all
 
 [Install]
 WantedBy=multi-user.target

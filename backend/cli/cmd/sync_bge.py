@@ -11,10 +11,13 @@ from app.db.session import SessionLocal
 from cli.utils.text import normalize_text, split_text
 
 
-@click.command()
-def load_bge():
-    db = SessionLocal()
+@click.command(name="sync-bge")
+def sync_bge_command():
+    with SessionLocal() as db:
+        sync_bge(db)
 
+
+def sync_bge(db: Session):
     last_job_sequence = get_last_job_sequence(db)
     click.echo(f"Last processed job sequence: {last_job_sequence}")
 

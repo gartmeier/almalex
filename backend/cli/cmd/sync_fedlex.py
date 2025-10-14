@@ -1,20 +1,17 @@
 from datetime import datetime, timedelta, timezone
 
 import click
-from openai import OpenAI
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
-from app.db.models import Document, DocumentChunk
+from app.db.models import Document
 from app.db.session import SessionLocal
 from cli.utils.fedlex import process_fedlex_articles
 from cli.utils.sparql import exec_sparql
 
 
-@click.command()
+@click.command(name="sync-fedlex")
 @click.option("--since", help="Start date for sync (YYYY-MM-DD)")
-@click.option("--embed", is_flag=True, help="Create embeddings for new documents")
-def sync_fedlex(since, embed):
+def sync_fedlex_command(since):
     with SessionLocal() as db:
         if since:
             since = datetime.strptime(since, "%Y-%m-%d")
@@ -23,11 +20,12 @@ def sync_fedlex(since, embed):
 
         since = since.date().isoformat()
 
-        delete_expired(db, since)
-        import_latest(db, since)
+        sync_fedlex(db, since)
 
-        if embed:
-            create_embeddings(db)
+
+def sync_fedlex(db: Session, since: str):
+    delete_expired(db, since)
+    import_latest(db, since)
 
 
 EXPIRED_QUERY = """
@@ -187,42 +185,3 @@ def import_latest(db: Session, since: str):
         f"Import completed: {total_articles} articles from {len(results)} laws",
         fg="green",
     )
-
-
-def create_embeddings(db: Session):
-    chunks = (
-        db.query(DocumentChunk)
-        .join(Document)
-        .filter(
-            Document.source == "fedlex_article",
-            DocumentChunk.embedding.is_(None),
-        )
-        .order_by(DocumentChunk.id)
-        .all()
-    )
-
-    if not chunks:
-        click.echo("No chunks without embeddings found")
-        return
-
-    click.echo(f"Creating embeddings for {len(chunks)} chunks")
-
-    client = OpenAI(api_key=settings.openai_api_key)
-    batch_size = 100
-
-    for i in range(0, len(chunks), batch_size):
-        batch = chunks[i : i + batch_size]
-        texts = [chunk.text for chunk in batch]
-
-        response = client.embeddings.create(
-            input=texts,
-            model=settings.openai_embedding_model,
-        )
-
-        for chunk, embedding_data in zip(batch, response.data):
-            chunk.embedding = embedding_data.embedding
-
-        db.commit()
-        click.echo(f"  Processed {i + len(batch)}/{len(chunks)} chunks")
-
-    click.secho(f"Created {len(chunks)} embeddings", fg="green")
