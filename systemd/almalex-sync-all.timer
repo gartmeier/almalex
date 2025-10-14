@@ -1,6 +1,6 @@
 [Unit]
-Description=Daily Fedlex sync timer for almalex.ch
-Requires=almalex-sync-fedlex.service
+Description=Daily sync timer for almalex.ch
+Requires=almalex-sync-all.service
 
 [Timer]
 OnCalendar=*-*-* 05:00:00
