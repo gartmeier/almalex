@@ -18,10 +18,10 @@
     "examples": {
       "landlord": "Can my landlord increase rent if they renovate the apartment?",
       "divorce": "What are the legal requirements for a divorce?",
-      "will": "How can I contest a will?",
+      "will": "What is the statutory share in inheritance law?",
       "business": "What is the difference between an AG and a GmbH?",
-      "flight": "What rights do I have in case of a flight delay?",
-      "employment": "Can I terminate my employment contract without notice?"
+      "insurance": "Is health insurance mandatory?",
+      "employment": "What notice periods apply to employment contracts?"
     }
   },
   "navigation": {

@@ -25,7 +25,7 @@ export default function Component() {
     t("chat.examples.divorce"),
     t("chat.examples.will"),
     t("chat.examples.business"),
-    t("chat.examples.flight"),
+    t("chat.examples.insurance"),
     t("chat.examples.employment"),
   ];
 
