@@ -1,7 +1,7 @@
 import click
 from sqlalchemy import select
 
-from app.ai.service import create_embedding, generate_text
+from app.ai import create_embedding
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
 
@@ -20,22 +20,25 @@ def prompt(question):
         ).all()
 
         formatted_context = format_chunks(context_chunks)
-        chat_messages = [
-            {
-                "role": "developer",
-                "content": f"Answer based on this context:\n\n{formatted_context}",
-            },
-            {
-                "role": "user",
-                "content": question,
-            },
-        ]
-        chat_response = generate_text(chat_messages)
+        # TODO: This command needs to be updated to use the new AI service
+        # chat_messages = [
+        #     {
+        #         "role": "developer",
+        #         "content": f"Answer based on this context:\n\n{formatted_context}",
+        #     },
+        #     {
+        #         "role": "user",
+        #         "content": question,
+        #     },
+        # ]
+        # chat_response = generate_text(chat_messages)
+        #
+        # for response_chunk in chat_response:
+        #     click.echo(response_chunk, nl=False)
+        #
+        # click.echo()
 
-        for response_chunk in chat_response:
-            click.echo(response_chunk, nl=False)
-
-        click.echo()
+        click.echo(f"Context found:\n{formatted_context}")
 
 
 def format_chunks(chunks):

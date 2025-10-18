@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.ai.service import create_embedding
+from app.ai import create_embedding, rerank_chunks
 from app.db.models import Chat, ChatMessage, Document, DocumentChunk
 from app.utils.helpers import nanoid
 
@@ -108,18 +108,19 @@ def get_document(db: Session, document_id: int):
 def hybrid_search(
     *, db: Session, query: str, top_k: int = 20, rrf_k: int = 60
 ) -> tuple[list[DocumentChunk], list[Document]]:
-    """Hybrid search combining full-text and vector similarity using RRF.
+    """Hybrid search combining full-text and vector similarity using RRF, with Cohere reranking.
 
     Args:
         db: Database session
         query: Search query string
-        top_k: Number of results to return
+        top_k: Number of results to return after reranking
         rrf_k: RRF constant (default 60, standard value)
 
     Returns:
-        Tuple of (chunks, unique_documents) ordered by combined RRF score
+        Tuple of (chunks, unique_documents) ordered by relevance
     """
     embedding = create_embedding(query)
+    candidate_limit = 100
 
     # Full-text search using simple config
     fts_query = func.plainto_tsquery("simple", query)
@@ -141,7 +142,7 @@ def hybrid_search(
             func.row_number().over(order_by=fts_subquery.c.score.desc()).label("rank"),
         )
         .order_by(fts_subquery.c.score.desc())
-        .limit(top_k * 2)  # Fetch more for better fusion
+        .limit(candidate_limit)
     ).all()
 
     # Vector similarity search
@@ -162,7 +163,7 @@ def hybrid_search(
             func.row_number().over(order_by=vector_subquery.c.distance).label("rank"),
         )
         .order_by(vector_subquery.c.distance)
-        .limit(top_k * 2)  # Fetch more for better fusion
+        .limit(candidate_limit)
     ).all()
 
     # Calculate RRF scores
@@ -172,26 +173,31 @@ def hybrid_search(
     for chunk_id, rank in vector_results:
         rrf_scores[chunk_id] = rrf_scores.get(chunk_id, 0) + 1 / (rrf_k + rank)
 
-    # Sort by RRF score and get top_k chunk IDs
-    top_chunk_ids = sorted(
+    # Sort by RRF score and get candidate chunk IDs
+    candidate_chunk_ids = sorted(
         rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True
-    )[:top_k]
+    )[:candidate_limit]
 
-    if not top_chunk_ids:
+    if not candidate_chunk_ids:
         return [], []
 
     # Fetch full chunk objects with documents
     chunks = db.scalars(
         select(DocumentChunk)
-        .where(DocumentChunk.id.in_(top_chunk_ids))
+        .where(DocumentChunk.id.in_(candidate_chunk_ids))
         .options(selectinload(DocumentChunk.document))
     ).all()
 
     # Preserve RRF order
     chunks_dict = {chunk.id: chunk for chunk in chunks}
     ordered_chunks = [
-        chunks_dict[chunk_id] for chunk_id in top_chunk_ids if chunk_id in chunks_dict
+        chunks_dict[chunk_id]
+        for chunk_id in candidate_chunk_ids
+        if chunk_id in chunks_dict
     ]
+
+    # Rerank with Cohere
+    ordered_chunks = rerank_chunks(query, ordered_chunks, top_k=top_k)
 
     # Extract unique documents in order
     seen_docs = set()

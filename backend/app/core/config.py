@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     openai_query_model: str = "gpt-5-nano"
     openai_response_model: str = "gpt-5-mini"
     openai_embedding_model: str = "text-embedding-3-small"
+    cohere_api_key: str
 
 
 @lru_cache()
