@@ -6,8 +6,8 @@ from app.db.session import SessionLocal
 
 @click.command()
 @click.argument("query")
-@click.option("--top-k", default=10, help="Number of results to return.")
-def search(query, top_k: int = 10):
+@click.option("--top-k", default=20, help="Number of results to return.")
+def search(query, top_k: int = 20):
     with SessionLocal() as db:
         results = crud.search(
             db=db,

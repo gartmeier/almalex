@@ -64,7 +64,7 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
     return db_message
 
 
-def search(*, db: Session, query: str, top_k: int = 10):
+def search(*, db: Session, query: str, top_k: int = 20):
     embedding = create_embedding(query)
     return db.scalars(
         select(DocumentChunk)
@@ -74,7 +74,7 @@ def search(*, db: Session, query: str, top_k: int = 10):
 
 
 def search_similar(
-    *, db: Session, embedding: list[float], top_k: int = 10
+    *, db: Session, embedding: list[float], top_k: int = 20
 ) -> tuple[list[DocumentChunk], list[Document]]:
     """Return document chunks and unique documents from similarity search."""
     result = db.execute(
@@ -106,7 +106,7 @@ def get_document(db: Session, document_id: int):
 
 
 def hybrid_search(
-    *, db: Session, query: str, top_k: int = 10, rrf_k: int = 60
+    *, db: Session, query: str, top_k: int = 20, rrf_k: int = 60
 ) -> tuple[list[DocumentChunk], list[Document]]:
     """Hybrid search combining full-text and vector similarity using RRF.
 
