@@ -5,11 +5,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.ai.service import (
-    generate_answer,
-    generate_query,
-    generate_title,
-)
+from app.ai import generate_answer, generate_title
 from app.api.deps import SessionDep
 from app.api.schemas import ChatCreate, ChatDetail, MessageCreate
 from app.core.types import Language
@@ -129,10 +125,8 @@ def stream_completion(db: Session, chat: Chat, lang: Language = "de"):
     assistant_message = crud.create_assistant_message(db=db, chat_id=chat.id)
     yield format_event("message_id", assistant_message.id)
 
-    search_query = generate_query(existing_messages)
-    yield format_event("search_query", search_query)
-
-    document_chunks, documents = crud.hybrid_search(db=db, query=search_query)
+    user_question = existing_messages[-1].content
+    document_chunks, documents = crud.hybrid_search(db=db, query=user_question)
 
     search_results = [
         {"id": doc.id, "title": doc.title, "url": doc.url} for doc in documents
@@ -153,7 +147,7 @@ def stream_completion(db: Session, chat: Chat, lang: Language = "de"):
         {
             "type": "search",
             "status": "completed",
-            "query": search_query,
+            "query": user_question,
             "results": search_results,
         },
         {"type": "text", "text": complete_text},

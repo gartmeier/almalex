@@ -3,7 +3,7 @@ from typing import List, TypedDict
 from mcp.server.fastmcp import FastMCP
 from sqlalchemy import select
 
-from app.ai.service import create_embedding
+from app.ai import create_embedding
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
 
