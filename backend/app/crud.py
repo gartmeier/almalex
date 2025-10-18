@@ -123,32 +123,45 @@ def hybrid_search(
 
     # Full-text search using simple config
     fts_query = func.plainto_tsquery("simple", query)
-    fts_results = db.execute(
+
+    # Subquery: compute ts_rank once
+    fts_subquery = (
         select(
             DocumentChunk.id,
-            func.row_number()
-            .over(
-                order_by=func.ts_rank(
-                    DocumentChunk.text_search_vector, fts_query
-                ).desc()
-            )
-            .label("rank"),
+            func.ts_rank(DocumentChunk.text_search_vector, fts_query).label("score"),
         )
         .where(DocumentChunk.text_search_vector.op("@@")(fts_query))
-        .order_by(func.ts_rank(DocumentChunk.text_search_vector, fts_query).desc())
+        .subquery()
+    )
+
+    # Outer query: use computed score for window function and ORDER BY
+    fts_results = db.execute(
+        select(
+            fts_subquery.c.id,
+            func.row_number().over(order_by=fts_subquery.c.score.desc()).label("rank"),
+        )
+        .order_by(fts_subquery.c.score.desc())
         .limit(top_k * 2)  # Fetch more for better fusion
     ).all()
 
     # Vector similarity search
-    vector_results = db.execute(
+    # Subquery: compute l2_distance once
+    vector_subquery = (
         select(
             DocumentChunk.id,
-            func.row_number()
-            .over(order_by=DocumentChunk.embedding.l2_distance(embedding))
-            .label("rank"),
+            DocumentChunk.embedding.l2_distance(embedding).label("distance"),
         )
         .where(DocumentChunk.embedding.isnot(None))
-        .order_by(DocumentChunk.embedding.l2_distance(embedding))
+        .subquery()
+    )
+
+    # Outer query: use computed distance for window function and ORDER BY
+    vector_results = db.execute(
+        select(
+            vector_subquery.c.id,
+            func.row_number().over(order_by=vector_subquery.c.distance).label("rank"),
+        )
+        .order_by(vector_subquery.c.distance)
         .limit(top_k * 2)  # Fetch more for better fusion
     ).all()
 
