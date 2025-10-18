@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.ai.service import (
+    create_embedding,
     generate_answer,
     generate_query,
     generate_title,
@@ -132,7 +133,8 @@ def stream_completion(db: Session, chat: Chat, lang: Language = "de"):
     search_query = generate_query(existing_messages)
     yield format_event("search_query", search_query)
 
-    document_chunks, documents = crud.hybrid_search(db=db, query=search_query)
+    query_embedding = create_embedding(search_query)
+    document_chunks, documents = crud.search_similar(db=db, embedding=query_embedding)
 
     search_results = [
         {"id": doc.id, "title": doc.title, "url": doc.url} for doc in documents
