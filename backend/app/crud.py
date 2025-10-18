@@ -135,6 +135,7 @@ def hybrid_search(
             .label("rank"),
         )
         .where(DocumentChunk.text_search_vector.op("@@")(fts_query))
+        .order_by(func.ts_rank(DocumentChunk.text_search_vector, fts_query).desc())
         .limit(top_k * 2)  # Fetch more for better fusion
     ).all()
 
@@ -147,6 +148,7 @@ def hybrid_search(
             .label("rank"),
         )
         .where(DocumentChunk.embedding.isnot(None))
+        .order_by(DocumentChunk.embedding.l2_distance(embedding))
         .limit(top_k * 2)  # Fetch more for better fusion
     ).all()
 
