@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, ForeignKey, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Computed, DateTime, ForeignKey, Index, func
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -37,8 +37,16 @@ class DocumentChunk(Base):
     text: Mapped[str]
     order: Mapped[int] = mapped_column(index=True)
     embedding: Mapped[Vector | None] = mapped_column(Vector(1536))
+    text_search_vector = mapped_column(
+        TSVECTOR,
+        Computed("to_tsvector('simple', text)", persisted=True),
+    )
 
     document = relationship("Document", back_populates="chunks")
+
+    __table_args__ = (
+        Index("idx_text_search_vector", "text_search_vector", postgresql_using="gin"),
+    )
 
 
 class Chat(Base):

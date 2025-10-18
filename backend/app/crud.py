@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
@@ -103,3 +103,88 @@ def search_similar(
 
 def get_document(db: Session, document_id: int):
     return db.scalar(select(Document).where(Document.id == document_id))
+
+
+def hybrid_search(
+    *, db: Session, query: str, top_k: int = 10, rrf_k: int = 60
+) -> tuple[list[DocumentChunk], list[Document]]:
+    """Hybrid search combining full-text and vector similarity using RRF.
+
+    Args:
+        db: Database session
+        query: Search query string
+        top_k: Number of results to return
+        rrf_k: RRF constant (default 60, standard value)
+
+    Returns:
+        Tuple of (chunks, unique_documents) ordered by combined RRF score
+    """
+    embedding = create_embedding(query)
+
+    # Full-text search using simple config
+    fts_query = func.plainto_tsquery("simple", query)
+    fts_results = db.execute(
+        select(
+            DocumentChunk.id,
+            func.row_number()
+            .over(
+                order_by=func.ts_rank(
+                    DocumentChunk.text_search_vector, fts_query
+                ).desc()
+            )
+            .label("rank"),
+        )
+        .where(DocumentChunk.text_search_vector.op("@@")(fts_query))
+        .limit(top_k * 2)  # Fetch more for better fusion
+    ).all()
+
+    # Vector similarity search
+    vector_results = db.execute(
+        select(
+            DocumentChunk.id,
+            func.row_number()
+            .over(order_by=DocumentChunk.embedding.l2_distance(embedding))
+            .label("rank"),
+        )
+        .where(DocumentChunk.embedding.isnot(None))
+        .limit(top_k * 2)  # Fetch more for better fusion
+    ).all()
+
+    # Calculate RRF scores
+    rrf_scores = {}
+    for chunk_id, rank in fts_results:
+        rrf_scores[chunk_id] = rrf_scores.get(chunk_id, 0) + 1 / (rrf_k + rank)
+    for chunk_id, rank in vector_results:
+        rrf_scores[chunk_id] = rrf_scores.get(chunk_id, 0) + 1 / (rrf_k + rank)
+
+    # Sort by RRF score and get top_k chunk IDs
+    top_chunk_ids = sorted(
+        rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True
+    )[:top_k]
+
+    if not top_chunk_ids:
+        return [], []
+
+    # Fetch full chunk objects with documents
+    chunks = db.scalars(
+        select(DocumentChunk)
+        .where(DocumentChunk.id.in_(top_chunk_ids))
+        .options(selectinload(DocumentChunk.document))
+    ).all()
+
+    # Preserve RRF order
+    chunks_dict = {chunk.id: chunk for chunk in chunks}
+    ordered_chunks = [
+        chunks_dict[chunk_id] for chunk_id in top_chunk_ids if chunk_id in chunks_dict
+    ]
+
+    # Extract unique documents in order
+    seen_docs = set()
+    documents = []
+    for chunk in ordered_chunks:
+        doc_id = chunk.document.id
+        if doc_id not in seen_docs:
+            seen_docs.add(doc_id)
+            documents.append(chunk.document)
+
+    return ordered_chunks, documents
