@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Cookie, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app import crud
 from app.api.deps import SessionDep
 from app.api.schemas import ChatDetail, MessageCreate
 from app.core.types import Language
+from app.crud.chat import create_chat, create_user_message, get_chat
 from app.services import chat_service
 
 router = APIRouter(tags=["chats"])
@@ -12,7 +12,7 @@ router = APIRouter(tags=["chats"])
 
 @router.get("/{chat_id}", response_model=ChatDetail)
 async def read_chat(chat_id: str, db: SessionDep):
-    chat = crud.get_chat(db=db, chat_id=chat_id)
+    chat = get_chat(db=db, chat_id=chat_id)
 
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
@@ -38,12 +38,12 @@ async def create_message(
     db: SessionDep,
     lang: Language = Cookie(default="de"),
 ):
-    chat = crud.get_chat(db=db, chat_id=message_in.chat_id)
+    chat = get_chat(db=db, chat_id=message_in.chat_id)
 
     if not chat:
-        chat = crud.create_chat(db=db, chat_id=message_in.chat_id)
+        chat = create_chat(db=db, chat_id=message_in.chat_id)
 
-    crud.create_user_message(db=db, message_in=message_in)
+    create_user_message(db=db, message_in=message_in)
 
     return StreamingResponse(
         chat_service.stream_completion(chat.id, lang),

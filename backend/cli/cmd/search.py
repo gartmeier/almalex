@@ -1,6 +1,6 @@
 import click
 
-from app import crud
+from app.crud.search import search as search_func
 from app.db.session import SessionLocal
 
 
@@ -9,7 +9,7 @@ from app.db.session import SessionLocal
 @click.option("--top-k", default=20, help="Number of results to return.")
 def search(query, top_k: int = 20):
     with SessionLocal() as db:
-        results = crud.search(
+        results = search_func(
             db=db,
             query=query,
             top_k=top_k,

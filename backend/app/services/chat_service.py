@@ -1,27 +1,28 @@
 import json
 
-from app import crud
 from app.ai.service import create_embedding, generate_answer, generate_query
 from app.core.types import Language
+from app.crud.chat import create_assistant_message, get_chat
+from app.crud.search import search_similar
 from app.db.session import SessionLocal
 
 
 def stream_completion(chat_id: str, lang: Language = "de"):
     with SessionLocal() as db:
-        chat = crud.get_chat(db=db, chat_id=chat_id)
+        chat = get_chat(db=db, chat_id=chat_id)
         if chat is None:
             raise ValueError(f"Chat not found: {chat_id}")
 
         existing_messages = list(chat.messages)
 
-        assistant_message = crud.create_assistant_message(db=db, chat_id=chat.id)
+        assistant_message = create_assistant_message(db=db, chat_id=chat.id)
         yield format_event("message_id", assistant_message.id)
 
         search_query = generate_query(existing_messages)
         yield format_event("search_query", search_query)
 
         query_embedding = create_embedding(search_query)
-        document_chunks, documents = crud.search_similar(db=db, embedding=query_embedding)
+        document_chunks, documents = search_similar(db=db, embedding=query_embedding)
 
         search_results = [
             {"id": doc.id, "title": doc.title, "url": doc.url} for doc in documents
