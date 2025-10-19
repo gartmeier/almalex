@@ -2,6 +2,7 @@ from typing import Sequence
 
 from openai import OpenAI
 
+from app.ai.formatters import format_chunks
 from app.ai.prompts import render
 from app.core.config import settings
 from app.core.types import Language
@@ -80,17 +81,3 @@ def create_embedding(input: str):
         model=settings.openai_embedding_model,
     )
     return response.data[0].embedding
-
-
-def format_chunks(chunks: Sequence[DocumentChunk]) -> str:
-    context = ""
-
-    for chunk in chunks:
-        context += f"""\
-ID: {chunk.document.id}
-Title: {chunk.document.title}
-Content: {chunk.text}
----
-"""
-
-    return context.strip()
