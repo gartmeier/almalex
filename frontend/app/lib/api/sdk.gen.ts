@@ -7,15 +7,15 @@ import type {
 } from "@hey-api/client-fetch";
 import { client as _heyApiClient } from "./client.gen";
 import type {
-  CreateChatData,
-  CreateChatError,
-  CreateChatResponse,
   CreateMessageData,
   CreateMessageError,
   CreateMessageResponse,
   ReadChatData,
   ReadChatError,
   ReadChatResponse,
+  ReadDocumentData,
+  ReadDocumentError,
+  ReadDocumentResponse,
 } from "./types.gen";
 
 export type Options<
@@ -36,26 +36,6 @@ export type Options<
 };
 
 /**
- * Create Chat
- */
-export const createChat = <ThrowOnError extends boolean = false>(
-  options: Options<CreateChatData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).post<
-    CreateChatResponse,
-    CreateChatError,
-    ThrowOnError
-  >({
-    url: "/api/chats",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
-};
-
-/**
  * Read Chat
  */
 export const readChat = <ThrowOnError extends boolean = false>(
@@ -66,7 +46,7 @@ export const readChat = <ThrowOnError extends boolean = false>(
     ReadChatError,
     ThrowOnError
   >({
-    url: "/api/chats/{chat_id}",
+    url: "/api/{chat_id}",
     ...options,
   });
 };
@@ -82,11 +62,27 @@ export const createMessage = <ThrowOnError extends boolean = false>(
     CreateMessageError,
     ThrowOnError
   >({
-    url: "/api/chats/{chat_id}/messages",
+    url: "/api/messages",
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
     },
+  });
+};
+
+/**
+ * Read Document
+ */
+export const readDocument = <ThrowOnError extends boolean = false>(
+  options: Options<ReadDocumentData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    ReadDocumentResponse,
+    ReadDocumentError,
+    ThrowOnError
+  >({
+    url: "/api/documents/{document_id}",
+    ...options,
   });
 };

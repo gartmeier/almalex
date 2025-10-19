@@ -2,6 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.ai.service import create_embedding
+from app.api.schemas import MessageCreate
 from app.db.models import Chat, ChatMessage, Document, DocumentChunk
 from app.utils.helpers import nanoid
 
@@ -12,38 +13,21 @@ def get_chat(*, db: Session, chat_id: str) -> Chat | None:
     )
 
 
-def create_chat(*, db: Session, chat_id: str, message: str) -> tuple[Chat, ChatMessage]:
-    # Create chat
+def create_chat(*, db: Session, chat_id: str) -> Chat:
     db_chat = Chat(id=chat_id)
     db.add(db_chat)
-    db.flush()  # Get the chat ID without committing
-
-    # Create the initial user message
-    db_message = ChatMessage(
-        id=nanoid(),
-        chat_id=chat_id,
-        role="user",
-        content=message,
-        content_blocks=[{"type": "text", "text": message}],
-    )
-    db.add(db_message)
     db.commit()
     db.refresh(db_chat)
-    return db_chat, db_message
+    return db_chat
 
 
 # Message operations
-def create_user_message(
-    *, db: Session, message_content: str, chat_id: str
-) -> ChatMessage:
-    from app.utils.helpers import nanoid
-
+def create_user_message(*, db: Session, message_in: MessageCreate) -> ChatMessage:
     db_message = ChatMessage(
-        id=nanoid(),
-        chat_id=chat_id,
+        chat_id=message_in.chat_id,
         role="user",
-        content=message_content,
-        content_blocks=[{"type": "text", "text": message_content}],
+        content=message_in.content,
+        content_blocks=[{"type": "text", "text": message_in.content}],
     )
     db.add(db_message)
     db.commit()

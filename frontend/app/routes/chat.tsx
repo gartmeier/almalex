@@ -65,12 +65,12 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      let res = await fetch("/api/chats", {
+      let res = await fetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: chatId, message }),
+        body: JSON.stringify({ chat_id: chatId, content: message }),
       });
 
       if (res.status === 429) {
@@ -120,12 +120,12 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      let res = await fetch(`/api/chats/${chatId}/messages`, {
+      let res = await fetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content: input }),
+        body: JSON.stringify({ chat_id: chatId, content: input }),
       });
 
       if (res.status === 429) {
@@ -154,7 +154,6 @@ export default function Component({ params }: Route.ComponentProps) {
     let decoder = new TextDecoder();
 
     let eventHandlers: Record<string, (event: ServerSentEvent) => void> = {
-      chat_title: handleChatTitleEvent,
       message_id: handleMessageIdEvent,
       message_delta: handleMessageDeltaEvent,
       search_query: handleSearchQueryEvent,
@@ -178,11 +177,6 @@ export default function Component({ params }: Route.ComponentProps) {
         }
       }
     }
-  }
-
-  function handleChatTitleEvent(event: ServerSentEvent) {
-    let title = JSON.parse(event.data);
-    document.title = `${title} | Alma Lex`;
   }
 
   function handleMessageIdEvent(event: ServerSentEvent) {
