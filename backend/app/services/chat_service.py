@@ -9,7 +9,8 @@ from app.db.session import SessionLocal
 def stream_completion(chat_id: str, lang: Language = "de"):
     with SessionLocal() as db:
         chat = crud.get_chat(db=db, chat_id=chat_id)
-        assert chat is not None
+        if chat is None:
+            raise ValueError(f"Chat not found: {chat_id}")
 
         existing_messages = list(chat.messages)
 
