@@ -23,9 +23,7 @@ def create_chat(*, db: Session, chat_id: str) -> Chat:
 
 # Message operations
 def create_user_message(*, db: Session, message_in: MessageCreate) -> ChatMessage:
-
     db_message = ChatMessage(
-        id=nanoid(),
         chat_id=message_in.chat_id,
         role="user",
         content=message_in.content,
