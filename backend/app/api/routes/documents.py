@@ -1,18 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, ConfigDict
 
 from app.api.deps import SessionDep
+from app.api.schemas.document import DocumentRead
 from app.crud.document import get_document
 
 router = APIRouter(prefix="/documents", tags=["documents"])
-
-
-class DocumentRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    title: str
-    url: str | None
 
 
 @router.get("/{document_id}", response_model=DocumentRead)

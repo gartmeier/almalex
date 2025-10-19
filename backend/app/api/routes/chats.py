@@ -2,7 +2,7 @@ from fastapi import APIRouter, Cookie, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.api.deps import SessionDep
-from app.api.schemas import ChatDetail, MessageCreate
+from app.api.schemas.chat import ChatDetail, MessageCreate
 from app.core.types import Language
 from app.crud.chat import create_chat, create_user_message, get_chat
 from app.services import chat_service

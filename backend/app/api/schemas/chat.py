@@ -2,17 +2,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from app.api.schemas.search import SearchResult
 
-# Content Block Schemas
+
 class TextContentBlock(BaseModel):
     type: Literal["text"]
     text: str
-
-
-class SearchResult(BaseModel):
-    id: int
-    title: str
-    url: str
 
 
 class SearchContentBlock(BaseModel):
@@ -22,7 +17,6 @@ class SearchContentBlock(BaseModel):
     results: list[SearchResult]
 
 
-# Message Schemas
 class MessageCreate(BaseModel):
     chat_id: str
     content: str
@@ -37,7 +31,6 @@ class MessageDetail(BaseModel):
     content_blocks: list[SearchContentBlock | TextContentBlock]
 
 
-# Chat Schemas
 class ChatCreate(BaseModel):
     id: str
     message: str

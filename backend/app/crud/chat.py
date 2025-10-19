@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.schemas import MessageCreate
+from app.api.schemas.chat import MessageCreate
 from app.db.models import Chat, ChatMessage
 
 
