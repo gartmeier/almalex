@@ -17,7 +17,6 @@ export type HttpValidationError = {
 };
 
 export type MessageCreate = {
-  chat_id: string;
   content: string;
 };
 
