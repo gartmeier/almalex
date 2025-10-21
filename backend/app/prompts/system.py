@@ -66,7 +66,7 @@ RESPONSE STRUCTURE:
 {question}
 </question>
 
-Respond in Swiss German. Make ALL legal citations clickable links using the document IDs. Do NOT add source disclaimers."""
+Respond in Schweizer Hochdeutsch. Make ALL legal citations clickable links using the document IDs. Do NOT add source disclaimers."""
 
 
 def _build_response_prompt_en(context: str, question: str) -> str:
