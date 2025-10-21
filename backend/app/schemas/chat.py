@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.api.schemas.search import SearchResult
+from app.schemas.search import SearchResult
 
 
 class TextContentBlock(BaseModel):

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-from app.api.deps import SessionDep
-from app.api.schemas.document import DocumentRead
-from app.crud.document import get_document
+from app.core.deps import SessionDep
+from app.schemas.document import DocumentRead
+from app.services.document import get_document
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 

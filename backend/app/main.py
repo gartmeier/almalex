@@ -1,13 +1,13 @@
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.routing import APIRoute
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.api.main import api_router
 from app.core.config import settings
-from app.limiter import limiter
+from app.core.limiter import limiter
+from app.routes import chats, documents
 
 # Initialize Sentry only if DSN is configured
 if settings.sentry_dsn:
@@ -21,6 +21,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add SlowAPI middleware to inject rate limit headers
 app.add_middleware(SlowAPIMiddleware)
+
+# Create API router
+api_router = APIRouter()
+api_router.include_router(chats.router)
+api_router.include_router(documents.router)
 
 app.include_router(api_router, prefix="/api")
 
