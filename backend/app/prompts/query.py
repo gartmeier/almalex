@@ -1,13 +1,34 @@
-Sie sind ein KI-Assistent, der eine Datenbankabfrage für eine Vektordatenbank generieren soll. Die Datenbank enthält
+"""Prompts for query processing and enhancement."""
+
+import re
+
+
+def _inline_message(text: str) -> str:
+    """Collapse whitespace in text to single spaces."""
+    return re.sub(r"\s+", " ", text)
+
+
+def build_search_query_prompt(messages: list) -> str:
+    """Build prompt for generating search queries from conversation.
+
+    Args:
+        messages: List of ChatMessage objects with role and content
+
+    Returns:
+        Formatted prompt for query generation
+    """
+    conversation = "\n".join(
+        f"{msg.role.capitalize()}: {_inline_message(msg.content)}" for msg in messages
+    )
+
+    return f"""Sie sind ein KI-Assistent, der eine Datenbankabfrage für eine Vektordatenbank generieren soll. Die Datenbank enthält
 Schweizer Bundesrecht Gesetzesartikel und Bundesgerichtsentscheide. Ihre Aufgabe ist es, basierend auf einer
 Konversation zwischen einem Benutzer und einer KI, eine relevante Abfrage zu erstellen.
 
 Hier ist die Konversation:
 
 <conversation>
-{% for message in messages %}
-{{ message.role|capitalize }}: {{ message.content|inline_message }}
-{% endfor %}
+{conversation}
 </conversation>
 
 Analysieren Sie die obige Konversation sorgfältig und identifizieren Sie die Kernbegriffe der rechtlichen Fragestellung.
@@ -41,4 +62,4 @@ Die Abfrage sollte:
 
 Antworten Sie NUR mit der natürlichen Suchabfrage, sonst nichts.
 
-Suchabfrage:
+Suchabfrage:"""

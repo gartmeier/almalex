@@ -9,7 +9,9 @@ from app.core.config import settings
 from app.core.types import Language
 from app.db.models import Chat, ChatMessage, DocumentChunk
 from app.db.session import SessionLocal
-from app.prompts import render
+from app.prompts.query import build_search_query_prompt
+from app.prompts.system import build_response_prompt
+from app.prompts.title import build_title_prompt
 from app.schemas.chat import MessageCreate
 from app.services.retrieval import rerank_chunks, retrieve
 from app.utils.formatters import format_chunks
@@ -60,7 +62,7 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
 
 # LLM operations
 def generate_title(user_message: str) -> str:
-    prompt = render("title.md", user_message=user_message)
+    prompt = build_title_prompt(user_message)
 
     response = openai_client.responses.create(
         model=settings.openai_title_model,
@@ -82,19 +84,7 @@ def generate_answer(
     question = messages[-1].content
     context = format_chunks(search_results)
 
-    # Map language code to template file
-    template_map = {
-        "de": "response_de.md",
-        "fr": "response_fr.md",
-        "en": "response_en.md",
-    }
-    template = template_map[lang]
-
-    prompt = render(
-        template,
-        question=question,
-        context=context,
-    )
+    prompt = build_response_prompt(context, question, lang)
 
     openai_messages: list = [
         {"role": "system", "content": "You are a helpful AI assistant"},
@@ -114,7 +104,7 @@ def generate_answer(
 
 
 def generate_query(messages: list[ChatMessage]):
-    prompt = render("query.md", messages=messages)
+    prompt = build_search_query_prompt(messages)
 
     response = openai_client.responses.create(
         input=prompt,
