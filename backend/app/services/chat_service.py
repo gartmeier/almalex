@@ -1,9 +1,10 @@
 import json
 
-from app.ai.service import create_embedding, generate_answer, generate_query
+from app.ai.chat import generate_answer, generate_query
+from app.ai.reranking import rerank_chunks
 from app.core.types import Language
 from app.crud.chat import create_assistant_message, get_chat
-from app.crud.search import search_similar
+from app.crud.search import retrieve
 from app.db.session import SessionLocal
 
 
@@ -21,16 +22,32 @@ def stream_completion(chat_id: str, lang: Language = "de"):
         search_query = generate_query(existing_messages)
         yield format_event("search_query", search_query)
 
-        query_embedding = create_embedding(search_query)
-        document_chunks, documents = search_similar(db=db, embedding=query_embedding)
+        # Retrieve and rerank separately by source for diversity
+        fedlex_chunks = retrieve(db=db, query=search_query, source="fedlex_article", top_k=100)
+        fedlex_chunks = rerank_chunks(search_query, fedlex_chunks, top_k=12)
 
-        search_results = [
-            {"id": doc.id, "title": doc.title, "url": doc.url} for doc in documents
-        ]
+        bge_chunks = retrieve(db=db, query=search_query, source="bge", top_k=100)
+        bge_chunks = rerank_chunks(search_query, bge_chunks, top_k=8)
+
+        # Combine: 60% laws, 40% court decisions (total 20)
+        chunks = fedlex_chunks + bge_chunks
+
+        # Extract unique documents for display
+        seen_doc_ids = set()
+        search_results = []
+        for chunk in chunks:
+            if chunk.document.id not in seen_doc_ids:
+                seen_doc_ids.add(chunk.document.id)
+                search_results.append({
+                    "id": chunk.document.id,
+                    "title": chunk.document.title,
+                    "url": chunk.document.url,
+                })
+
         yield format_event("search_results", search_results)
 
         response_stream = generate_answer(
-            messages=existing_messages, search_results=document_chunks, lang=lang
+            messages=existing_messages, search_results=chunks, lang=lang
         )
         complete_text = ""
 

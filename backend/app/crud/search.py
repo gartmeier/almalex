@@ -1,142 +1,131 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, literal, select, union_all
 from sqlalchemy.orm import Session, selectinload
 
-from app.ai.service import create_embedding
-from app.db.models import Document, DocumentChunk
+from app.ai.embeddings import create_embedding
+from app.db.models import DocumentChunk
 
 
-def search(*, db: Session, query: str, top_k: int = 20):
-    embedding = create_embedding(query)
-    return db.scalars(
-        select(DocumentChunk)
-        .order_by(DocumentChunk.embedding.l2_distance(embedding))
-        .limit(top_k)
-    )
+def diversify_chunks(
+    chunks: list[DocumentChunk],
+    target_distribution: dict[str, float] = {"fedlex_article": 0.6, "bge": 0.4},
+    top_k: int = 100,
+) -> list[DocumentChunk]:
+    """Diversify chunks by document source to balance laws and court decisions.
 
+    Args:
+        chunks: Ordered chunks from retrieval
+        target_distribution: Target distribution by source (default 60% laws, 40% BGE)
+        top_k: Number of chunks to return
 
-def search_similar(
-    *, db: Session, embedding: list[float], top_k: int = 20
-) -> tuple[list[DocumentChunk], list[Document]]:
-    """Return document chunks and unique documents from similarity search."""
-    result = db.execute(
-        select(
-            DocumentChunk,
-            DocumentChunk.embedding.l2_distance(embedding).label("distance"),
-        )
-        .options(selectinload(DocumentChunk.document))
-        .order_by(DocumentChunk.embedding.l2_distance(embedding))
-        .limit(top_k)
-    ).all()
+    Returns:
+        Diversified list maintaining relevance order within source groups
+    """
+    if not chunks:
+        return chunks
 
-    chunks = [chunk for chunk, _ in result]
-
-    # Extract unique documents in order of first appearance
-    seen_docs = set()
-    documents = []
+    # Group by source
+    by_source: dict[str, list[DocumentChunk]] = {}
     for chunk in chunks:
-        doc_id = chunk.document.id
-        if doc_id not in seen_docs:
-            seen_docs.add(doc_id)
-            documents.append(chunk.document)
+        source = chunk.document.source
+        if source not in by_source:
+            by_source[source] = []
+        by_source[source].append(chunk)
 
-    return chunks, documents
+    # Calculate target counts
+    diversified = []
+    for source, ratio in target_distribution.items():
+        n = int(top_k * ratio)
+        diversified.extend(by_source.get(source, [])[:n])
+
+    return diversified[:top_k]
 
 
-def hybrid_search(
-    *, db: Session, query: str, top_k: int = 20, rrf_k: int = 60
-) -> tuple[list[DocumentChunk], list[Document]]:
-    """Hybrid search combining full-text and vector similarity using RRF.
+def retrieve(
+    *,
+    db: Session,
+    query: str,
+    source: str,
+    top_k: int = 100,
+    rrf_k: int = 60,
+) -> list[DocumentChunk]:
+    """Retrieve document chunks using hybrid full-text + vector ranking.
 
     Args:
         db: Database session
         query: Search query string
+        source: Filter by document source (e.g., "fedlex_article", "bge")
         top_k: Number of results to return
-        rrf_k: RRF constant (default 60, standard value)
+        rrf_k: RRF constant for ranking (default 60)
 
     Returns:
-        Tuple of (chunks, unique_documents) ordered by combined RRF score
+        List of DocumentChunk ordered by RRF score with document preloaded
     """
     embedding = create_embedding(query)
 
-    # Full-text search using simple config
-    fts_query = func.plainto_tsquery("simple", query)
+    # Filter by source
+    from app.db.models import Document
 
-    # Subquery: compute ts_rank once
-    fts_subquery = (
-        select(
-            DocumentChunk.id,
-            func.ts_rank(DocumentChunk.text_search_vector, fts_query).label("score"),
-        )
-        .where(DocumentChunk.text_search_vector.op("@@")(fts_query))
-        .subquery()
-    )
+    source_filter = Document.source == source
 
-    # Outer query: use computed score for window function and ORDER BY
-    fts_results = db.execute(
+    # CTE for vector search with ranks
+    vector_cte = (
         select(
-            fts_subquery.c.id,
-            func.row_number().over(order_by=fts_subquery.c.score.desc()).label("rank"),
+            DocumentChunk.id.label("chunk_id"),
+            func.row_number()
+            .over(order_by=DocumentChunk.embedding.l2_distance(embedding))
+            .label("rank"),
+            literal("vector").label("source"),
         )
-        .order_by(fts_subquery.c.score.desc())
-        .limit(top_k * 2)  # Fetch more for better fusion
-    ).all()
-
-    # Vector similarity search
-    # Subquery: compute l2_distance once
-    vector_subquery = (
-        select(
-            DocumentChunk.id,
-            DocumentChunk.embedding.l2_distance(embedding).label("distance"),
-        )
+        .join(DocumentChunk.document)
         .where(DocumentChunk.embedding.isnot(None))
+        .where(source_filter)
+        .limit(top_k * 2)
+        .cte("vector_ranks")
+    )
+
+    # CTE for full-text search with ranks
+    fts_query = func.plainto_tsquery("simple", query)
+    fts_cte = (
+        select(
+            DocumentChunk.id.label("chunk_id"),
+            func.row_number()
+            .over(
+                order_by=func.ts_rank(
+                    DocumentChunk.text_search_vector, fts_query
+                ).desc()
+            )
+            .label("rank"),
+            literal("fts").label("source"),
+        )
+        .join(DocumentChunk.document)
+        .where(DocumentChunk.text_search_vector.op("@@")(fts_query))
+        .where(source_filter)
+        .limit(top_k * 2)
+        .cte("fts_ranks")
+    )
+
+    # Union both search methods
+    combined = union_all(
+        select(fts_cte.c.chunk_id, fts_cte.c.rank, fts_cte.c.source),
+        select(vector_cte.c.chunk_id, vector_cte.c.rank, vector_cte.c.source),
+    ).subquery()
+
+    # Calculate RRF scores in database
+    rrf_scores = (
+        select(
+            combined.c.chunk_id,
+            func.sum(1.0 / (rrf_k + combined.c.rank)).label("rrf_score"),
+        )
+        .group_by(combined.c.chunk_id)
+        .order_by(func.sum(1.0 / (rrf_k + combined.c.rank)).desc())
+        .limit(top_k)
         .subquery()
     )
 
-    # Outer query: use computed distance for window function and ORDER BY
-    vector_results = db.execute(
-        select(
-            vector_subquery.c.id,
-            func.row_number().over(order_by=vector_subquery.c.distance).label("rank"),
-        )
-        .order_by(vector_subquery.c.distance)
-        .limit(top_k * 2)  # Fetch more for better fusion
-    ).all()
-
-    # Calculate RRF scores
-    rrf_scores = {}
-    for chunk_id, rank in fts_results:
-        rrf_scores[chunk_id] = rrf_scores.get(chunk_id, 0) + 1 / (rrf_k + rank)
-    for chunk_id, rank in vector_results:
-        rrf_scores[chunk_id] = rrf_scores.get(chunk_id, 0) + 1 / (rrf_k + rank)
-
-    # Sort by RRF score and get top_k chunk IDs
-    top_chunk_ids = sorted(
-        rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True
-    )[:top_k]
-
-    if not top_chunk_ids:
-        return [], []
-
-    # Fetch full chunk objects with documents
-    chunks = db.scalars(
+    # Fetch chunks in RRF order with documents preloaded
+    return db.scalars(
         select(DocumentChunk)
-        .where(DocumentChunk.id.in_(top_chunk_ids))
+        .join(rrf_scores, DocumentChunk.id == rrf_scores.c.chunk_id)
         .options(selectinload(DocumentChunk.document))
+        .order_by(rrf_scores.c.rrf_score.desc())
     ).all()
-
-    # Preserve RRF order
-    chunks_dict = {chunk.id: chunk for chunk in chunks}
-    ordered_chunks = [
-        chunks_dict[chunk_id] for chunk_id in top_chunk_ids if chunk_id in chunks_dict
-    ]
-
-    # Extract unique documents in order
-    seen_docs = set()
-    documents = []
-    for chunk in ordered_chunks:
-        doc_id = chunk.document.id
-        if doc_id not in seen_docs:
-            seen_docs.add(doc_id)
-            documents.append(chunk.document)
-
-    return ordered_chunks, documents

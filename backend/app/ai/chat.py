@@ -75,9 +75,14 @@ def generate_query(messages: list[ChatMessage]):
     return response.output_text
 
 
-def create_embedding(input: str):
-    response = client.embeddings.create(
-        input=input,
-        model=settings.openai_embedding_model,
+def generate_text(messages: list[dict]):
+    """Generate text from chat messages (used by CLI)."""
+    stream = client.responses.create(
+        input=messages,
+        model=settings.openai_response_model,
+        stream=True,
     )
-    return response.data[0].embedding
+
+    for event in stream:
+        if event.type == "response.output_text.delta":
+            yield event.delta
