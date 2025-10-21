@@ -17,7 +17,6 @@ export type HttpValidationError = {
 };
 
 export type MessageCreate = {
-  chat_id: string;
   content: string;
 };
 
@@ -58,7 +57,7 @@ export type ReadChatData = {
     chat_id: string;
   };
   query?: never;
-  url: "/api/{chat_id}";
+  url: "/api/chats/{chat_id}";
 };
 
 export type ReadChatErrors = {
@@ -81,9 +80,11 @@ export type ReadChatResponse = ReadChatResponses[keyof ReadChatResponses];
 
 export type CreateMessageData = {
   body: MessageCreate;
-  path?: never;
+  path: {
+    chat_id: string;
+  };
   query?: never;
-  url: "/api/messages";
+  url: "/api/chats/{chat_id}/messages";
 };
 
 export type CreateMessageErrors = {

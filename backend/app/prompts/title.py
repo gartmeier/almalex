@@ -1,4 +1,16 @@
-Du bist ein KI-Assistent, der Konversationstitel erstellt. Deine Aufgabe ist es, einen prägnanten, beschreibenden Titel
+"""Prompts for generating chat session titles."""
+
+
+def build_title_prompt(user_message: str) -> str:
+    """Generate a concise title for a chat session.
+
+    Args:
+        user_message: First user message in the conversation
+
+    Returns:
+        Formatted prompt for title generation
+    """
+    return f"""Du bist ein KI-Assistent, der Konversationstitel erstellt. Deine Aufgabe ist es, einen prägnanten, beschreibenden Titel
 für eine Konversation basierend auf der ersten Nachricht des Benutzers zu generieren.
 
 Befolge diese Richtlinien:
@@ -12,7 +24,7 @@ Befolge diese Richtlinien:
 7. Wandle Fragen wo angebracht in Themenaussagen um
 8. Erstelle den Titel in derselben Sprache wie die Nachricht des Benutzers
 
-Basierend auf der ersten Nachricht des Benutzers: "{{ user_message }}", generiere einen passenden Titel für diese
+Basierend auf der ersten Nachricht des Benutzers: "{user_message}", generiere einen passenden Titel für diese
 Konversation.
 
-Antworte NUR mit dem Titeltext, sonst nichts.
+Antworte NUR mit dem Titeltext, sonst nichts."""

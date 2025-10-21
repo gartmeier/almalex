@@ -1,8 +1,42 @@
+import cohere
 from sqlalchemy import func, literal, select, union_all
 from sqlalchemy.orm import Session, selectinload
 
-from app.ai.embeddings import create_embedding
-from app.db.models import DocumentChunk
+from app.core.config import settings
+from app.db.models import Document, DocumentChunk
+from app.services import embedding
+
+cohere_client = cohere.ClientV2(api_key=settings.cohere_api_key)
+
+
+def rerank(
+    query: str, chunks: list[DocumentChunk], top_k: int | None = None
+) -> list[DocumentChunk]:
+    """Rerank chunks using Cohere's reranking model.
+
+    Args:
+        query: Search query
+        chunks: Chunks to rerank
+        top_k: Number of top results to return (None = return all reranked)
+
+    Returns:
+        Reranked chunks
+    """
+    if not chunks:
+        return chunks
+
+    documents = [chunk.text for chunk in chunks]
+
+    response = cohere_client.rerank(
+        model=settings.cohere_rerank_model,
+        query=query,
+        documents=documents,
+        top_n=top_k or len(chunks),
+    )
+
+    # Reorder chunks by Cohere's ranking
+    reranked = [chunks[result.index] for result in response.results]
+    return reranked
 
 
 def diversify_chunks(
@@ -60,11 +94,7 @@ def retrieve(
     Returns:
         List of DocumentChunk ordered by RRF score with document preloaded
     """
-    embedding = create_embedding(query)
-
-    # Filter by source
-    from app.db.models import Document
-
+    query_embedding = embedding.embed_text(query)
     source_filter = Document.source == source
 
     # CTE for vector search with ranks
@@ -72,14 +102,14 @@ def retrieve(
         select(
             DocumentChunk.id.label("chunk_id"),
             func.row_number()
-            .over(order_by=DocumentChunk.embedding.l2_distance(embedding))
+            .over(order_by=DocumentChunk.embedding.l2_distance(query_embedding))
             .label("rank"),
             literal("vector").label("source"),
         )
         .join(DocumentChunk.document)
         .where(DocumentChunk.embedding.isnot(None))
         .where(source_filter)
-        .order_by(DocumentChunk.embedding.l2_distance(embedding))
+        .order_by(DocumentChunk.embedding.l2_distance(query_embedding))
         .limit(top_k * 2)
         .cte("vector_ranks")
     )

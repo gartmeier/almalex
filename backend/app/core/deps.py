@@ -4,8 +4,8 @@ import redis
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.core.redis import get_redis
 from app.db.session import SessionLocal
-from app.redis import get_redis
 
 
 def get_session():
