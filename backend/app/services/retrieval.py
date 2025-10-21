@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
 from app.db.models import Document, DocumentChunk
-from app.services.embedding import create_embedding
+from app.services import embedding
 
 cohere_client = cohere.ClientV2(api_key=settings.cohere_api_key)
 
 
-def rerank_chunks(
+def rerank(
     query: str, chunks: list[DocumentChunk], top_k: int | None = None
 ) -> list[DocumentChunk]:
     """Rerank chunks using Cohere's reranking model.
@@ -94,7 +94,7 @@ def retrieve(
     Returns:
         List of DocumentChunk ordered by RRF score with document preloaded
     """
-    embedding = create_embedding(query)
+    query_embedding = embedding.embed_text(query)
     source_filter = Document.source == source
 
     # CTE for vector search with ranks
@@ -102,14 +102,14 @@ def retrieve(
         select(
             DocumentChunk.id.label("chunk_id"),
             func.row_number()
-            .over(order_by=DocumentChunk.embedding.l2_distance(embedding))
+            .over(order_by=DocumentChunk.embedding.l2_distance(query_embedding))
             .label("rank"),
             literal("vector").label("source"),
         )
         .join(DocumentChunk.document)
         .where(DocumentChunk.embedding.isnot(None))
         .where(source_filter)
-        .order_by(DocumentChunk.embedding.l2_distance(embedding))
+        .order_by(DocumentChunk.embedding.l2_distance(query_embedding))
         .limit(top_k * 2)
         .cte("vector_ranks")
     )

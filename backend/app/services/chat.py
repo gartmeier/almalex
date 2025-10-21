@@ -1,22 +1,13 @@
 import json
-from typing import Sequence
 
-from openai import OpenAI
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.config import settings
 from app.core.types import Language
-from app.db.models import Chat, ChatMessage, DocumentChunk
+from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
-from app.prompts.query import build_search_query_prompt
-from app.prompts.system import build_response_prompt
-from app.prompts.title import build_title_prompt
 from app.schemas.chat import MessageCreate
-from app.services.retrieval import rerank_chunks, retrieve
-from app.utils.formatters import format_chunks
-
-openai_client = OpenAI(api_key=settings.openai_api_key)
+from app.services import llm, retrieval
 
 
 # Database operations
@@ -60,72 +51,6 @@ def create_assistant_message(*, db: Session, chat_id: str) -> ChatMessage:
     return db_message
 
 
-# LLM operations
-def generate_title(user_message: str) -> str:
-    prompt = build_title_prompt(user_message)
-
-    response = openai_client.responses.create(
-        model=settings.openai_title_model,
-        input=prompt,
-    )
-    return clean_title(response.output_text)
-
-
-def clean_title(title: str) -> str:
-    return title.replace('"', "").replace("'", "")
-
-
-def generate_answer(
-    *,
-    messages: list[ChatMessage],
-    search_results: Sequence[DocumentChunk],
-    lang: Language = "de",
-):
-    question = messages[-1].content
-    context = format_chunks(search_results)
-
-    prompt = build_response_prompt(context, question, lang)
-
-    openai_messages: list = [
-        {"role": "system", "content": "You are a helpful AI assistant"},
-        *[{"role": m.role, "content": m.content} for m in messages[:-1]],
-        {"role": "user", "content": prompt},
-    ]
-
-    stream = openai_client.responses.create(
-        input=openai_messages,
-        model=settings.openai_response_model,
-        stream=True,
-    )
-
-    for event in stream:
-        if event.type == "response.output_text.delta":
-            yield event.delta
-
-
-def generate_query(messages: list[ChatMessage]):
-    prompt = build_search_query_prompt(messages)
-
-    response = openai_client.responses.create(
-        input=prompt,
-        model=settings.openai_query_model,
-    )
-    return response.output_text
-
-
-def generate_text(messages: list[dict]):
-    """Generate text from chat messages (used by CLI)."""
-    stream = openai_client.responses.create(
-        input=messages,
-        model=settings.openai_response_model,
-        stream=True,
-    )
-
-    for event in stream:
-        if event.type == "response.output_text.delta":
-            yield event.delta
-
-
 # Service operations
 def stream_completion(chat_id: str, lang: Language = "de"):
     with SessionLocal() as db:
@@ -138,17 +63,19 @@ def stream_completion(chat_id: str, lang: Language = "de"):
         assistant_message = create_assistant_message(db=db, chat_id=chat.id)
         yield format_event("message_id", assistant_message.id)
 
-        search_query = generate_query(existing_messages)
+        search_query = llm.generate_search_query(existing_messages)
         yield format_event("search_query", search_query)
 
         # Retrieve and rerank separately by source for diversity
-        fedlex_chunks = retrieve(
+        fedlex_chunks = retrieval.retrieve(
             db=db, query=search_query, source="fedlex_article", top_k=100
         )
-        fedlex_chunks = rerank_chunks(search_query, fedlex_chunks, top_k=12)
+        fedlex_chunks = retrieval.rerank(search_query, fedlex_chunks, top_k=12)
 
-        bge_chunks = retrieve(db=db, query=search_query, source="bge", top_k=100)
-        bge_chunks = rerank_chunks(search_query, bge_chunks, top_k=8)
+        bge_chunks = retrieval.retrieve(
+            db=db, query=search_query, source="bge", top_k=100
+        )
+        bge_chunks = retrieval.rerank(search_query, bge_chunks, top_k=8)
 
         # Combine: 60% laws, 40% court decisions (total 20)
         chunks = fedlex_chunks + bge_chunks
@@ -169,7 +96,7 @@ def stream_completion(chat_id: str, lang: Language = "de"):
 
         yield format_event("search_results", search_results)
 
-        response_stream = generate_answer(
+        response_stream = llm.generate_answer(
             messages=existing_messages, search_results=chunks, lang=lang
         )
         complete_text = ""
