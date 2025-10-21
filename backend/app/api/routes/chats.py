@@ -5,7 +5,7 @@ from app.api.deps import SessionDep
 from app.api.schemas.chat import ChatDetail, MessageCreate
 from app.core.types import Language
 from app.crud.chat import create_chat, create_user_message, get_chat
-from app.services import chat_service
+from app.services.chat import stream_completion
 
 router = APIRouter(tags=["chats"])
 
@@ -46,6 +46,6 @@ async def create_message(
     create_user_message(db=db, message_in=message_in)
 
     return StreamingResponse(
-        chat_service.stream_completion(chat.id, lang),
+        stream_completion(chat.id, lang),
         media_type="text/event-stream",
     )
