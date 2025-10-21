@@ -124,10 +124,17 @@ function renderContentBlock(
               if (href?.match(/^#\d+$/)) {
                 let documentId = parseInt(href.slice(1)); // Remove the # prefix and convert to number
                 // Find the document in search results
-                let document = searchResults.find((result) => result.id === documentId);
+                let document = searchResults.find(
+                  (result) => result.id === documentId,
+                );
                 if (document) {
                   return (
-                    <a href={document.url} target="_blank" rel="noopener noreferrer" {...props}>
+                    <a
+                      href={document.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      {...props}
+                    >
                       {children}
                     </a>
                   );
@@ -138,7 +145,7 @@ function renderContentBlock(
                   extra: {
                     documentId,
                     citationText: children?.toString(),
-                    availableDocumentIds: searchResults.map(r => r.id),
+                    availableDocumentIds: searchResults.map((r) => r.id),
                   },
                 });
                 // Fallback if document not found in search results

@@ -30,11 +30,13 @@ React-based web application providing an intuitive chat interface for exploring 
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 2. Generate API client (requires backend running):
+
 ```bash
 pnpm generate-client
 ```
@@ -42,12 +44,14 @@ pnpm generate-client
 ## Development
 
 ### Start development server
+
 ```bash
 # Start with hot module replacement at http://localhost:5173
 pnpm dev
 ```
 
 ### Build for production
+
 ```bash
 # Type checking
 pnpm typecheck
@@ -60,6 +64,7 @@ pnpm start
 ```
 
 ### Code quality
+
 ```bash
 # Format code with Prettier
 pnpm format
@@ -71,6 +76,7 @@ pnpm typecheck
 ## Architecture
 
 ### Routing Structure
+
 - Client-side routing without SSR (`ssr: false`)
 - All routes nested under `layout.tsx` wrapper
 - Language-specific routes: `/de/*`, `/en/*`, `/fr/*`
@@ -120,6 +126,7 @@ frontend/
 ## Docker Deployment
 
 Build and run with Docker:
+
 ```bash
 # Build image
 docker build -t almalex-frontend .

@@ -6,7 +6,7 @@ from app.core.types import Language
 from app.schemas.chat import ChatDetail, MessageCreate
 from app.services import chat
 
-router = APIRouter(tags=["chats"])
+router = APIRouter(prefix="/chats", tags=["chats"])
 
 
 @router.get("/{chat_id}", response_model=ChatDetail)
@@ -20,7 +20,7 @@ async def read_chat(chat_id: str, db: SessionDep):
 
 
 @router.post(
-    "/messages",
+    "/{chat_id}/messages",
     response_class=StreamingResponse,
     responses={
         200: {
@@ -33,16 +33,17 @@ async def read_chat(chat_id: str, db: SessionDep):
     response_model=None,
 )
 async def create_message(
-    message_in: MessageCreate,
+    chat_id: str,
+    message_data: MessageCreate,
     db: SessionDep,
     lang: Language = Cookie(default="de"),
 ):
-    chat_obj = chat.get_chat(db=db, chat_id=message_in.chat_id)
+    chat_obj = chat.get_chat(db=db, chat_id=chat_id)
 
     if not chat_obj:
-        chat_obj = chat.create_chat(db=db, chat_id=message_in.chat_id)
+        chat_obj = chat.create_chat(db=db, chat_id=chat_id)
 
-    chat.create_user_message(db=db, message_in=message_in)
+    chat.create_user_message(db=db, chat_id=chat_id, content=message_data.content)
 
     return StreamingResponse(
         chat.stream_completion(chat_obj.id, lang),

@@ -65,7 +65,7 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      let res = await fetch("/api/messages", {
+      let res = await fetch(`/api/chats/${chatId}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

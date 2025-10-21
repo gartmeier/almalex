@@ -21,7 +21,7 @@ export function MessageList({ messages }: { messages: MessageDetail[] }) {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observerRef.current.observe(endRef.current);

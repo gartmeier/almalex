@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.types import Language
 from app.db.models import Chat, ChatMessage
 from app.db.session import SessionLocal
-from app.schemas.chat import MessageCreate
 from app.services import llm, retrieval
 
 
@@ -25,12 +24,12 @@ def create_chat(*, db: Session, chat_id: str) -> Chat:
     return db_chat
 
 
-def create_user_message(*, db: Session, message_in: MessageCreate) -> ChatMessage:
+def create_user_message(*, db: Session, chat_id: str, content: str) -> ChatMessage:
     db_message = ChatMessage(
-        chat_id=message_in.chat_id,
+        chat_id=chat_id,
         role="user",
-        content=message_in.content,
-        content_blocks=[{"type": "text", "text": message_in.content}],
+        content=content,
+        content_blocks=[{"type": "text", "text": content}],
     )
     db.add(db_message)
     db.commit()

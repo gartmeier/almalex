@@ -46,7 +46,7 @@ export const readChat = <ThrowOnError extends boolean = false>(
     ReadChatError,
     ThrowOnError
   >({
-    url: "/api/{chat_id}",
+    url: "/api/chats/{chat_id}",
     ...options,
   });
 };
@@ -62,7 +62,7 @@ export const createMessage = <ThrowOnError extends boolean = false>(
     CreateMessageError,
     ThrowOnError
   >({
-    url: "/api/messages",
+    url: "/api/chats/{chat_id}/messages",
     ...options,
     headers: {
       "Content-Type": "application/json",
