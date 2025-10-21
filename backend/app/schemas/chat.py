@@ -18,7 +18,6 @@ class SearchContentBlock(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    chat_id: str
     content: str
 
 
