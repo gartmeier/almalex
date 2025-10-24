@@ -2,19 +2,28 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.search import SearchResult
-
 
 class TextContentBlock(BaseModel):
     type: Literal["text"]
     text: str
 
 
-class SearchContentBlock(BaseModel):
-    type: Literal["search"]
-    status: Literal["completed", "in_progress"] = "completed"
-    query: str
-    results: list[SearchResult]
+class ReasoningContentBlock(BaseModel):
+    type: Literal["reasoning"]
+    text: str
+
+
+class ToolCallContentBlock(BaseModel):
+    type: Literal["tool_call"]
+    id: str
+    name: str
+    arguments: dict[str, Any]
+
+
+class ToolResultContentBlock(BaseModel):
+    type: Literal["tool_result"]
+    id: str
+    result: dict[str, Any]
 
 
 class MessageCreate(BaseModel):
@@ -27,7 +36,12 @@ class MessageDetail(BaseModel):
     id: str
     role: str
     content: str
-    content_blocks: list[SearchContentBlock | TextContentBlock]
+    content_blocks: list[
+        TextContentBlock
+        | ReasoningContentBlock
+        | ToolCallContentBlock
+        | ToolResultContentBlock
+    ]
 
 
 class ChatCreate(BaseModel):
