@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -18,7 +18,6 @@ class SearchContentBlock(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    chat_id: str
     content: str
 
 
@@ -42,3 +41,37 @@ class ChatDetail(BaseModel):
     id: str
     title: str | None
     messages: list[MessageDetail]
+
+
+class ReasoningEvent(BaseModel):
+    type: Literal["reasoning"]
+    delta: str
+
+
+class TextEvent(BaseModel):
+    type: Literal["text"]
+    delta: str
+
+
+class ToolCallEvent(BaseModel):
+    type: Literal["tool_call"]
+    id: str
+    name: str
+    arguments: dict[str, Any]
+
+
+class ToolResultEvent(BaseModel):
+    type: Literal["tool_result"]
+    id: str
+    result: dict[str, Any]
+
+
+class DoneEvent(BaseModel):
+    type: Literal["done"]
+
+
+StreamEvent = ReasoningEvent | TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent
+
+
+class SSEMessage(BaseModel):
+    data: StreamEvent

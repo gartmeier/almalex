@@ -3,20 +3,21 @@ from fastapi.responses import StreamingResponse
 
 from app.core.deps import SessionDep
 from app.core.types import Language
-from app.schemas.chat import ChatDetail, MessageCreate
-from app.services import chat
+from app.db.session import SessionLocal
+from app.schemas.chat import ChatDetail, MessageCreate, SSEMessage
+from app.services import chat as chat_service
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
 @router.get("/{chat_id}", response_model=ChatDetail)
 async def read_chat(chat_id: str, db: SessionDep):
-    chat_obj = chat.get_chat(db=db, chat_id=chat_id)
+    chat = chat_service.get_chat(db=db, chat_id=chat_id)
 
-    if not chat_obj:
+    if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    return chat_obj
+    return chat
 
 
 @router.post(
@@ -24,9 +25,12 @@ async def read_chat(chat_id: str, db: SessionDep):
     response_class=StreamingResponse,
     responses={
         200: {
-            "description": "Event stream",
+            "description": "Server-Sent Events stream of chat completion",
             "content": {
-                "text/event-stream": {"schema": {"type": "string", "format": "binary"}}
+                "text/event-stream": {
+                    "schema": SSEMessage.model_json_schema(),
+                    "example": 'data: {"type": "text", "delta": "Hello"}\n\n',
+                }
             },
         }
     },
@@ -35,17 +39,22 @@ async def read_chat(chat_id: str, db: SessionDep):
 async def create_message(
     chat_id: str,
     message_data: MessageCreate,
-    db: SessionDep,
     lang: Language = Cookie(default="de"),
 ):
-    chat_obj = chat.get_chat(db=db, chat_id=chat_id)
+    def event_stream():
+        db = SessionLocal()
 
-    if not chat_obj:
-        chat_obj = chat.create_chat(db=db, chat_id=chat_id)
-
-    chat.create_user_message(db=db, chat_id=chat_id, content=message_data.content)
+        try:
+            return chat_service.process_message(
+                db=db,
+                chat_id=chat_id,
+                message=message_data.content,
+                lang=lang,
+            )
+        finally:
+            db.close()
 
     return StreamingResponse(
-        chat.stream_completion(chat_obj.id, lang),
+        event_stream(),
         media_type="text/event-stream",
     )
