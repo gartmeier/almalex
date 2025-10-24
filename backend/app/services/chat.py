@@ -146,12 +146,66 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
         db.query(ChatMessage)
         .filter(ChatMessage.chat_id == chat_id)
         .order_by(desc(ChatMessage.created_at))
-        .limit(1)
+        .limit(10)
         .all()
     )
 
     history = list(reversed(history))
     messages_for_llm = [{"role": msg.role, "content": msg.content} for msg in history]
 
+    content_blocks = []
+    current_item = None
+    complete_text = ""
+
     for event in llm.generate_with_tools(messages_for_llm, effort="low"):
+        if event.type == "reasoning":
+            if current_item and current_item["type"] == "reasoning":
+                current_item["text"] += event.delta
+            else:
+                if current_item:
+                    content_blocks.append(current_item)
+                current_item = {"type": "reasoning", "text": event.delta}
+
+        elif event.type == "text":
+            complete_text += event.delta
+            if current_item and current_item["type"] == "text":
+                current_item["text"] += event.delta
+            else:
+                if current_item:
+                    content_blocks.append(current_item)
+                current_item = {"type": "text", "text": event.delta}
+
+        elif event.type == "tool_call":
+            if current_item:
+                content_blocks.append(current_item)
+                current_item = None
+            content_blocks.append(
+                {
+                    "type": "tool_call",
+                    "id": event.id,
+                    "name": event.name,
+                    "arguments": event.arguments,
+                }
+            )
+
+        elif event.type == "tool_result":
+            if current_item:
+                content_blocks.append(current_item)
+                current_item = None
+            content_blocks.append(
+                {"type": "tool_result", "id": event.id, "result": event.result}
+            )
+
         yield f"data: {event.model_dump_json()}\n\n"
+
+    if current_item:
+        content_blocks.append(current_item)
+
+    assistant_msg = ChatMessage(
+        chat_id=chat_id,
+        role="assistant",
+        content=complete_text,
+        content_blocks=content_blocks,
+    )
+    db.add(assistant_msg)
+    db.commit()
