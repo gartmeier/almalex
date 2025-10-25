@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
+from openai.types.responses import ResponseStreamEvent
 
 from app.db.session import SessionLocal
-from app.schemas.response import ResponseRequest, SSEMessage
+from app.schemas.response import ResponseRequest
 from app.services import response
 
 router = APIRouter(prefix="/responses", tags=["responses"])
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/responses", tags=["responses"])
             "description": "Server-Sent Events stream of OpenAI response events",
             "content": {
                 "text/event-stream": {
-                    "schema": SSEMessage.model_json_schema(),
+                    "schema": ResponseStreamEvent.model_json_schema(),
                     "example": 'data: {"type": "response.text.delta", "delta": "Hello"}\n\n',
                 }
             },
