@@ -134,6 +134,80 @@ def call_function(name: str, args: dict, db: Session):
     raise ValueError(f"Unknown function: {name}")
 
 
+def _messages_to_openai_format(messages: list[ChatMessage]) -> list[dict]:
+    """Convert ChatMessage objects to OpenAI Responses API format.
+
+    Reconstructs full conversation context including:
+    - User text messages
+    - Assistant reasoning
+    - Assistant tool calls
+    - Tool call results
+    - Assistant text responses
+
+    Args:
+        messages: ChatMessage objects with content_blocks
+
+    Returns:
+        List of OpenAI API formatted message items
+    """
+    import json
+
+    openai_items = []
+
+    for msg in messages:
+        if msg.role == "user":
+            # User messages are simple
+            openai_items.append({"role": "user", "content": msg.content})
+
+        elif msg.role == "assistant":
+            # Reconstruct assistant turn from content_blocks
+            if msg.content_blocks:
+                for block in msg.content_blocks:
+                    block_type = block.get("type")
+
+                    if block_type == "reasoning":
+                        openai_items.append(
+                            {
+                                "type": "reasoning",
+                                "content": block["text"],
+                            }
+                        )
+
+                    elif block_type == "text":
+                        openai_items.append(
+                            {
+                                "type": "message",
+                                "content": block["text"],
+                            }
+                        )
+
+                    elif block_type == "tool_call":
+                        openai_items.append(
+                            {
+                                "type": "function_call",
+                                "name": block["name"],
+                                "call_id": block["id"],
+                                "arguments": json.dumps(block["arguments"]),
+                            }
+                        )
+
+                    elif block_type == "tool_result":
+                        # Serialize result to JSON
+                        result = block["result"]
+                        openai_items.append(
+                            {
+                                "type": "function_call_output",
+                                "call_id": block["id"],
+                                "output": json.dumps(result),
+                            }
+                        )
+            else:
+                # Fallback for old messages without content_blocks
+                openai_items.append({"role": "assistant", "content": msg.content})
+
+    return openai_items
+
+
 TOOLS = [
     {
         "type": "function",
@@ -198,9 +272,12 @@ def generate_with_tools(
 ) -> Iterator[StreamEvent]:
     """Generate response with automatic tool calling loop.
 
+    Reconstructs full conversation context from content_blocks including
+    previous reasoning, tool calls, and results for proper follow-up support.
+
     Args:
         db: Database session for tool functions
-        history: Chat conversation history
+        history: Chat conversation history with content_blocks
         effort: Reasoning effort level
 
     Yields:
@@ -208,8 +285,8 @@ def generate_with_tools(
     """
     import json
 
-    # Transform ChatMessage objects to OpenAI format
-    input_list = [{"role": msg.role, "content": msg.content} for msg in history]
+    # Transform ChatMessage objects to OpenAI format with full context
+    input_list = _messages_to_openai_format(history)
 
     while True:
         stream = client.responses.create(
