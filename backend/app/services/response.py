@@ -1,36 +1,12 @@
-"""LLM text generation using OpenAI API."""
+"""Response generation using OpenAI Responses API with tool calling."""
 
 from openai import OpenAI
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.prompts.title import build_title_prompt
 from app.tools import search as search_tools
 
 client = OpenAI(api_key=settings.openai_api_key)
-
-
-def generate_title(user_message: str) -> str:
-    """Generate chat title from first user message.
-
-    Args:
-        user_message: First message in conversation
-
-    Returns:
-        Clean title string (3-7 words)
-    """
-    prompt = build_title_prompt(user_message)
-
-    response = client.responses.create(
-        model=settings.openai_title_model,
-        input=prompt,
-    )
-    return _clean_title(response.output_text)
-
-
-def _clean_title(title: str) -> str:
-    """Remove quotes from generated title."""
-    return title.replace('"', "").replace("'", "")
 
 
 def call_function(name: str, args: dict, db: Session):

@@ -1,7 +1,5 @@
-from datetime import datetime
-
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Computed, DateTime, ForeignKey, Index, func
+from sqlalchemy import Computed, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,22 +43,4 @@ class DocumentChunk(Base):
 
     __table_args__ = (
         Index("idx_text_search_vector", "text_search_vector", postgresql_using="gin"),
-    )
-
-
-class Chat(Base):
-    __tablename__ = "chat"
-
-    id: Mapped[str] = mapped_column(primary_key=True)
-    openai_conversation_id: Mapped[str] = mapped_column(index=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        index=True,
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        index=True,
     )
