@@ -18,8 +18,8 @@ async def create_response(request: ResponseRequest):
             for event in response.generate_with_tools(
                 db=db,
                 conversation_id=request.conversation_id,
-                message=request.message,
-                effort=request.effort,
+                message=request.input,
+                effort=request.reasoning_effort,
             ):
                 yield f"data: {event.model_dump_json()}\n\n"
         finally:
