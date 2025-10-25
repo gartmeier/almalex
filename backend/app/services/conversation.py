@@ -23,10 +23,6 @@ def get_conversation(conversation_id: str):
         conversation_id: OpenAI conversation ID
 
     Returns:
-        Dict with conversation_id and items list
+        OpenAI conversation items
     """
-    items = client.conversations.items.list(conversation_id)
-    return {
-        "conversation_id": conversation_id,
-        "items": list(items),
-    }
+    return client.conversations.items.list(conversation_id)
