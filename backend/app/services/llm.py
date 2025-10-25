@@ -17,6 +17,7 @@ from app.schemas.chat import (
     TextEvent,
     ToolCallEvent,
     ToolResultEvent,
+    WeatherResult,
 )
 from app.utils.formatters import format_chunks
 
@@ -122,14 +123,14 @@ def generate_text(messages: list[dict]):
             yield event.delta
 
 
-def get_weather(location: str) -> dict:
+def get_weather(location: str) -> WeatherResult:
     """Fake weather function for testing tool calls."""
-    return {
-        "location": location,
-        "temperature": 22,
-        "conditions": "sunny",
-        "humidity": 65,
-    }
+    return WeatherResult(
+        location=location,
+        temperature=22,
+        conditions="sunny",
+        humidity=65,
+    )
 
 
 def call_function(name: str, args: dict):
@@ -230,7 +231,7 @@ def generate_with_tools(
                 {
                     "type": "function_call_output",
                     "call_id": tool_call.call_id,
-                    "output": json.dumps(result),
+                    "output": result.model_dump_json(),
                 }
             )
 
