@@ -3,6 +3,12 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.types import Language
 from app.db.models import Chat, ChatMessage
+from app.schemas.chat import (
+    ReasoningContentBlock,
+    TextContentBlock,
+    ToolCallContentBlock,
+    ToolResultContentBlock,
+)
 from app.services import chat as chat_service
 from app.services import llm
 
@@ -71,33 +77,33 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
 
     for event in llm.generate_with_tools(messages_for_llm, effort="low"):
         if event.type == "reasoning":
-            if current_item and current_item["type"] == "reasoning":
-                current_item["text"] += event.delta
+            if current_item and isinstance(current_item, ReasoningContentBlock):
+                current_item.text += event.delta
             else:
                 if current_item:
                     content_blocks.append(current_item)
-                current_item = {"type": "reasoning", "text": event.delta}
+                current_item = ReasoningContentBlock(type="reasoning", text=event.delta)
 
         elif event.type == "text":
             complete_text += event.delta
-            if current_item and current_item["type"] == "text":
-                current_item["text"] += event.delta
+            if current_item and isinstance(current_item, TextContentBlock):
+                current_item.text += event.delta
             else:
                 if current_item:
                     content_blocks.append(current_item)
-                current_item = {"type": "text", "text": event.delta}
+                current_item = TextContentBlock(type="text", text=event.delta)
 
         elif event.type == "tool_call":
             if current_item:
                 content_blocks.append(current_item)
                 current_item = None
             content_blocks.append(
-                {
-                    "type": "tool_call",
-                    "id": event.id,
-                    "name": event.name,
-                    "arguments": event.arguments,
-                }
+                ToolCallContentBlock(
+                    type="tool_call",
+                    id=event.id,
+                    name=event.name,
+                    arguments=event.arguments,
+                )
             )
 
         elif event.type == "tool_result":
@@ -105,7 +111,9 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
                 content_blocks.append(current_item)
                 current_item = None
             content_blocks.append(
-                {"type": "tool_result", "id": event.id, "result": event.result}
+                ToolResultContentBlock(
+                    type="tool_result", id=event.id, result=event.result
+                )
             )
 
         yield f"data: {event.model_dump_json()}\n\n"
@@ -117,7 +125,7 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
         chat_id=chat_id,
         role="assistant",
         content=complete_text,
-        content_blocks=content_blocks,
+        content_blocks=[block.model_dump() for block in content_blocks],
     )
     db.add(assistant_msg)
     db.commit()

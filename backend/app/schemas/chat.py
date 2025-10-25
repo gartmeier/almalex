@@ -3,6 +3,13 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict
 
 
+class WeatherResult(BaseModel):
+    location: str
+    temperature: int
+    conditions: str
+    humidity: int
+
+
 class TextContentBlock(BaseModel):
     type: Literal["text"]
     text: str
@@ -23,7 +30,7 @@ class ToolCallContentBlock(BaseModel):
 class ToolResultContentBlock(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: dict[str, Any]
+    result: WeatherResult
 
 
 class MessageCreate(BaseModel):
@@ -77,7 +84,7 @@ class ToolCallEvent(BaseModel):
 class ToolResultEvent(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: dict[str, Any]
+    result: WeatherResult
 
 
 class DoneEvent(BaseModel):
