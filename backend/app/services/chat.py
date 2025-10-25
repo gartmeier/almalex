@@ -75,7 +75,7 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
     current_item = None
     complete_text = ""
 
-    for event in llm.generate_with_tools(messages_for_llm, effort="low"):
+    for event in llm.generate_with_tools(messages_for_llm, db=db, effort="low"):
         if event.type == "reasoning":
             if current_item and isinstance(current_item, ReasoningContentBlock):
                 current_item.text += event.delta
