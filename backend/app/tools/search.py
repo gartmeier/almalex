@@ -19,7 +19,7 @@ def search_legal_documents(
     *,
     db: Session,
     query: str,
-    sources: list[str] | None = None,
+    sources: list[str],
     limit: int = 5,
 ) -> SearchResults:
     """Search Swiss legal database using hybrid vector + full-text search.
@@ -27,17 +27,14 @@ def search_legal_documents(
     Args:
         db: Database session
         query: Search query
-        sources: Filter by source types (["federal_law", "federal_court"], or None for all)
+        sources: Filter by source types (["federal_law", "federal_court"])
         limit: Max results to return
 
     Returns:
         SearchResults with document chunks and citation metadata
     """
     # Map friendly names to internal source identifiers
-    if sources:
-        internal_sources = [SOURCE_MAPPING.get(s, s) for s in sources]
-    else:
-        internal_sources = list(SOURCE_MAPPING.values())
+    internal_sources = [SOURCE_MAPPING.get(s, s) for s in sources]
 
     # Retrieve chunks from each source
     all_chunks = []
@@ -53,8 +50,8 @@ def search_legal_documents(
     # Always apply Cohere reranking
     reranked_chunks = retrieval.rerank(query, all_chunks, top_k=limit * 2)
 
-    # Apply diversification only when searching all sources
-    if not sources or len(sources) > 1:
+    # Apply diversification only when searching multiple sources
+    if len(sources) > 1:
         final_chunks = retrieval.diversify_chunks(reranked_chunks, top_k=limit)
     else:
         final_chunks = reranked_chunks[:limit]

@@ -152,7 +152,7 @@ TOOLS = [
                         "type": "string",
                         "enum": ["federal_law", "federal_court"],
                     },
-                    "description": "Filter by source types. If omitted, searches all sources. Use ['federal_law'] for laws only, ['federal_court'] for court decisions only.",
+                    "description": "Source types to search. Use ['federal_law'] for laws only, ['federal_court'] for court decisions only, or ['federal_law', 'federal_court'] for both.",
                 },
                 "limit": {
                     "type": "integer",
@@ -160,7 +160,7 @@ TOOLS = [
                     "default": 5,
                 },
             },
-            "required": ["query"],
+            "required": ["query", "sources"],
         },
     },
     {
