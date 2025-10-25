@@ -153,8 +153,8 @@ TOOLS = [
                 },
                 "limit": {
                     "type": "integer",
-                    "description": "Maximum number of results to return (default: 5)",
-                    "default": 5,
+                    "description": "Maximum number of results to return (default: 20)",
+                    "default": 20,
                 },
             },
             "required": ["query", "source"],

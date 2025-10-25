@@ -20,7 +20,7 @@ def search_legal_documents(
     db: Session,
     query: str,
     source: str,
-    limit: int = 5,
+    limit: int = 20,
 ) -> SearchResults:
     """Search Swiss legal database using hybrid vector + full-text search.
 
