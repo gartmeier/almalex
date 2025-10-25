@@ -63,16 +63,13 @@ def search_legal_documents(
     results = []
     for chunk in final_chunks:
         doc = chunk.document
-        metadata = doc.metadata_
 
         result = DocumentChunkResult(
+            id=chunk.id,
             chunk_text=chunk.text,
-            document_id=doc.id,
             url=doc.url or "",
             title=doc.title,
             source=doc.source,
-            law_abbreviation=metadata.get("law_abbr"),
-            article_number=metadata.get("article_num"),
         )
         results.append(result)
 
@@ -132,16 +129,13 @@ def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
     results = []
     for chunk in chunks:
         doc = chunk.document
-        metadata = doc.metadata_
 
         result = DocumentChunkResult(
+            id=chunk.id,
             chunk_text=chunk.text,
-            document_id=doc.id,
             url=doc.url or "",
             title=doc.title,
             source=doc.source,
-            law_abbreviation=metadata.get("law_abbr"),
-            article_number=metadata.get("article_num"),
         )
         results.append(result)
 
@@ -204,13 +198,11 @@ def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
         doc = chunk.document
 
         result = DocumentChunkResult(
+            id=chunk.id,
             chunk_text=chunk.text,
-            document_id=doc.id,
             url=doc.url or "",
             title=doc.title,
             source=doc.source,
-            law_abbreviation=None,
-            article_number=None,
         )
         results.append(result)
 
