@@ -1,19 +1,16 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Cookie
 
-from app.schemas.conversation import (
-    ConversationCreateRequest,
-    ConversationItemsResponse,
-    ConversationResponse,
-)
+from app.core.types import Language
+from app.schemas.conversation import ConversationItemsResponse, ConversationResponse
 from app.services import conversation
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
 @router.post("", response_model=ConversationResponse)
-async def create_conversation(request: ConversationCreateRequest):
+async def create_conversation(lang: Language = Cookie(default="de")):
     """Create new OpenAI conversation with instructions."""
-    return conversation.create_conversation(lang=request.lang)
+    return conversation.create_conversation(lang=lang)
 
 
 @router.get("/{conversation_id}/items", response_model=ConversationItemsResponse)
