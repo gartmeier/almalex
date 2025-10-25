@@ -1,15 +1,19 @@
 from fastapi import APIRouter
 
-from app.schemas.conversation import ConversationItemsResponse, ConversationResponse
+from app.schemas.conversation import (
+    ConversationCreateRequest,
+    ConversationItemsResponse,
+    ConversationResponse,
+)
 from app.services import conversation
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
 @router.post("", response_model=ConversationResponse)
-async def create_conversation():
-    """Create new OpenAI conversation."""
-    return conversation.create_conversation()
+async def create_conversation(request: ConversationCreateRequest):
+    """Create new OpenAI conversation with instructions."""
+    return conversation.create_conversation(lang=request.lang)
 
 
 @router.get("/{conversation_id}/items", response_model=ConversationItemsResponse)

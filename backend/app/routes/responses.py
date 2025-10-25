@@ -23,7 +23,6 @@ async def create_response(data: ResponseRequest):
                 conversation_id=data.conversation_id,
                 input=data.input,
                 reasoning_effort=data.reasoning_effort,
-                lang=data.lang,
             ):
                 yield f"data: {event.model_dump_json()}\n\n"
         finally:

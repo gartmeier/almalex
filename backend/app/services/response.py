@@ -4,8 +4,6 @@ from openai import OpenAI
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.types import Language
-from app.prompts.instructions import build_instructions
 from app.tools import search as search_tools
 
 client = OpenAI(api_key=settings.openai_api_key)
@@ -81,12 +79,7 @@ TOOLS = [
 
 
 def generate_with_tools(
-    *,
-    db: Session,
-    conversation_id: str,
-    input: str,
-    reasoning_effort: str = "low",
-    lang: Language = "de",
+    *, db: Session, conversation_id: str, input: str, reasoning_effort: str = "low"
 ):
     """Generate response using OpenAI Conversations API with tool calling.
 
@@ -95,19 +88,15 @@ def generate_with_tools(
         conversation_id: OpenAI conversation ID
         input: User input message
         reasoning_effort: Reasoning effort level
-        lang: Response language
 
     Yields:
         Raw OpenAI streaming events
     """
     import json
 
-    instructions = build_instructions(lang)
-
     stream = client.responses.create(
         input=[{"role": "user", "content": input}],
         conversation=conversation_id,
-        instructions=instructions,
         model=settings.openai_response_model,
         reasoning={"effort": reasoning_effort, "summary": "auto"},
         tools=TOOLS,
