@@ -5,13 +5,6 @@ from pydantic import BaseModel, ConfigDict
 from app.schemas.search import SearchResults
 
 
-class WeatherResult(BaseModel):
-    location: str
-    temperature: int
-    conditions: str
-    humidity: int
-
-
 class TextContentBlock(BaseModel):
     type: Literal["text"]
     text: str
@@ -32,7 +25,7 @@ class ToolCallContentBlock(BaseModel):
 class ToolResultContentBlock(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: WeatherResult | SearchResults
+    result: SearchResults
 
 
 class MessageCreate(BaseModel):
@@ -86,7 +79,7 @@ class ToolCallEvent(BaseModel):
 class ToolResultEvent(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: WeatherResult | SearchResults
+    result: SearchResults
 
 
 class DoneEvent(BaseModel):

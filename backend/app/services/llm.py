@@ -18,7 +18,6 @@ from app.schemas.chat import (
     TextEvent,
     ToolCallEvent,
     ToolResultEvent,
-    WeatherResult,
 )
 from app.tools import search as search_tools
 from app.utils.formatters import format_chunks
@@ -125,20 +124,8 @@ def generate_text(messages: list[dict]):
             yield event.delta
 
 
-def get_weather(location: str) -> WeatherResult:
-    """Fake weather function for testing tool calls."""
-    return WeatherResult(
-        location=location,
-        temperature=22,
-        conditions="sunny",
-        humidity=65,
-    )
-
-
 def call_function(name: str, args: dict, db: Session):
-    if name == "get_weather":
-        return get_weather(**args)
-    elif name == "search_legal_documents":
+    if name == "search_legal_documents":
         return search_tools.search_legal_documents(db=db, **args)
     elif name == "lookup_law_article":
         return search_tools.lookup_law_article(db=db, **args)
@@ -148,21 +135,6 @@ def call_function(name: str, args: dict, db: Session):
 
 
 TOOLS = [
-    {
-        "type": "function",
-        "name": "get_weather",
-        "description": "Get current weather for a location",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "location": {
-                    "type": "string",
-                    "description": "City name or location",
-                }
-            },
-            "required": ["location"],
-        },
-    },
     {
         "type": "function",
         "name": "search_legal_documents",
