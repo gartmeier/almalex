@@ -137,21 +137,12 @@ def call_function(name: str, args: dict, db: Session):
 def _messages_to_openai_format(messages: list[ChatMessage]) -> list[dict]:
     """Convert ChatMessage objects to OpenAI Responses API format.
 
-    Reconstructs full conversation context including:
-    - User text messages
-    - Assistant reasoning
-    - Assistant tool calls
-    - Tool call results
-    - Assistant text responses
-
     Args:
-        messages: ChatMessage objects with content_blocks
+        messages: ChatMessage objects with content_blocks (raw OpenAI output_items)
 
     Returns:
         List of OpenAI API formatted message items
     """
-    import json
-
     openai_items = []
 
     for msg in messages:
@@ -160,47 +151,9 @@ def _messages_to_openai_format(messages: list[ChatMessage]) -> list[dict]:
             openai_items.append({"role": "user", "content": msg.content})
 
         elif msg.role == "assistant":
-            # Reconstruct assistant turn from content_blocks
+            # content_blocks are already OpenAI output_items - pass through as-is
             if msg.content_blocks:
-                for block in msg.content_blocks:
-                    block_type = block.get("type")
-
-                    if block_type == "reasoning":
-                        openai_items.append(
-                            {
-                                "type": "reasoning",
-                                "content": block["text"],
-                            }
-                        )
-
-                    elif block_type == "text":
-                        openai_items.append(
-                            {
-                                "type": "message",
-                                "content": block["text"],
-                            }
-                        )
-
-                    elif block_type == "tool_call":
-                        openai_items.append(
-                            {
-                                "type": "function_call",
-                                "name": block["name"],
-                                "call_id": block["id"],
-                                "arguments": json.dumps(block["arguments"]),
-                            }
-                        )
-
-                    elif block_type == "tool_result":
-                        # Serialize result to JSON
-                        result = block["result"]
-                        openai_items.append(
-                            {
-                                "type": "function_call_output",
-                                "call_id": block["id"],
-                                "output": json.dumps(result),
-                            }
-                        )
+                openai_items.extend(msg.content_blocks)
             else:
                 # Fallback for old messages without content_blocks
                 openai_items.append({"role": "assistant", "content": msg.content})
@@ -288,6 +241,9 @@ def generate_with_tools(
     # Transform ChatMessage objects to OpenAI format with full context
     input_list = _messages_to_openai_format(history)
 
+    # Collect all output items from all turns for storage
+    all_output_items = []
+
     while True:
         stream = client.responses.create(
             input=input_list,
@@ -318,6 +274,8 @@ def generate_with_tools(
             elif event.type == "response.output_item.done":
                 output_items.append(event.item)
 
+        # Add this turn's output items
+        all_output_items.extend(output_items)
         input_list += output_items
 
         if not tool_calls:
@@ -341,12 +299,20 @@ def generate_with_tools(
                 result=result,
             )
 
-            input_list.append(
-                {
-                    "type": "function_call_output",
-                    "call_id": tool_call.call_id,
-                    "output": result.model_dump_json(),
-                }
-            )
+            # Add tool call output to items
+            tool_output = {
+                "type": "function_call_output",
+                "call_id": tool_call.call_id,
+                "output": result.model_dump_json(),
+            }
+            all_output_items.append(tool_output)
+            input_list.append(tool_output)
 
-    yield DoneEvent(type="done")
+    # Yield all output items for storage as content_blocks
+    yield DoneEvent(
+        type="done",
+        output_items=[
+            item.model_dump() if hasattr(item, "model_dump") else item
+            for item in all_output_items
+        ],
+    )

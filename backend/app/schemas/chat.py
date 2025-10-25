@@ -84,6 +84,7 @@ class ToolResultEvent(BaseModel):
 
 class DoneEvent(BaseModel):
     type: Literal["done"]
+    output_items: list[dict]  # Raw OpenAI output items for storage
 
 
 StreamEvent = ReasoningEvent | TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent
