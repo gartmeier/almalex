@@ -79,15 +79,15 @@ TOOLS = [
 
 
 def generate_with_tools(
-    *, db: Session, conversation_id: str, message: str, effort: str = "low"
+    *, db: Session, conversation_id: str, input: str, reasoning_effort: str = "low"
 ):
     """Generate response using OpenAI Conversations API with tool calling.
 
     Args:
         db: Database session for tool functions
         conversation_id: OpenAI conversation ID
-        message: User message
-        effort: Reasoning effort level
+        input: User input message
+        reasoning_effort: Reasoning effort level
 
     Yields:
         Raw OpenAI streaming events
@@ -95,10 +95,10 @@ def generate_with_tools(
     import json
 
     stream = client.responses.create(
-        input=[{"role": "user", "content": message}],
+        input=[{"role": "user", "content": input}],
         conversation=conversation_id,
         model=settings.openai_response_model,
-        reasoning={"effort": effort, "summary": "auto"},
+        reasoning={"effort": reasoning_effort, "summary": "auto"},
         tools=TOOLS,
         stream=True,
     )
@@ -138,7 +138,7 @@ def generate_with_tools(
         continuation_stream = client.responses.create(
             conversation=conversation_id,
             model=settings.openai_response_model,
-            reasoning={"effort": effort, "summary": "auto"},
+            reasoning={"effort": reasoning_effort, "summary": "auto"},
             tools=TOOLS,
             stream=True,
         )

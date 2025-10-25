@@ -7,7 +7,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
 from app.core.limiter import limiter
-from app.routes import conversations, documents, responses
+from app.routes import conversations, responses
 
 # Initialize Sentry only if DSN is configured
 if settings.sentry_dsn:
@@ -26,7 +26,6 @@ app.add_middleware(SlowAPIMiddleware)
 api_router = APIRouter()
 api_router.include_router(conversations.router)
 api_router.include_router(responses.router)
-api_router.include_router(documents.router)
 
 app.include_router(api_router, prefix="/api")
 
