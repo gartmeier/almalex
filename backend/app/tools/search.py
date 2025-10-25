@@ -1,18 +1,10 @@
 """Legal document search tools for LLM tool calling."""
 
-import re
+from sqlalchemy.orm import Session
 
-from sqlalchemy import or_, select
-from sqlalchemy.orm import Session, selectinload
-
-from app.db.models import Document, DocumentChunk
+from app.db.models import DocumentChunk
 from app.schemas.search import DocumentChunkResult, SearchResults
-from app.services import retrieval
-
-SOURCE_MAPPING = {
-    "federal_law": "fedlex_article",
-    "federal_court": "bge",
-}
+from app.services import search as search_service
 
 
 def search_legal_documents(
@@ -33,35 +25,8 @@ def search_legal_documents(
     Returns:
         SearchResults with document chunks and citation metadata
     """
-    # Map friendly name to internal source identifier
-    internal_source = SOURCE_MAPPING.get(source, source)
-
-    # Retrieve chunks
-    chunks = retrieval.retrieve(
-        db=db,
-        query=query,
-        source=internal_source,
-        top_k=limit * 2,  # Get more for reranking
-    )
-
-    # Apply Cohere reranking
-    final_chunks = retrieval.rerank(query, chunks, top_k=limit)
-
-    # Convert to result schema
-    results = []
-    for chunk in final_chunks:
-        doc = chunk.document
-
-        result = DocumentChunkResult(
-            id=chunk.id,
-            source=doc.source,
-            title=doc.title,
-            text=chunk.text,
-            url=doc.url or "",
-        )
-        results.append(result)
-
-    return SearchResults(results=results)
+    chunks = search_service.search(db=db, query=query, source=source, limit=limit)
+    return _to_search_results(chunks)
 
 
 def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
@@ -74,60 +39,8 @@ def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
     Returns:
         SearchResults with matching article chunks
     """
-    # Parse article reference
-    # Patterns: "Art. 334 OR", "Art 334 OR", "334 OR", "Art. 334 Abs. 1 OR"
-    pattern = r"(?:Art\.?\s*)?(\d+)(?:\s+Abs\.?\s+\d+)?\s+([A-Z]+)"
-    match = re.search(pattern, article_reference, re.IGNORECASE)
-
-    if not match:
-        return SearchResults(results=[])
-
-    article_num, law_abbr = match.groups()
-
-    # Try exact metadata match first
-    chunks = db.scalars(
-        select(DocumentChunk)
-        .join(DocumentChunk.document)
-        .where(Document.source == "fedlex_article")
-        .where(Document.metadata_["article_num"].astext == article_num)
-        .where(Document.metadata_["law_abbr"].astext == law_abbr.upper())
-        .options(selectinload(DocumentChunk.document))
-        .order_by(DocumentChunk.order)
-    ).all()
-
-    # Fallback to title/text search if not found
-    if not chunks:
-        search_term = f"Art. {article_num} {law_abbr.upper()}"
-        chunks = db.scalars(
-            select(DocumentChunk)
-            .join(DocumentChunk.document)
-            .where(Document.source == "fedlex_article")
-            .where(
-                or_(
-                    Document.title.ilike(f"%{search_term}%"),
-                    DocumentChunk.text.ilike(f"%{search_term}%"),
-                )
-            )
-            .options(selectinload(DocumentChunk.document))
-            .order_by(DocumentChunk.order)
-            .limit(5)
-        ).all()
-
-    # Convert to result schema
-    results = []
-    for chunk in chunks:
-        doc = chunk.document
-
-        result = DocumentChunkResult(
-            id=chunk.id,
-            source=doc.source,
-            title=doc.title,
-            text=chunk.text,
-            url=doc.url or "",
-        )
-        results.append(result)
-
-    return SearchResults(results=results)
+    chunks = search_service.lookup_article(db=db, article_reference=article_reference)
+    return _to_search_results(chunks)
 
 
 def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
@@ -140,51 +53,22 @@ def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
     Returns:
         SearchResults with matching court decision chunks
     """
-    # Parse BGE citation
-    # Patterns: "146 V 240", "BGE 146 V 240", "91 I 374"
-    # Format: {volume} {part (Roman numeral)} {page}
-    pattern = r"(?:BGE\s+)?(\d+)\s+([IVX]+)\s+(\d+)"
-    match = re.search(pattern, citation, re.IGNORECASE)
+    chunks = search_service.lookup_decision(db=db, citation=citation)
+    return _to_search_results(chunks)
 
-    if not match:
-        return SearchResults(results=[])
 
-    volume, part, page = match.groups()
-    search_citation = f"BGE {volume} {part.upper()} {page}"
+def _to_search_results(chunks: list[DocumentChunk]) -> SearchResults:
+    """Convert DocumentChunk list to SearchResults schema.
 
-    # Try exact metadata match on Num field
-    chunks = db.scalars(
-        select(DocumentChunk)
-        .join(DocumentChunk.document)
-        .where(Document.source == "bge")
-        .where(Document.metadata_["Num"].astext.contains(search_citation))
-        .options(selectinload(DocumentChunk.document))
-        .order_by(DocumentChunk.order)
-        .limit(10)
-    ).all()
+    Args:
+        chunks: Document chunks to convert
 
-    # Fallback to title/text search if not found
-    if not chunks:
-        chunks = db.scalars(
-            select(DocumentChunk)
-            .join(DocumentChunk.document)
-            .where(Document.source == "bge")
-            .where(
-                or_(
-                    Document.title.ilike(f"%{search_citation}%"),
-                    DocumentChunk.text.ilike(f"%{search_citation}%"),
-                )
-            )
-            .options(selectinload(DocumentChunk.document))
-            .order_by(DocumentChunk.order)
-            .limit(10)
-        ).all()
-
-    # Convert to result schema
+    Returns:
+        SearchResults with formatted chunk data
+    """
     results = []
     for chunk in chunks:
         doc = chunk.document
-
         result = DocumentChunkResult(
             id=chunk.id,
             source=doc.source,
@@ -193,5 +77,4 @@ def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
             url=doc.url or "",
         )
         results.append(result)
-
     return SearchResults(results=results)
