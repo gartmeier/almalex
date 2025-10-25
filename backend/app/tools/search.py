@@ -66,10 +66,10 @@ def search_legal_documents(
 
         result = DocumentChunkResult(
             id=chunk.id,
+            source=doc.source,
+            title=doc.title,
             text=chunk.text,
             url=doc.url or "",
-            title=doc.title,
-            source=doc.source,
         )
         results.append(result)
 
@@ -132,10 +132,10 @@ def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
 
         result = DocumentChunkResult(
             id=chunk.id,
+            source=doc.source,
+            title=doc.title,
             text=chunk.text,
             url=doc.url or "",
-            title=doc.title,
-            source=doc.source,
         )
         results.append(result)
 
@@ -199,10 +199,10 @@ def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
 
         result = DocumentChunkResult(
             id=chunk.id,
+            source=doc.source,
+            title=doc.title,
             text=chunk.text,
             url=doc.url or "",
-            title=doc.title,
-            source=doc.source,
         )
         results.append(result)
 

@@ -9,10 +9,10 @@ class SearchResult(BaseModel):
 
 class DocumentChunkResult(BaseModel):
     id: int
+    source: str
+    title: str
     text: str
     url: str
-    title: str
-    source: str
 
 
 class SearchResults(BaseModel):
