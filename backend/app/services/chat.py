@@ -31,7 +31,7 @@ def get_chat(*, db: Session, chat_id: str):
 
     return {
         "id": chat.id,
-        "title": chat.title,
+        "conversation_id": chat.openai_conversation_id,
         "items": list(items),
     }
 

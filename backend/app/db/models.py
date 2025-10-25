@@ -52,16 +52,15 @@ class Chat(Base):
     __tablename__ = "chat"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    title: Mapped[str | None] = mapped_column(index=True)
     openai_conversation_id: Mapped[str] = mapped_column(index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        index=True,
         server_default=func.now(),
+        index=True,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        index=True,
-        onupdate=func.now(),
         server_default=func.now(),
+        onupdate=func.now(),
+        index=True,
     )
