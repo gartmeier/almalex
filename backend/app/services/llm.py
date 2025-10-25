@@ -3,6 +3,7 @@
 from typing import Iterator, Sequence
 
 from openai import OpenAI
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.types import Language
@@ -19,6 +20,7 @@ from app.schemas.chat import (
     ToolResultEvent,
     WeatherResult,
 )
+from app.tools import search as search_tools
 from app.utils.formatters import format_chunks
 
 client = OpenAI(api_key=settings.openai_api_key)
@@ -133,9 +135,15 @@ def get_weather(location: str) -> WeatherResult:
     )
 
 
-def call_function(name: str, args: dict):
+def call_function(name: str, args: dict, db: Session):
     if name == "get_weather":
         return get_weather(**args)
+    elif name == "search_legal_documents":
+        return search_tools.search_legal_documents(db=db, **args)
+    elif name == "lookup_law_article":
+        return search_tools.lookup_law_article(db=db, **args)
+    elif name == "lookup_court_decision":
+        return search_tools.lookup_court_decision(db=db, **args)
     raise ValueError(f"Unknown function: {name}")
 
 
@@ -154,17 +162,76 @@ TOOLS = [
             },
             "required": ["location"],
         },
-    }
+    },
+    {
+        "type": "function",
+        "name": "search_legal_documents",
+        "description": "Search Swiss legal database (federal laws and court decisions) using semantic search. Returns document chunks with citation metadata.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural language search query (e.g., 'Wertrechte Register Eintragung', 'Bucheffekten Entstehung')",
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["federal_law", "federal_court"],
+                    },
+                    "description": "Filter by source types. If omitted, searches all sources. Use ['federal_law'] for laws only, ['federal_court'] for court decisions only.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return (default: 5)",
+                    "default": 5,
+                },
+            },
+            "required": ["query"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "lookup_law_article",
+        "description": "Lookup specific law article by reference (e.g., 'Art. 334 OR', 'Art. 8 ZGB'). Use when a law or court decision mentions another article.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "article_reference": {
+                    "type": "string",
+                    "description": "Article reference like 'Art. 334 OR', 'Art. 8 ZGB', or '334 OR'",
+                }
+            },
+            "required": ["article_reference"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "lookup_court_decision",
+        "description": "Lookup court decision by BGE citation (e.g., '146 V 240', 'BGE 91 I 374'). Use when a court decision or law mentions another court decision.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "citation": {
+                    "type": "string",
+                    "description": "BGE citation like '146 V 240' or 'BGE 146 V 240'. Format: volume part page (e.g., '91 I 374')",
+                }
+            },
+            "required": ["citation"],
+        },
+    },
 ]
 
 
 def generate_with_tools(
-    messages: list[dict], effort: str = "low"
+    messages: list[dict], db: Session, effort: str = "low"
 ) -> Iterator[StreamEvent]:
     """Generate response with automatic tool calling loop.
 
     Args:
         messages: List of message dicts with role and content
+        db: Database session for tool functions
         effort: Reasoning effort level
 
     Yields:
@@ -219,7 +286,7 @@ def generate_with_tools(
                 arguments=args,
             )
 
-            result = call_function(tool_call.name, args)
+            result = call_function(tool_call.name, args, db)
 
             yield ToolResultEvent(
                 type="tool_result",
