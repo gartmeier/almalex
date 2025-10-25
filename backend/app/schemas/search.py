@@ -9,7 +9,7 @@ class SearchResult(BaseModel):
 
 class DocumentChunkResult(BaseModel):
     id: int
-    chunk_text: str
+    text: str
     url: str
     title: str
     source: str
