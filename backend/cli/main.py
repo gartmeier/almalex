@@ -1,6 +1,5 @@
 import click
 
-from cli.cmd.cleanup_chats import cleanup_chats
 from cli.cmd.load_fedlex import load_fedlex
 from cli.cmd.shell import shell
 from cli.cmd.sync_all import sync_all
@@ -13,7 +12,6 @@ def main():
     pass
 
 
-main.add_command(cleanup_chats)
 main.add_command(load_fedlex)
 main.add_command(shell)
 main.add_command(sync_all)
