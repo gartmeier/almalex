@@ -69,13 +69,12 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
     )
 
     history = list(reversed(history))
-    messages_for_llm = [{"role": msg.role, "content": msg.content} for msg in history]
 
     content_blocks = []
     current_item = None
     complete_text = ""
 
-    for event in llm.generate_with_tools(messages_for_llm, db=db, effort="low"):
+    for event in llm.generate_with_tools(db=db, history=history, effort="low"):
         if event.type == "reasoning":
             if current_item and isinstance(current_item, ReasoningContentBlock):
                 current_item.text += event.delta

@@ -194,13 +194,13 @@ TOOLS = [
 
 
 def generate_with_tools(
-    messages: list[dict], db: Session, effort: str = "low"
+    *, db: Session, history: list[ChatMessage], effort: str = "low"
 ) -> Iterator[StreamEvent]:
     """Generate response with automatic tool calling loop.
 
     Args:
-        messages: List of message dicts with role and content
         db: Database session for tool functions
+        history: Chat conversation history
         effort: Reasoning effort level
 
     Yields:
@@ -208,7 +208,8 @@ def generate_with_tools(
     """
     import json
 
-    input_list = messages.copy()
+    # Transform ChatMessage objects to OpenAI format
+    input_list = [{"role": msg.role, "content": msg.content} for msg in history]
 
     while True:
         stream = client.responses.create(
