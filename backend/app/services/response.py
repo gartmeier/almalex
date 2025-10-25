@@ -148,7 +148,6 @@ def generate_with_tools(
         # Continue streaming with tool results
         continuation_stream = client.responses.create(
             conversation=conversation_id,
-            instructions=instructions,
             model=settings.openai_response_model,
             reasoning={"effort": reasoning_effort, "summary": "auto"},
             tools=TOOLS,
