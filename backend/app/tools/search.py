@@ -19,7 +19,7 @@ def search_legal_documents(
     *,
     db: Session,
     query: str,
-    sources: list[str],
+    source: str,
     limit: int = 5,
 ) -> SearchResults:
     """Search Swiss legal database using hybrid vector + full-text search.
@@ -27,34 +27,25 @@ def search_legal_documents(
     Args:
         db: Database session
         query: Search query
-        sources: Filter by source types (["federal_law", "federal_court"])
+        source: Source type ("federal_law" or "federal_court")
         limit: Max results to return
 
     Returns:
         SearchResults with document chunks and citation metadata
     """
-    # Map friendly names to internal source identifiers
-    internal_sources = [SOURCE_MAPPING.get(s, s) for s in sources]
+    # Map friendly name to internal source identifier
+    internal_source = SOURCE_MAPPING.get(source, source)
 
-    # Retrieve chunks from each source
-    all_chunks = []
-    for source in internal_sources:
-        chunks = retrieval.retrieve(
-            db=db,
-            query=query,
-            source=source,
-            top_k=limit * 2,  # Get more for reranking
-        )
-        all_chunks.extend(chunks)
+    # Retrieve chunks
+    chunks = retrieval.retrieve(
+        db=db,
+        query=query,
+        source=internal_source,
+        top_k=limit * 2,  # Get more for reranking
+    )
 
-    # Always apply Cohere reranking
-    reranked_chunks = retrieval.rerank(query, all_chunks, top_k=limit * 2)
-
-    # Apply diversification only when searching multiple sources
-    if len(sources) > 1:
-        final_chunks = retrieval.diversify_chunks(reranked_chunks, top_k=limit)
-    else:
-        final_chunks = reranked_chunks[:limit]
+    # Apply Cohere reranking
+    final_chunks = retrieval.rerank(query, chunks, top_k=limit)
 
     # Convert to result schema
     results = []

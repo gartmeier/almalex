@@ -138,7 +138,7 @@ TOOLS = [
     {
         "type": "function",
         "name": "search_legal_documents",
-        "description": "Search Swiss legal database (federal laws and court decisions) using semantic search. Returns document chunks with citation metadata.",
+        "description": "Search Swiss legal database using semantic search. Returns document chunks with citation metadata. Call multiple times to search different sources.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -146,13 +146,10 @@ TOOLS = [
                     "type": "string",
                     "description": "Natural language search query (e.g., 'Wertrechte Register Eintragung', 'Bucheffekten Entstehung')",
                 },
-                "sources": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": ["federal_law", "federal_court"],
-                    },
-                    "description": "Source types to search. Use ['federal_law'] for laws only, ['federal_court'] for court decisions only, or ['federal_law', 'federal_court'] for both.",
+                "source": {
+                    "type": "string",
+                    "enum": ["federal_law", "federal_court"],
+                    "description": "Source type to search. Use 'federal_law' for laws or 'federal_court' for court decisions.",
                 },
                 "limit": {
                     "type": "integer",
@@ -160,7 +157,7 @@ TOOLS = [
                     "default": 5,
                 },
             },
-            "required": ["query", "sources"],
+            "required": ["query", "source"],
         },
     },
     {
