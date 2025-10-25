@@ -9,7 +9,7 @@ router = APIRouter(prefix="/responses", tags=["responses"])
 
 
 @router.post("", response_class=StreamingResponse)
-async def create_response(request: ResponseRequest):
+async def create_response(data: ResponseRequest):
     """Stream OpenAI response events via Server-Sent Events.
 
     Returns text/event-stream with OpenAI ResponseStreamEvent objects.
@@ -20,9 +20,10 @@ async def create_response(request: ResponseRequest):
         try:
             for event in response.generate_with_tools(
                 db=db,
-                conversation_id=request.conversation_id,
-                input=request.input,
-                reasoning_effort=request.reasoning_effort,
+                conversation_id=data.conversation_id,
+                input=data.input,
+                reasoning_effort=data.reasoning_effort,
+                lang=data.lang,
             ):
                 yield f"data: {event.model_dump_json()}\n\n"
         finally:
