@@ -57,48 +57,19 @@ def lookup_article(*, db: Session, article_reference: str) -> list[DocumentChunk
     Returns:
         Matching article chunks
     """
-    # Parse article reference (handles letter suffixes like 973c)
-    pattern = r"(?:Art\.?\s*)?(\d+[a-z]?)(?:\s+Abs\.?\s+\d+)?\s+([A-Z]+)"
-    match = re.search(pattern, article_reference, re.IGNORECASE)
+    # Normalize reference: ensure "Art." prefix
+    ref = article_reference.strip()
+    if not ref.lower().startswith("art"):
+        ref = f"Art. {ref}"
 
-    if not match:
-        return []
-
-    article_num, law_abbr = match.groups()
-
-    # Exact metadata match (try with and without "Art." prefix)
     chunks = db.scalars(
         select(DocumentChunk)
         .join(DocumentChunk.document)
         .where(Document.source == "fedlex_article")
-        .where(
-            or_(
-                Document.metadata_["article_num"].astext == article_num,
-                Document.metadata_["article_num"].astext == f"Art. {article_num}",
-            )
-        )
-        .where(Document.metadata_["law_abbr"].astext == law_abbr.upper())
+        .where(Document.title.ilike(ref))
         .options(selectinload(DocumentChunk.document))
         .order_by(DocumentChunk.order)
     ).all()
-
-    # Fallback to title/text search
-    if not chunks:
-        search_term = f"Art. {article_num} {law_abbr.upper()}"
-        chunks = db.scalars(
-            select(DocumentChunk)
-            .join(DocumentChunk.document)
-            .where(Document.source == "fedlex_article")
-            .where(
-                or_(
-                    Document.title.ilike(f"%{search_term}%"),
-                    DocumentChunk.text.ilike(f"%{search_term}%"),
-                )
-            )
-            .options(selectinload(DocumentChunk.document))
-            .order_by(DocumentChunk.order)
-            .limit(5)
-        ).all()
 
     return chunks
 
