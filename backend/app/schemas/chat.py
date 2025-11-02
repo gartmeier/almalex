@@ -84,6 +84,13 @@ class ToolResultEvent(BaseModel):
 
 class DoneEvent(BaseModel):
     type: Literal["done"]
+    content: str
+    content_blocks: list[
+        TextContentBlock
+        | ReasoningContentBlock
+        | ToolCallContentBlock
+        | ToolResultContentBlock
+    ]
 
 
 StreamEvent = ReasoningEvent | TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent

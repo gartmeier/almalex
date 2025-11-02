@@ -1,10 +1,74 @@
 """Legal document search tools for LLM tool calling."""
 
+from openai.types.responses import FunctionToolParam
 from sqlalchemy.orm import Session
 
 from app.db.models import DocumentChunk
 from app.schemas.search import DocumentChunkResult, SearchResults
 from app.services import search as search_service
+
+SEARCH_TOOLS = [
+    FunctionToolParam(
+        type="function",
+        name="search_legal_documents",
+        description="Search Swiss legal database using semantic search. Returns document chunks with citation metadata. Call multiple times to search different sources.",
+        strict=True,
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural language search query (e.g., 'Wertrechte Register Eintragung', 'Bucheffekten Entstehung')",
+                },
+                "source": {
+                    "type": "string",
+                    "enum": ["federal_law", "federal_court"],
+                    "description": "Source type to search. Use 'federal_law' for laws or 'federal_court' for court decisions.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return",
+                },
+            },
+            "required": ["query", "source", "limit"],
+            "additionalProperties": False,
+        },
+    ),
+    FunctionToolParam(
+        type="function",
+        name="lookup_law_article",
+        description="Lookup specific law article by reference (e.g., 'Art. 334 OR', 'Art. 8 ZGB'). Use when a law or court decision mentions another article.",
+        strict=True,
+        parameters={
+            "type": "object",
+            "properties": {
+                "article_reference": {
+                    "type": "string",
+                    "description": "Article reference like 'Art. 334 OR', 'Art. 8 ZGB', or '334 OR'",
+                }
+            },
+            "required": ["article_reference"],
+            "additionalProperties": False,
+        },
+    ),
+    FunctionToolParam(
+        type="function",
+        name="lookup_court_decision",
+        description="Lookup court decision by BGE citation (e.g., '146 V 240', 'BGE 91 I 374'). Use when a court decision or law mentions another court decision.",
+        strict=True,
+        parameters={
+            "type": "object",
+            "properties": {
+                "citation": {
+                    "type": "string",
+                    "description": "BGE citation like '146 V 240' or 'BGE 146 V 240'. Format: volume part page (e.g., '91 I 374')",
+                }
+            },
+            "required": ["citation"],
+            "additionalProperties": False,
+        },
+    ),
+]
 
 
 def search_legal_documents(

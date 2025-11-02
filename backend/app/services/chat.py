@@ -3,12 +3,6 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.types import Language
 from app.db.models import Chat, ChatMessage
-from app.schemas.chat import (
-    ReasoningContentBlock,
-    TextContentBlock,
-    ToolCallContentBlock,
-    ToolResultContentBlock,
-)
 from app.services import chat as chat_service
 from app.services import llm
 
@@ -70,61 +64,15 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
 
     history = list(reversed(history))
 
-    content_blocks = []
-    current_item = None
-    complete_text = ""
-
-    for event in llm.generate_with_tools(db=db, history=history):
-        if event.type == "reasoning":
-            if current_item and isinstance(current_item, ReasoningContentBlock):
-                current_item.text += event.delta
-            else:
-                if current_item:
-                    content_blocks.append(current_item)
-                current_item = ReasoningContentBlock(type="reasoning", text=event.delta)
-
-        elif event.type == "text":
-            complete_text += event.delta
-            if current_item and isinstance(current_item, TextContentBlock):
-                current_item.text += event.delta
-            else:
-                if current_item:
-                    content_blocks.append(current_item)
-                current_item = TextContentBlock(type="text", text=event.delta)
-
-        elif event.type == "tool_call":
-            if current_item:
-                content_blocks.append(current_item)
-                current_item = None
-            content_blocks.append(
-                ToolCallContentBlock(
-                    type="tool_call",
-                    id=event.id,
-                    name=event.name,
-                    arguments=event.arguments,
-                )
+    for event in llm.generate_with_tools(db=db, history=history, lang=lang):
+        if event.type == "done":
+            assistant_msg = ChatMessage(
+                chat_id=chat_id,
+                role="assistant",
+                content=event.content,
+                content_blocks=[block.model_dump() for block in event.content_blocks],
             )
-
-        elif event.type == "tool_result":
-            if current_item:
-                content_blocks.append(current_item)
-                current_item = None
-            content_blocks.append(
-                ToolResultContentBlock(
-                    type="tool_result", id=event.id, result=event.result
-                )
-            )
-
-        yield f"data: {event.model_dump_json()}\n\n"
-
-    if current_item:
-        content_blocks.append(current_item)
-
-    assistant_msg = ChatMessage(
-        chat_id=chat_id,
-        role="assistant",
-        content=complete_text,
-        content_blocks=[block.model_dump() for block in content_blocks],
-    )
-    db.add(assistant_msg)
-    db.commit()
+            db.add(assistant_msg)
+            db.commit()
+        else:
+            yield f"data: {event.model_dump_json()}\n\n"
