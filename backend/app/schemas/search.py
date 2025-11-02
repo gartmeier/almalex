@@ -15,5 +15,4 @@ class DocumentChunkResult(BaseModel):
     url: str
 
 
-class SearchResults(BaseModel):
-    results: list[DocumentChunkResult]
+SearchResults = list[DocumentChunkResult]
