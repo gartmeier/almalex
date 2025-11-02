@@ -130,15 +130,13 @@ def _to_search_results(chunks: list[DocumentChunk]) -> SearchResults:
     Returns:
         SearchResults with formatted chunk data
     """
-    results = []
-    for chunk in chunks:
-        doc = chunk.document
-        result = DocumentChunkResult(
+    return [
+        DocumentChunkResult(
             id=chunk.id,
-            source=doc.source,
-            title=doc.title,
+            source=chunk.document.source,
+            title=chunk.document.title,
             text=chunk.text,
-            url=doc.url or "",
+            url=chunk.document.url or "",
         )
-        results.append(result)
-    return SearchResults(results=results)
+        for chunk in chunks
+    ]
