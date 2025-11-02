@@ -2,8 +2,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.search import SearchResults
-
 
 class TextContentBlock(BaseModel):
     type: Literal["text"]
@@ -25,7 +23,7 @@ class ToolCallContentBlock(BaseModel):
 class ToolResultContentBlock(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: SearchResults
+    result: Any
 
 
 class MessageCreate(BaseModel):
@@ -79,7 +77,7 @@ class ToolCallEvent(BaseModel):
 class ToolResultEvent(BaseModel):
     type: Literal["tool_result"]
     id: str
-    result: SearchResults
+    result: Any
 
 
 class DoneEvent(BaseModel):

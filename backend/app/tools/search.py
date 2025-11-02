@@ -4,7 +4,6 @@ from openai.types.responses import FunctionToolParam
 from sqlalchemy.orm import Session
 
 from app.db.models import DocumentChunk
-from app.schemas.search import DocumentChunkResult, SearchResults
 from app.services import search as search_service
 
 SEARCH_TOOLS = [
@@ -77,7 +76,7 @@ def search_legal_documents(
     query: str,
     source: str,
     limit: int = 20,
-) -> SearchResults:
+) -> list[dict]:
     """Search Swiss legal database using hybrid vector + full-text search.
 
     Args:
@@ -87,13 +86,13 @@ def search_legal_documents(
         limit: Max results to return
 
     Returns:
-        SearchResults with document chunks and citation metadata
+        List of document chunk dicts
     """
     chunks = search_service.search(db=db, query=query, source=source, limit=limit)
-    return _to_search_results(chunks)
+    return _chunks_to_dicts(chunks)
 
 
-def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
+def lookup_law_article(*, db: Session, article_reference: str) -> list[dict]:
     """Lookup specific law article by reference (e.g., 'Art. 334 OR').
 
     Args:
@@ -101,13 +100,13 @@ def lookup_law_article(*, db: Session, article_reference: str) -> SearchResults:
         article_reference: Article reference like "Art. 334 OR" or "334 OR"
 
     Returns:
-        SearchResults with matching article chunks
+        List of matching article chunk dicts
     """
     chunks = search_service.lookup_article(db=db, article_reference=article_reference)
-    return _to_search_results(chunks)
+    return _chunks_to_dicts(chunks)
 
 
-def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
+def lookup_court_decision(*, db: Session, citation: str) -> list[dict]:
     """Lookup court decision by BGE citation (e.g., '146 V 240' or 'BGE 146 V 240').
 
     Args:
@@ -115,28 +114,28 @@ def lookup_court_decision(*, db: Session, citation: str) -> SearchResults:
         citation: BGE citation like "146 V 240" or "BGE 146 V 240"
 
     Returns:
-        SearchResults with matching court decision chunks
+        List of matching court decision chunk dicts
     """
     chunks = search_service.lookup_decision(db=db, citation=citation)
-    return _to_search_results(chunks)
+    return _chunks_to_dicts(chunks)
 
 
-def _to_search_results(chunks: list[DocumentChunk]) -> SearchResults:
-    """Convert DocumentChunk list to SearchResults schema.
+def _chunks_to_dicts(chunks: list[DocumentChunk]) -> list[dict]:
+    """Convert DocumentChunk list to dict list for tool results.
 
     Args:
         chunks: Document chunks to convert
 
     Returns:
-        SearchResults with formatted chunk data
+        List of chunk dicts with id, source, title, text, url
     """
     return [
-        DocumentChunkResult(
-            id=chunk.id,
-            source=chunk.document.source,
-            title=chunk.document.title,
-            text=chunk.text,
-            url=chunk.document.url or "",
-        )
+        {
+            "id": chunk.id,
+            "source": chunk.document.source,
+            "title": chunk.document.title,
+            "text": chunk.text,
+            "url": chunk.document.url or "",
+        }
         for chunk in chunks
     ]
