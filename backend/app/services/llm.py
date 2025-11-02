@@ -113,7 +113,7 @@ def generate_with_tools(
             item = {
                 "type": "function_call_output",
                 "call_id": tool_call.call_id,
-                "output": result.model_dump_json(),
+                "output": json.dumps([r.model_dump() for r in result]),
             }
 
             input_items.append(item)
