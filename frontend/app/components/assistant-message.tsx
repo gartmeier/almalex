@@ -3,17 +3,24 @@ import { ChevronDown, FileText, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
 import type {
+  ContentBlock,
   MessageDetail,
+  ReasoningContentBlock,
   SearchContentBlock,
   SearchResult,
   TextContentBlock,
+  ToolCallContentBlock,
+  ToolResultContentBlock,
 } from "~/lib/api";
+import { ReasoningBlock } from "./reasoning-block";
+import { ToolCallBlock } from "./tool-call-block";
+import { ToolResultBlock } from "./tool-result-block";
 
 type AssistantMessageProps = {
   message: MessageDetail;
 };
 
-function SearchBlock({
+export function SearchBlock({
   block,
   index,
 }: {
@@ -107,82 +114,116 @@ function SearchBlock({
 }
 
 function renderContentBlock(
-  block: SearchContentBlock | TextContentBlock,
+  block: ContentBlock,
   index: number,
   searchResults: SearchResult[],
 ) {
-  if (block.type === "text") {
-    return (
-      <div
-        key={index}
-        className="prose prose-neutral dark:prose-invert inline-block max-w-none"
-      >
-        <Markdown
-          components={{
-            a: ({ href, children, ...props }) => {
-              // Check if this is a citation link (e.g., #1234)
-              if (href?.match(/^#\d+$/)) {
-                let documentId = parseInt(href.slice(1)); // Remove the # prefix and convert to number
-                // Find the document in search results
-                let document = searchResults.find(
-                  (result) => result.id === documentId,
-                );
-                if (document) {
+  switch (block.type) {
+    case "text":
+      return (
+        <div
+          key={index}
+          className="prose prose-neutral dark:prose-invert inline-block max-w-none"
+        >
+          <Markdown
+            components={{
+              a: ({ href, children, ...props }) => {
+                // Check if this is a citation link (e.g., #1234)
+                if (href?.match(/^#\d+$/)) {
+                  let documentId = parseInt(href.slice(1)); // Remove the # prefix and convert to number
+                  // Find the document in search results
+                  let document = searchResults.find(
+                    (result) => result.id === documentId,
+                  );
+                  if (document) {
+                    return (
+                      <a
+                        href={document.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        {...props}
+                      >
+                        {children}
+                      </a>
+                    );
+                  }
+                  // Document not found - AI hallucinated the citation
+                  Sentry.captureMessage("AI cited non-existent document", {
+                    level: "warning",
+                    extra: {
+                      documentId,
+                      citationText: children?.toString(),
+                      availableDocumentIds: searchResults.map((r) => r.id),
+                    },
+                  });
+                  // Fallback if document not found in search results
                   return (
-                    <a
-                      href={document.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      {...props}
-                    >
+                    <a href={href} {...props}>
                       {children}
                     </a>
                   );
                 }
-                // Document not found - AI hallucinated the citation
-                Sentry.captureMessage("AI cited non-existent document", {
-                  level: "warning",
-                  extra: {
-                    documentId,
-                    citationText: children?.toString(),
-                    availableDocumentIds: searchResults.map((r) => r.id),
-                  },
-                });
-                // Fallback if document not found in search results
+                // Regular external links
                 return (
                   <a href={href} {...props}>
                     {children}
                   </a>
                 );
-              }
-              // Regular external links
-              return (
-                <a href={href} {...props}>
-                  {children}
-                </a>
-              );
-            },
-          }}
-        >
-          {block.text}
-        </Markdown>
-      </div>
-    );
-  }
+              },
+            }}
+          >
+            {block.text}
+          </Markdown>
+        </div>
+      );
 
-  if (block.type === "search") {
-    return <SearchBlock key={index} block={block} index={index} />;
-  }
+    case "reasoning":
+      return (
+        <ReasoningBlock key={index} block={block as ReasoningContentBlock} index={index} />
+      );
 
-  return null;
+    case "tool_call":
+      return (
+        <ToolCallBlock key={index} block={block as ToolCallContentBlock} index={index} />
+      );
+
+    case "tool_result":
+      return (
+        <ToolResultBlock
+          key={index}
+          block={block as ToolResultContentBlock}
+          index={index}
+          searchResults={searchResults}
+        />
+      );
+
+    case "search":
+      return <SearchBlock key={index} block={block} index={index} />;
+
+    default:
+      return null;
+  }
 }
 
 export function AssistantMessage({ message }: AssistantMessageProps) {
-  // Collect all search results from search blocks
+  // Collect all search results from search blocks and tool results
   let searchResults: SearchResult[] = [];
   for (let block of message.content_blocks || []) {
     if (block.type === "search") {
       searchResults.push(...block.results);
+    } else if (block.type === "tool_result") {
+      // Extract search results from tool results if they match the format
+      if (
+        Array.isArray(block.result) &&
+        block.result.length > 0 &&
+        block.result[0] &&
+        typeof block.result[0] === "object" &&
+        "id" in block.result[0] &&
+        "title" in block.result[0] &&
+        "url" in block.result[0]
+      ) {
+        searchResults.push(...(block.result as SearchResult[]));
+      }
     }
   }
 

@@ -21,6 +21,18 @@ export function parseServerSentEvents(rawEvents: string) {
         }
       }
 
+      // If no explicit event name, try to extract type from JSON data
+      if (!name && data) {
+        try {
+          let parsed = JSON.parse(data);
+          if (parsed && typeof parsed === "object" && "type" in parsed) {
+            name = parsed.type as string;
+          }
+        } catch (e) {
+          // Not valid JSON, will be handled below
+        }
+      }
+
       if (!name || !data) {
         console.error("Invalid server-sent event", rawEvent);
         continue;

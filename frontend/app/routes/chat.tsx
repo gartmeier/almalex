@@ -8,10 +8,14 @@ import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import {
   readChat,
+  type ContentBlock,
   type MessageDetail,
+  type ReasoningContentBlock,
   type SearchContentBlock,
   type SearchResult,
   type TextContentBlock,
+  type ToolCallContentBlock,
+  type ToolResultContentBlock,
 } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
 import { parseServerSentEvents, type ServerSentEvent } from "~/lib/sse";
@@ -153,7 +157,17 @@ export default function Component({ params }: Route.ComponentProps) {
     let reader = response.body!.getReader();
     let decoder = new TextDecoder();
 
+    // Initialize assistant message if it doesn't exist
+    let assistantMessageInitialized = false;
+
     let eventHandlers: Record<string, (event: ServerSentEvent) => void> = {
+      // New event handlers
+      text: handleTextEvent,
+      reasoning: handleReasoningEvent,
+      tool_call: handleToolCallEvent,
+      tool_result: handleToolResultEvent,
+      done: handleDoneEvent,
+      // Keep old handlers for backward compatibility
       message_id: handleMessageIdEvent,
       message_delta: handleMessageDeltaEvent,
       search_query: handleSearchQueryEvent,
@@ -171,6 +185,12 @@ export default function Component({ params }: Route.ComponentProps) {
       let events = parseServerSentEvents(chunk);
 
       for (let event of events) {
+        // Initialize assistant message on first event if needed
+        if (!assistantMessageInitialized && ["text", "reasoning", "tool_call"].includes(event.name)) {
+          ensureAssistantMessage();
+          assistantMessageInitialized = true;
+        }
+
         let eventHandler = eventHandlers[event.name];
         if (eventHandler) {
           eventHandler(event);
@@ -179,6 +199,76 @@ export default function Component({ params }: Route.ComponentProps) {
     }
   }
 
+  function ensureAssistantMessage() {
+    setMessages((prev) => {
+      let lastMessage = prev.at(-1);
+      // Only create if last message is not already an assistant message
+      if (!lastMessage || lastMessage.role !== "assistant") {
+        let newMessage: MessageDetail = {
+          id: `temp-${nanoid()}`,
+          role: "assistant",
+          content: "",
+          content_blocks: [],
+        };
+        return [...prev, newMessage];
+      }
+      return prev;
+    });
+  }
+
+  // New event handlers
+  function handleTextEvent(event: ServerSentEvent) {
+    let data = JSON.parse(event.data);
+    if (data.type === "text" && data.delta) {
+      appendToTextBlock(data.delta);
+    }
+  }
+
+  function handleReasoningEvent(event: ServerSentEvent) {
+    let data = JSON.parse(event.data);
+    if (data.type === "reasoning" && data.delta) {
+      appendToReasoningBlock(data.delta);
+    }
+  }
+
+  function handleToolCallEvent(event: ServerSentEvent) {
+    let data = JSON.parse(event.data);
+    if (data.type === "tool_call") {
+      let toolCallBlock: ToolCallContentBlock = {
+        type: "tool_call",
+        id: data.id,
+        name: data.name,
+        arguments: data.arguments || {},
+      };
+      addContentBlockToLastMessage(toolCallBlock);
+    }
+  }
+
+  function handleToolResultEvent(event: ServerSentEvent) {
+    let data = JSON.parse(event.data);
+    if (data.type === "tool_result") {
+      let toolResultBlock: ToolResultContentBlock = {
+        type: "tool_result",
+        id: data.id,
+        result: data.result,
+      };
+      addContentBlockToLastMessage(toolResultBlock);
+    }
+  }
+
+  function handleDoneEvent(event: ServerSentEvent) {
+    let data = JSON.parse(event.data);
+    if (data.type === "done") {
+      updateLastMessage((message) => ({
+        ...message,
+        id: message.id.startsWith("temp-") ? `msg-${nanoid()}` : message.id,
+        content: data.content || message.content,
+        content_blocks: data.content_blocks || message.content_blocks,
+      }));
+    }
+  }
+
+  // Old event handlers (for backward compatibility)
   function handleMessageIdEvent(event: ServerSentEvent) {
     let newMessage: MessageDetail = {
       id: JSON.parse(event.data) as string,
@@ -226,9 +316,7 @@ export default function Component({ params }: Route.ComponentProps) {
     });
   }
 
-  function addContentBlockToLastMessage(
-    block: SearchContentBlock | TextContentBlock,
-  ) {
+  function addContentBlockToLastMessage(block: ContentBlock) {
     updateLastMessage((message) => ({
       ...message,
       content_blocks: [...message.content_blocks, block],
@@ -236,9 +324,7 @@ export default function Component({ params }: Route.ComponentProps) {
   }
 
   function updateLastContentBlock(
-    updater: (
-      block: SearchContentBlock | TextContentBlock,
-    ) => SearchContentBlock | TextContentBlock,
+    updater: (block: ContentBlock) => ContentBlock,
   ) {
     updateLastMessage((message) => {
       let lastBlock = message.content_blocks.at(-1)!;
@@ -251,31 +337,64 @@ export default function Component({ params }: Route.ComponentProps) {
     });
   }
 
-  function appendToTextBlock(text: string) {
+  function appendToTextBlock(delta: string) {
     updateLastMessage((message) => {
-      let lastBlock = message.content_blocks.at(-1)!;
+      let lastBlock = message.content_blocks.at(-1);
 
-      if (lastBlock.type !== "text") {
+      if (!lastBlock || lastBlock.type !== "text") {
         // Add new text block if none exists
-        let textBlock = {
-          type: "text" as const,
-          text: text,
+        let textBlock: TextContentBlock = {
+          type: "text",
+          text: delta,
         };
         return {
           ...message,
+          content: message.content + delta,
           content_blocks: [...message.content_blocks, textBlock],
         };
       } else {
         // Update existing text block
-        let updatedTextBlock = {
-          type: "text" as const,
-          text: lastBlock.text + text,
+        let updatedTextBlock: TextContentBlock = {
+          type: "text",
+          text: lastBlock.text + delta,
+        };
+        return {
+          ...message,
+          content: message.content + delta,
+          content_blocks: [
+            ...message.content_blocks.slice(0, -1),
+            updatedTextBlock,
+          ],
+        };
+      }
+    });
+  }
+
+  function appendToReasoningBlock(delta: string) {
+    updateLastMessage((message) => {
+      let lastBlock = message.content_blocks.at(-1);
+
+      if (!lastBlock || lastBlock.type !== "reasoning") {
+        // Add new reasoning block if none exists
+        let reasoningBlock: ReasoningContentBlock = {
+          type: "reasoning",
+          text: delta,
+        };
+        return {
+          ...message,
+          content_blocks: [...message.content_blocks, reasoningBlock],
+        };
+      } else {
+        // Update existing reasoning block
+        let updatedReasoningBlock: ReasoningContentBlock = {
+          type: "reasoning",
+          text: lastBlock.text + delta,
         };
         return {
           ...message,
           content_blocks: [
             ...message.content_blocks.slice(0, -1),
-            updatedTextBlock,
+            updatedReasoningBlock,
           ],
         };
       }
