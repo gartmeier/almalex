@@ -1,33 +1,25 @@
-export type ServerSentEvent = {
-  name: string;
-  data: string;
-};
+import * as Sentry from "@sentry/react";
+import type { ServerSentEvent } from "~/types";
 
 export function parseServerSentEvents(rawEvents: string) {
   let parsedEvents: ServerSentEvent[] = [];
 
   for (let rawEvent of rawEvents.split("\n\n")) {
-    if (rawEvent) {
-      let lines = rawEvent.split("\n");
+    if (!rawEvent || !rawEvent.startsWith("data: {")) {
+      continue;
+    }
 
-      let name: string | null = null;
-      let data: string | null = null;
+    // drop "data: " prefix
+    rawEvent = rawEvent.slice(6);
 
-      for (let line of lines) {
-        if (line.startsWith("event: ")) {
-          name = line.slice(7);
-        } else if (line.startsWith("data: ")) {
-          data = line.slice(6);
-        }
-      }
-
-      if (!name || !data) {
-        console.error("Invalid server-sent event", rawEvent);
-        continue;
-      }
-
-      parsedEvents.push({ name, data });
+    try {
+      let event = JSON.parse(rawEvent);
+      parsedEvents.push(event);
+    } catch (e) {
+      console.error("Invalid server-sent event", rawEvent);
+      Sentry.captureException(e);
     }
   }
+
   return parsedEvents;
 }
