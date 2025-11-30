@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from app.core.deps import SessionDep
 from app.core.types import Language
 from app.db.session import SessionLocal
-from app.schemas.chat import ChatDetail, MessageCreate, SSEMessage
+from app.schemas.chat import ChatDetail, MessageCreate
 from app.services import chat as chat_service
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -28,7 +28,6 @@ async def read_chat(chat_id: str, db: SessionDep):
             "description": "Server-Sent Events stream of chat completion",
             "content": {
                 "text/event-stream": {
-                    "schema": SSEMessage.model_json_schema(),
                     "example": 'data: {"type": "text", "delta": "Hello"}\n\n',
                 }
             },
