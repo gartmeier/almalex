@@ -22,7 +22,7 @@ class ToolCallContentBlock(BaseModel):
 
 class ToolResultContentBlock(BaseModel):
     type: Literal["tool_result"]
-    id: str
+    tool_call_id: str
     result: Any
 
 
@@ -76,7 +76,7 @@ class ToolCallEvent(BaseModel):
 
 class ToolResultEvent(BaseModel):
     type: Literal["tool_result"]
-    id: str
+    tool_call_id: str
     result: Any
 
 
