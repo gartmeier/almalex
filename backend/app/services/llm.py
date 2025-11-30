@@ -106,7 +106,7 @@ def generate_with_tools(
 
             yield ToolResultEvent(
                 type="tool_result",
-                id=tool_call.call_id,
+                tool_call_id=tool_call.call_id,
                 result=result,
             )
 
@@ -164,7 +164,7 @@ def generate_with_tools(
                         content_blocks.append(
                             ToolResultContentBlock(
                                 type="tool_result",
-                                id=output_item.call_id,
+                                tool_call_id=output_item.call_id,
                                 result=result_data,
                             )
                         )
