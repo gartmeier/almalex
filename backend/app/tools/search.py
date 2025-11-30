@@ -9,7 +9,7 @@ from app.services import search as search_service
 SEARCH_TOOLS = [
     FunctionToolParam(
         type="function",
-        name="search_legal_documents",
+        name="legal_search",
         description="Search Swiss legal database using semantic search. Returns document chunks with citation metadata. Call multiple times to search different sources.",
         strict=True,
         parameters={
@@ -35,42 +35,42 @@ SEARCH_TOOLS = [
     ),
     FunctionToolParam(
         type="function",
-        name="lookup_law_article",
+        name="article_lookup",
         description="Lookup specific law article by reference (e.g., 'Art. 334 OR', 'Art. 8 ZGB'). Use when a law or court decision mentions another article.",
         strict=True,
         parameters={
             "type": "object",
             "properties": {
-                "article_reference": {
+                "reference": {
                     "type": "string",
                     "description": "Article reference like 'Art. 334 OR', 'Art. 8 ZGB', or '334 OR'",
                 }
             },
-            "required": ["article_reference"],
+            "required": ["reference"],
             "additionalProperties": False,
         },
     ),
     FunctionToolParam(
         type="function",
-        name="lookup_court_decision",
+        name="decision_lookup",
         description="Lookup court decision by BGE citation (e.g., '146 V 240', 'BGE 91 I 374'). Use when a court decision or law mentions another court decision.",
         strict=True,
         parameters={
             "type": "object",
             "properties": {
-                "citation": {
+                "reference": {
                     "type": "string",
                     "description": "BGE citation like '146 V 240' or 'BGE 146 V 240'. Format: volume part page (e.g., '91 I 374')",
                 }
             },
-            "required": ["citation"],
+            "required": ["reference"],
             "additionalProperties": False,
         },
     ),
 ]
 
 
-def search_legal_documents(
+def legal_search(
     *,
     db: Session,
     query: str,
@@ -92,31 +92,15 @@ def search_legal_documents(
     return _chunks_to_dicts(chunks)
 
 
-def lookup_law_article(*, db: Session, article_reference: str) -> list[dict]:
-    """Lookup specific law article by reference (e.g., 'Art. 334 OR').
-
-    Args:
-        db: Database session
-        article_reference: Article reference like "Art. 334 OR" or "334 OR"
-
-    Returns:
-        List of matching article chunk dicts
-    """
-    chunks = search_service.lookup_article(db=db, article_reference=article_reference)
+def article_lookup(*, db: Session, reference: str) -> list[dict]:
+    """Lookup specific law article by reference (e.g., 'Art. 334 OR')."""
+    chunks = search_service.lookup_article(db=db, article_reference=reference)
     return _chunks_to_dicts(chunks)
 
 
-def lookup_court_decision(*, db: Session, citation: str) -> list[dict]:
-    """Lookup court decision by BGE citation (e.g., '146 V 240' or 'BGE 146 V 240').
-
-    Args:
-        db: Database session
-        citation: BGE citation like "146 V 240" or "BGE 146 V 240"
-
-    Returns:
-        List of matching court decision chunk dicts
-    """
-    chunks = search_service.lookup_decision(db=db, citation=citation)
+def decision_lookup(*, db: Session, reference: str) -> list[dict]:
+    """Lookup court decision by BGE citation (e.g., '146 V 240' or 'BGE 146 V 240')."""
+    chunks = search_service.lookup_decision(db=db, citation=reference)
     return _chunks_to_dicts(chunks)
 
 
