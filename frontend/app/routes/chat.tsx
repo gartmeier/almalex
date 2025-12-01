@@ -9,12 +9,19 @@ import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import {
   readChat,
   type MessageDetail,
-  type SearchContentBlock,
-  type SearchResult,
+  type ReasoningContentBlock,
   type TextContentBlock,
+  type ToolCallContentBlock,
+  type ToolResultContentBlock,
 } from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
-import { parseServerSentEvents, type ServerSentEvent } from "~/lib/sse";
+import { createSSEParser } from "~/lib/sse";
+import type {
+  ReasoningDeltaEvent,
+  TextDeltaEvent,
+  ToolCallEvent,
+  ToolResultEvent,
+} from "~/types";
 import type { Route } from "./+types/chat";
 
 export default function Component({ params }: Route.ComponentProps) {
@@ -29,6 +36,10 @@ export default function Component({ params }: Route.ComponentProps) {
 
   let hasInitialized = useRef(false);
   let shouldScrollRef = useRef(false);
+
+  let currentMessage = useRef<MessageDetail | null>(null);
+  let currentBlock = useRef<MessageDetail["content_blocks"][number] | null>(null);
+  let pendingUpdate = useRef(false);
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -54,14 +65,13 @@ export default function Component({ params }: Route.ComponentProps) {
   }, [messages]);
 
   async function handleInitialMessage(message: string) {
-    setMessages([
-      {
-        id: `tmp-${nanoid()}`,
-        role: "user",
-        content: message,
-        content_blocks: [{ type: "text", text: message }],
-      },
-    ]);
+    let userMessage: MessageDetail = {
+      id: `tmp-${nanoid()}`,
+      role: "user",
+      content: message,
+      content_blocks: [{ type: "text", text: message }],
+    };
+    setMessages([userMessage]);
     setIsLoading(true);
 
     try {
@@ -149,137 +159,104 @@ export default function Component({ params }: Route.ComponentProps) {
     }
   }
 
-  async function processStreamingResponse(response: Response) {
-    let reader = response.body!.getReader();
-    let decoder = new TextDecoder();
-
-    let eventHandlers: Record<string, (event: ServerSentEvent) => void> = {
-      message_id: handleMessageIdEvent,
-      message_delta: handleMessageDeltaEvent,
-      search_query: handleSearchQueryEvent,
-      search_results: handleSearchResultsEvent,
-    };
-
-    while (true) {
-      let { done, value } = await reader.read();
-
-      if (done) {
-        break;
-      }
-
-      let chunk = decoder.decode(value!);
-      let events = parseServerSentEvents(chunk);
-
-      for (let event of events) {
-        let eventHandler = eventHandlers[event.name];
-        if (eventHandler) {
-          eventHandler(event);
-        }
-      }
-    }
-  }
-
-  function handleMessageIdEvent(event: ServerSentEvent) {
-    let newMessage: MessageDetail = {
-      id: JSON.parse(event.data) as string,
-      role: "assistant",
-      content: "",
-      content_blocks: [],
-    };
-    addMessage(newMessage);
-  }
-
-  function handleMessageDeltaEvent(event: ServerSentEvent) {
-    appendToTextBlock(JSON.parse(event.data));
-  }
-
-  function handleSearchQueryEvent(event: ServerSentEvent) {
-    let searchBlock: SearchContentBlock = {
-      type: "search",
-      status: "in_progress",
-      query: JSON.parse(event.data) as string,
-      results: [],
-    };
-    addContentBlockToLastMessage(searchBlock);
-  }
-
-  function handleSearchResultsEvent(event: ServerSentEvent) {
-    updateLastContentBlock((block) => ({
-      ...(block as SearchContentBlock),
-      status: "completed" as const,
-      results: JSON.parse(event.data) as SearchResult[],
-    }));
-  }
-
   function addMessage(message: MessageDetail) {
     setMessages((prev) => [...prev, message]);
   }
 
-  function updateLastMessage(
-    updater: (message: MessageDetail) => MessageDetail,
-  ) {
-    setMessages((prev) => {
-      let lastMessage = prev.at(-1)!;
-      let updatedMessage = updater(lastMessage);
-
-      return [...prev.slice(0, -1), updatedMessage];
-    });
+  function scheduleUpdate() {
+    if (!pendingUpdate.current) {
+      pendingUpdate.current = true;
+      requestAnimationFrame(() => {
+        setMessages((prev) => [...prev]);
+        pendingUpdate.current = false;
+      });
+    }
   }
 
-  function addContentBlockToLastMessage(
-    block: SearchContentBlock | TextContentBlock,
-  ) {
-    updateLastMessage((message) => ({
-      ...message,
-      content_blocks: [...message.content_blocks, block],
-    }));
-  }
+  async function processStreamingResponse(response: Response) {
+    let reader = response.body!.getReader();
+    let parse = createSSEParser();
 
-  function updateLastContentBlock(
-    updater: (
-      block: SearchContentBlock | TextContentBlock,
-    ) => SearchContentBlock | TextContentBlock,
-  ) {
-    updateLastMessage((message) => {
-      let lastBlock = message.content_blocks.at(-1)!;
-      let updatedBlock = updater(lastBlock);
+    let message: MessageDetail = {
+      id: `tmp-${nanoid()}`,
+      role: "assistant",
+      content: "",
+      content_blocks: [],
+    };
+    currentMessage.current = message;
+    currentBlock.current = null;
+    setMessages((prev) => [...prev, message]);
 
-      return {
-        ...message,
-        content_blocks: [...message.content_blocks.slice(0, -1), updatedBlock],
-      };
-    });
-  }
+    while (true) {
+      let { done, value } = await reader.read();
 
-  function appendToTextBlock(text: string) {
-    updateLastMessage((message) => {
-      let lastBlock = message.content_blocks.at(-1)!;
+      let events = parse(value || new Uint8Array(), done);
 
-      if (lastBlock.type !== "text") {
-        // Add new text block if none exists
-        let textBlock = {
-          type: "text" as const,
-          text: text,
-        };
-        return {
-          ...message,
-          content_blocks: [...message.content_blocks, textBlock],
-        };
-      } else {
-        // Update existing text block
-        let updatedTextBlock = {
-          type: "text" as const,
-          text: lastBlock.text + text,
-        };
-        return {
-          ...message,
-          content_blocks: [
-            ...message.content_blocks.slice(0, -1),
-            updatedTextBlock,
-          ],
-        };
+      for (let event of events) {
+        switch (event.type) {
+          case "reasoning":
+            handleReasoningDeltaEvent(event);
+            break;
+          case "text":
+            handleTextDeltaEvent(event);
+            break;
+          case "tool_call":
+            handleToolCallEvent(event);
+            break;
+          case "tool_result":
+            handleToolResultEvent(event);
+            break;
+        }
       }
-    });
+
+      if (done) {
+        break;
+      }
+    }
+  }
+
+  function handleReasoningDeltaEvent(event: ReasoningDeltaEvent) {
+    if (currentBlock.current?.type !== "reasoning") {
+      let block: ReasoningContentBlock = { type: "reasoning", text: event.delta };
+      currentBlock.current = block;
+      currentMessage.current!.content_blocks.push(block);
+    } else {
+      (currentBlock.current as ReasoningContentBlock).text += event.delta;
+    }
+    scheduleUpdate();
+  }
+
+  function handleTextDeltaEvent(event: TextDeltaEvent) {
+    if (currentBlock.current?.type !== "text") {
+      let block: TextContentBlock = { type: "text", text: event.delta };
+      currentBlock.current = block;
+      currentMessage.current!.content_blocks.push(block);
+    } else {
+      (currentBlock.current as TextContentBlock).text += event.delta;
+    }
+    scheduleUpdate();
+  }
+
+  function handleToolCallEvent(event: ToolCallEvent) {
+    let block: ToolCallContentBlock = {
+      type: "tool_call",
+      id: event.id,
+      name: event.name,
+      arguments: event.arguments,
+    };
+    currentMessage.current!.content_blocks.push(block);
+    currentBlock.current = null;
+    scheduleUpdate();
+  }
+
+  function handleToolResultEvent(event: ToolResultEvent) {
+    let block: ToolResultContentBlock = {
+      type: "tool_result",
+      tool_call_id: event.tool_call_id,
+      result: event.result,
+    };
+    currentMessage.current!.content_blocks.push(block);
+    scheduleUpdate();
   }
 
   return (

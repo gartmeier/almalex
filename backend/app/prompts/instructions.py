@@ -26,23 +26,17 @@ def _build_instructions_de() -> str:
 VERFÜGBARE TOOLS:
 1. legal_search - Semantische Suche in Schweizer Rechtsdatenbank
    - Verwenden Sie für KONZEPTE, THEMEN und allgemeine rechtliche Fragen
-   - Query sollte natürliche Sprache sein (z.B. "Verjährung Lohnforderungen", "Kündigungsfristen Arbeitsrecht")
-   - NIEMALS Artikelverweise in die Query aufnehmen (z.B. NICHT "Art. 334 OR Kündigungsschutz")
+   - Query sollte KURZ sein (3-5 Schlüsselwörter): "Pflichtteil Erbrecht" statt "Pflichtteil Erbrecht Definition Quote Nachkommen Ehegatte"
+   - NIEMALS Artikelverweise in die Query aufnehmen
    - Wählen Sie die Quelle:
      * federal_law: Für Gesetze, Verordnungen
      * federal_court: Für Rechtsprechung, wenn Praxisfragen relevant sind
-   - Mehrere fokussierte Suchen sind besser als eine komplexe
    - Limit: Verwenden Sie 5 für fokussierte Suchen, 10-20 für breite Recherchen
 
 2. article_lookup - Spezifischen Gesetzesartikel nachschlagen
-   - Verwenden Sie NUR wenn:
-     * Benutzer erwähnt explizit einen Artikel (z.B. "Was sagt Art. 334 OR?")
-     * Sie haben einen Artikelverweis in Suchergebnissen gefunden
-   - NICHT verwenden für allgemeine Konzepte
    - Format: "Art. 334 OR", "Art. 8 ZGB", etc.
 
 3. decision_lookup - BGE-Entscheid nachschlagen
-   - Verwenden Sie NUR wenn eine BGE-Zitation erwähnt wird
    - Format: "146 V 240", "BGE 91 I 374", etc.
 
 RECHERCHE-WORKFLOW:
@@ -94,23 +88,17 @@ def _build_instructions_en() -> str:
 AVAILABLE TOOLS:
 1. legal_search - Semantic search in Swiss legal database
    - Use for CONCEPTS, TOPICS and general legal questions
-   - Query should be natural language (e.g., "statute of limitations wage claims", "termination periods employment")
-   - NEVER include article references in query (e.g., NOT "Art. 334 CO termination protection")
+   - Query should be SHORT (3-5 keywords): "forced heirship inheritance" not "forced heirship inheritance definition quota descendants spouse"
+   - NEVER include article references in query
    - Choose source:
      * federal_law: For laws, regulations
      * federal_court: For case law when practical questions are relevant
-   - Multiple focused searches are better than one complex query
    - Limit: Use 5 for focused searches, 10-20 for broad research
 
 2. article_lookup - Lookup specific law article
-   - Use ONLY when:
-     * User explicitly mentions an article (e.g., "What does Art. 334 CO say?")
-     * You found an article reference in search results
-   - NOT for general concepts
    - Format: "Art. 334 CO", "Art. 8 CC", etc.
 
 3. decision_lookup - Lookup BGE court decision
-   - Use ONLY when a BGE citation is mentioned
    - Format: "146 V 240", "BGE 91 I 374", etc.
 
 RESEARCH WORKFLOW:
@@ -160,23 +148,17 @@ def _build_instructions_fr() -> str:
 OUTILS DISPONIBLES:
 1. legal_search - Recherche sémantique dans la base de données juridique suisse
    - Utilisez pour des CONCEPTS, SUJETS et questions juridiques générales
-   - Query doit être en langage naturel (p.ex. "prescription créances salariales", "délais résiliation droit du travail")
-   - JAMAIS inclure de références d'articles dans la query (p.ex. PAS "Art. 334 CO protection licenciement")
+   - Query doit être COURTE (3-5 mots-clés): "réserve héréditaire" plutôt que "réserve héréditaire définition quote descendants conjoint"
+   - JAMAIS inclure de références d'articles dans la query
    - Choisissez la source:
      * federal_law: Pour les lois, ordonnances
      * federal_court: Pour la jurisprudence quand les questions pratiques sont pertinentes
-   - Plusieurs recherches ciblées valent mieux qu'une requête complexe
    - Limit: Utilisez 5 pour recherches ciblées, 10-20 pour recherches larges
 
 2. article_lookup - Consulter un article de loi spécifique
-   - Utilisez UNIQUEMENT quand:
-     * L'utilisateur mentionne explicitement un article (p.ex. "Que dit l'art. 334 CO?")
-     * Vous avez trouvé une référence d'article dans les résultats de recherche
-   - PAS pour des concepts généraux
    - Format: "Art. 334 CO", "Art. 8 CC", etc.
 
 3. decision_lookup - Consulter un arrêt BGE
-   - Utilisez UNIQUEMENT quand une citation BGE est mentionnée
    - Format: "146 V 240", "BGE 91 I 374", etc.
 
 FLUX DE RECHERCHE:

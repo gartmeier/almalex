@@ -1,33 +1,76 @@
 import * as Sentry from "@sentry/react";
-import { ChevronDown, FileText, Loader2, Search } from "lucide-react";
+import { Brain, ChevronDown, FileText, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
 import type {
   MessageDetail,
-  SearchContentBlock,
-  SearchResult,
-  TextContentBlock,
+  ReasoningContentBlock,
+  ToolCallContentBlock,
+  ToolResultContentBlock,
 } from "~/lib/api";
+import type { SearchResult } from "~/types";
 
 type AssistantMessageProps = {
   message: MessageDetail;
 };
 
-function SearchBlock({
-  block,
-  index,
-}: {
-  block: SearchContentBlock;
-  index: number;
-}) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const isLoading = block.status === "in_progress";
+type ContentBlock = MessageDetail["content_blocks"][number];
+
+function ReasoningBlock({ block }: { block: ReasoningContentBlock }) {
+  let [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div
-      key={index}
-      className="font-ui bg-muted hover:bg-muted/80 my-4 flex min-h-[2.625rem] flex-col rounded-lg border leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out"
-    >
+    <div className="font-ui bg-muted/50 my-4 flex min-h-[2.625rem] flex-col rounded-lg border border-dashed leading-normal tracking-tight transition-all duration-400 ease-out">
+      <button
+        className="group/row text-muted-foreground hover:text-foreground flex h-[2.625rem] cursor-pointer flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex min-w-0 flex-row items-center gap-2">
+          <div className="text-muted-foreground flex h-5 w-5 items-center justify-center">
+            <Brain size={16} />
+          </div>
+          <div className="font-base text-muted-foreground relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
+            Thinking
+          </div>
+        </div>
+        <div
+          className={`ease-snappy-out text-muted-foreground relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
+          style={{ width: "16px", height: "16px" }}
+        >
+          <ChevronDown size={16} />
+        </div>
+      </button>
+
+      <div
+        className="shrink-0 overflow-hidden"
+        style={{
+          opacity: isExpanded ? 1 : 0,
+          height: isExpanded ? "auto" : "0px",
+        }}
+      >
+        <div className="text-muted-foreground max-h-[300px] overflow-y-auto px-3 pb-3 text-sm whitespace-pre-wrap">
+          {block.text}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToolUseBlock({
+  toolCall,
+  toolResult,
+}: {
+  toolCall: ToolCallContentBlock;
+  toolResult?: ToolResultContentBlock;
+}) {
+  let [isExpanded, setIsExpanded] = useState(false);
+  let isLoading = !toolResult;
+  let results = Array.isArray(toolResult?.result) ? (toolResult.result as SearchResult[]) : [];
+  let args = toolCall.arguments as { query?: string; reference?: string };
+  let query = args.query || args.reference || "";
+
+  return (
+    <div className="font-ui bg-muted hover:bg-muted/80 my-4 flex min-h-[2.625rem] flex-col rounded-lg border leading-normal tracking-tight shadow-sm transition-all duration-400 ease-out">
       <button
         className={`group/row text-muted-foreground hover:text-muted-foreground flex h-[2.625rem] flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200 ${isLoading ? "cursor-default" : "hover:text-foreground cursor-pointer"}`}
         onClick={() => !isLoading && setIsExpanded(!isExpanded)}
@@ -44,15 +87,14 @@ function SearchBlock({
           <div className="font-base text-muted-foreground relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
             {isLoading
               ? "Searching for relevant law and court decisions"
-              : block.query}
+              : query}
           </div>
         </div>
         <div className="flex min-w-0 shrink-0 flex-row items-center gap-1.5">
           {!isLoading && (
             <>
               <p className="text-muted-foreground font-small relative bottom-[0.5px] shrink-0 pl-1 leading-tight whitespace-nowrap">
-                {block.results.length}{" "}
-                {block.results.length === 1 ? "result" : "results"}
+                {results.length} {results.length === 1 ? "result" : "results"}
               </p>
               <div
                 className={`ease-snappy-out text-muted-foreground relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
@@ -75,7 +117,7 @@ function SearchBlock({
         <div className="min-h-0">
           <div className="h-full max-h-[238px] min-h-0 overflow-x-hidden overflow-y-auto">
             <div className="flex flex-col flex-nowrap p-2 pt-0">
-              {block.results.map((result) => (
+              {results.map((result) => (
                 <div key={result.id}>
                   <a
                     target="_blank"
@@ -106,91 +148,94 @@ function SearchBlock({
   );
 }
 
-function renderContentBlock(
-  block: SearchContentBlock | TextContentBlock,
-  index: number,
-  searchResults: SearchResult[],
-) {
-  if (block.type === "text") {
-    return (
-      <div
-        key={index}
-        className="prose prose-neutral dark:prose-invert inline-block max-w-none"
-      >
-        <Markdown
-          components={{
-            a: ({ href, children, ...props }) => {
-              // Check if this is a citation link (e.g., #1234)
-              if (href?.match(/^#\d+$/)) {
-                let documentId = parseInt(href.slice(1)); // Remove the # prefix and convert to number
-                // Find the document in search results
-                let document = searchResults.find(
-                  (result) => result.id === documentId,
-                );
-                if (document) {
+export function AssistantMessage({ message }: AssistantMessageProps) {
+  let blocks = message.content_blocks || [];
+
+  // Build a map of tool_result by tool_call_id for quick lookup
+  let toolResults = new Map<string, ToolResultContentBlock>();
+  for (let block of blocks) {
+    if (block.type === "tool_result") {
+      toolResults.set(block.tool_call_id, block);
+    }
+  }
+
+  // Collect all search results for citation linking
+  let searchResults: SearchResult[] = [];
+  for (let block of blocks) {
+    if (block.type === "tool_result" && Array.isArray(block.result)) {
+      searchResults.push(...(block.result as SearchResult[]));
+    }
+  }
+
+  function renderBlock(block: ContentBlock, index: number) {
+    if (block.type === "text") {
+      return (
+        <div
+          key={index}
+          className="prose prose-neutral dark:prose-invert inline-block max-w-none"
+        >
+          <Markdown
+            components={{
+              a: ({ href, children, ...props }) => {
+                if (href?.match(/^#\d+$/)) {
+                  let documentId = parseInt(href.slice(1));
+                  let document = searchResults.find((r) => r.id === documentId);
+                  if (document) {
+                    return (
+                      <a
+                        href={document.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        {...props}
+                      >
+                        {children}
+                      </a>
+                    );
+                  }
+                  Sentry.captureMessage("AI cited non-existent document", {
+                    level: "warning",
+                    extra: {
+                      documentId,
+                      citationText: children?.toString(),
+                      availableDocumentIds: searchResults.map((r) => r.id),
+                    },
+                  });
                   return (
-                    <a
-                      href={document.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      {...props}
-                    >
+                    <a href={href} {...props}>
                       {children}
                     </a>
                   );
                 }
-                // Document not found - AI hallucinated the citation
-                Sentry.captureMessage("AI cited non-existent document", {
-                  level: "warning",
-                  extra: {
-                    documentId,
-                    citationText: children?.toString(),
-                    availableDocumentIds: searchResults.map((r) => r.id),
-                  },
-                });
-                // Fallback if document not found in search results
                 return (
                   <a href={href} {...props}>
                     {children}
                   </a>
                 );
-              }
-              // Regular external links
-              return (
-                <a href={href} {...props}>
-                  {children}
-                </a>
-              );
-            },
-          }}
-        >
-          {block.text}
-        </Markdown>
-      </div>
-    );
-  }
-
-  if (block.type === "search") {
-    return <SearchBlock key={index} block={block} index={index} />;
-  }
-
-  return null;
-}
-
-export function AssistantMessage({ message }: AssistantMessageProps) {
-  // Collect all search results from search blocks
-  let searchResults: SearchResult[] = [];
-  for (let block of message.content_blocks || []) {
-    if (block.type === "search") {
-      searchResults.push(...block.results);
+              },
+            }}
+          >
+            {block.text}
+          </Markdown>
+        </div>
+      );
     }
+
+    if (block.type === "tool_call") {
+      let result = toolResults.get(block.id);
+      return <ToolUseBlock key={index} toolCall={block} toolResult={result} />;
+    }
+
+    if (block.type === "reasoning") {
+      return <ReasoningBlock key={index} block={block} />;
+    }
+
+    // Skip tool_result blocks (rendered with their tool_call)
+    return null;
   }
 
   return (
     <div className="py-5">
-      {message.content_blocks?.map((block, index) =>
-        renderContentBlock(block, index, searchResults),
-      )}
+      {blocks.map((block, index) => renderBlock(block, index))}
     </div>
   );
 }

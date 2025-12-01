@@ -12,13 +12,13 @@ export type ToolCallEvent = {
   type: "tool_call";
   id: string;
   name: string;
-  arguments: any;
+  arguments: Record<string, unknown>;
 };
 
 export type ToolResultEvent = {
   type: "tool_result";
-  id: string;
-  result: any;
+  tool_call_id: string;
+  result: unknown;
 };
 
 export type ServerSentEvent =

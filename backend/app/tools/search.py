@@ -10,23 +10,23 @@ SEARCH_TOOLS = [
     FunctionToolParam(
         type="function",
         name="legal_search",
-        description="Search Swiss legal database using semantic search. Returns document chunks with citation metadata. Call multiple times to search different sources.",
+        description="Search Swiss legal database using semantic search. Use short queries (3-5 keywords).",
         strict=True,
         parameters={
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Natural language search query (e.g., 'Wertrechte Register Eintragung', 'Bucheffekten Entstehung')",
+                    "description": "Short search query (3-5 keywords), e.g. 'Pflichtteil Erbrecht'",
                 },
                 "source": {
                     "type": "string",
                     "enum": ["federal_law", "federal_court"],
-                    "description": "Source type to search. Use 'federal_law' for laws or 'federal_court' for court decisions.",
+                    "description": "Source type: 'federal_law' for laws, 'federal_court' for court decisions.",
                 },
                 "limit": {
                     "type": "integer",
-                    "description": "Maximum number of results to return",
+                    "description": "Maximum number of results",
                 },
             },
             "required": ["query", "source", "limit"],
@@ -36,14 +36,14 @@ SEARCH_TOOLS = [
     FunctionToolParam(
         type="function",
         name="article_lookup",
-        description="Lookup specific law article by reference (e.g., 'Art. 334 OR', 'Art. 8 ZGB'). Use when a law or court decision mentions another article.",
+        description="Lookup specific law article by reference.",
         strict=True,
         parameters={
             "type": "object",
             "properties": {
                 "reference": {
                     "type": "string",
-                    "description": "Article reference like 'Art. 334 OR', 'Art. 8 ZGB', or '334 OR'",
+                    "description": "Article reference like 'Art. 334 OR', 'Art. 8 ZGB'",
                 }
             },
             "required": ["reference"],
@@ -53,14 +53,14 @@ SEARCH_TOOLS = [
     FunctionToolParam(
         type="function",
         name="decision_lookup",
-        description="Lookup court decision by BGE citation (e.g., '146 V 240', 'BGE 91 I 374'). Use when a court decision or law mentions another court decision.",
+        description="Lookup court decision by BGE citation.",
         strict=True,
         parameters={
             "type": "object",
             "properties": {
                 "reference": {
                     "type": "string",
-                    "description": "BGE citation like '146 V 240' or 'BGE 146 V 240'. Format: volume part page (e.g., '91 I 374')",
+                    "description": "BGE citation like '146 V 240', 'BGE 91 I 374'",
                 }
             },
             "required": ["reference"],
@@ -75,51 +75,31 @@ def legal_search(
     db: Session,
     query: str,
     source: str,
-    limit: int = 20,
+    limit: int = 5,
 ) -> list[dict]:
-    """Search Swiss legal database using hybrid vector + full-text search.
-
-    Args:
-        db: Database session
-        query: Search query
-        source: Source type ("federal_law" or "federal_court")
-        limit: Max results to return
-
-    Returns:
-        List of document chunk dicts
-    """
+    """Search Swiss legal database."""
     chunks = search_service.search(db=db, query=query, source=source, limit=limit)
-    return _chunks_to_dicts(chunks)
+    return [_chunk_to_dict(chunk) for chunk in chunks]
 
 
 def article_lookup(*, db: Session, reference: str) -> list[dict]:
-    """Lookup specific law article by reference (e.g., 'Art. 334 OR')."""
+    """Lookup law article by reference."""
     chunks = search_service.lookup_article(db=db, article_reference=reference)
-    return _chunks_to_dicts(chunks)
+    return [_chunk_to_dict(chunk) for chunk in chunks]
 
 
 def decision_lookup(*, db: Session, reference: str) -> list[dict]:
-    """Lookup court decision by BGE citation (e.g., '146 V 240' or 'BGE 146 V 240')."""
+    """Lookup court decision by BGE citation."""
     chunks = search_service.lookup_decision(db=db, citation=reference)
-    return _chunks_to_dicts(chunks)
+    return [_chunk_to_dict(chunk) for chunk in chunks]
 
 
-def _chunks_to_dicts(chunks: list[DocumentChunk]) -> list[dict]:
-    """Convert DocumentChunk list to dict list for tool results.
-
-    Args:
-        chunks: Document chunks to convert
-
-    Returns:
-        List of chunk dicts with id, source, title, text, url
-    """
-    return [
-        {
-            "id": chunk.id,
-            "source": chunk.document.source,
-            "title": chunk.document.title,
-            "text": chunk.text,
-            "url": chunk.document.url or "",
-        }
-        for chunk in chunks
-    ]
+def _chunk_to_dict(chunk: DocumentChunk) -> dict:
+    """Convert DocumentChunk to dict for tool results."""
+    return {
+        "id": chunk.id,
+        "source": chunk.document.source,
+        "title": chunk.document.title,
+        "text": chunk.text,
+        "url": chunk.document.url or "",
+    }

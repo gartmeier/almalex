@@ -1,25 +1,33 @@
 import * as Sentry from "@sentry/react";
 import type { ServerSentEvent } from "~/types";
 
-export function parseServerSentEvents(rawEvents: string) {
-  let parsedEvents: ServerSentEvent[] = [];
+export function createSSEParser() {
+  let buffer = "";
+  let decoder = new TextDecoder();
 
-  for (let rawEvent of rawEvents.split("\n\n")) {
-    if (!rawEvent || !rawEvent.startsWith("data: {")) {
-      continue;
+  return function parse(chunk: Uint8Array, done: boolean = false): ServerSentEvent[] {
+    buffer += decoder.decode(chunk, { stream: !done });
+
+    let events: ServerSentEvent[] = [];
+    let parts = buffer.split("\n\n");
+
+    // Keep the last part in buffer (may be incomplete)
+    buffer = parts.pop() || "";
+
+    for (let part of parts) {
+      if (!part.startsWith("data: ")) {
+        continue;
+      }
+
+      let json = part.slice(6);
+      try {
+        events.push(JSON.parse(json));
+      } catch (e) {
+        console.error("Invalid server-sent event", json);
+        Sentry.captureException(e);
+      }
     }
 
-    // drop "data: " prefix
-    rawEvent = rawEvent.slice(6);
-
-    try {
-      let event = JSON.parse(rawEvent);
-      parsedEvents.push(event);
-    } catch (e) {
-      console.error("Invalid server-sent event", rawEvent);
-      Sentry.captureException(e);
-    }
-  }
-
-  return parsedEvents;
+    return events;
+  };
 }
