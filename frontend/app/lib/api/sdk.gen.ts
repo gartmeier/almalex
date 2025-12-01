@@ -9,7 +9,6 @@ import { client as _heyApiClient } from "./client.gen";
 import type {
   CreateMessageData,
   CreateMessageError,
-  CreateMessageResponse,
   ReadChatData,
   ReadChatError,
   ReadChatResponse,
@@ -58,7 +57,7 @@ export const createMessage = <ThrowOnError extends boolean = false>(
   options: Options<CreateMessageData, ThrowOnError>,
 ) => {
   return (options.client ?? _heyApiClient).post<
-    CreateMessageResponse,
+    unknown,
     CreateMessageError,
     ThrowOnError
   >({

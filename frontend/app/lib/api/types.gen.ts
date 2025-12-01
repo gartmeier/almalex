@@ -24,25 +24,37 @@ export type MessageDetail = {
   id: string;
   role: string;
   content: string;
-  content_blocks: Array<SearchContentBlock | TextContentBlock>;
+  content_blocks: Array<
+    | TextContentBlock
+    | ReasoningContentBlock
+    | ToolCallContentBlock
+    | ToolResultContentBlock
+  >;
 };
 
-export type SearchContentBlock = {
-  type: "search";
-  status?: "completed" | "in_progress";
-  query: string;
-  results: Array<SearchResult>;
-};
-
-export type SearchResult = {
-  id: number;
-  title: string;
-  url: string;
+export type ReasoningContentBlock = {
+  type: "reasoning";
+  text: string;
 };
 
 export type TextContentBlock = {
   type: "text";
   text: string;
+};
+
+export type ToolCallContentBlock = {
+  type: "tool_call";
+  id: string;
+  name: string;
+  arguments: {
+    [key: string]: unknown;
+  };
+};
+
+export type ToolResultContentBlock = {
+  type: "tool_result";
+  tool_call_id: string;
+  result: unknown;
 };
 
 export type ValidationError = {
@@ -98,13 +110,10 @@ export type CreateMessageError = CreateMessageErrors[keyof CreateMessageErrors];
 
 export type CreateMessageResponses = {
   /**
-   * Event stream
+   * Server-Sent Events stream of chat completion
    */
-  200: Blob | File;
+  200: unknown;
 };
-
-export type CreateMessageResponse =
-  CreateMessageResponses[keyof CreateMessageResponses];
 
 export type ReadDocumentData = {
   body?: never;
