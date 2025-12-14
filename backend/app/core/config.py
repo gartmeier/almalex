@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     cohere_api_key: str
     cohere_rerank_model: str = "rerank-multilingual-v3.0"
+    hf_token: str | None = None
 
 
 @lru_cache()
