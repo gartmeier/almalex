@@ -23,7 +23,7 @@ Here is the chunk we want to situate within the whole document:
 Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk. Answer only with the succinct context and nothing else."""
 
 
-def _generate_context(document_text: str, chunk_text: str) -> str:
+def generate_context(document_text: str, chunk_text: str) -> str:
     response = _anthropic.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=200,
@@ -68,7 +68,7 @@ def _generate_contexts(db: Session):
     for doc_chunks in docs.values():
         document_text = "\n\n".join(c.text for c in doc_chunks)
         for chunk in doc_chunks:
-            chunk.context = _generate_context(document_text, chunk.text)
+            chunk.context = generate_context(document_text, chunk.text)
             processed += 1
 
         db.commit()
