@@ -21,7 +21,7 @@ def search(
     source: str,
     limit: int = 20,
 ) -> list[DocumentChunk]:
-    """Search documents using hybrid RRF + Cohere reranking.
+    """Search documents using hybrid RRF + reranking.
 
     Args:
         db: Database session
@@ -43,7 +43,7 @@ def search(
         top_k=limit * 2,
     )
 
-    # Cohere reranking
+    # Reranking
     return ranking.rerank(query, chunks, top_k=limit)
 
 

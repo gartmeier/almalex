@@ -1,38 +1,25 @@
-"""Document ranking using Cohere reranking."""
-
 import cohere
 
 from app.core.config import settings
 from app.db.models import DocumentChunk
 
-cohere_client = cohere.ClientV2(api_key=settings.cohere_api_key)
+client = cohere.ClientV2(
+    api_key=settings.infomaniak_api_key,
+    base_url=f"https://api.infomaniak.com/2/ai/{settings.infomaniak_rerank_product_id}/cohere",
+)
 
 
 def rerank(
     query: str, chunks: list[DocumentChunk], top_k: int | None = None
 ) -> list[DocumentChunk]:
-    """Rerank chunks using Cohere's reranking model.
-
-    Args:
-        query: Search query
-        chunks: Chunks to rerank
-        top_k: Number of top results to return (None = return all reranked)
-
-    Returns:
-        Reranked chunks
-    """
     if not chunks:
         return chunks
 
-    documents = [chunk.text for chunk in chunks]
-
-    response = cohere_client.rerank(
-        model=settings.cohere_rerank_model,
+    response = client.rerank(
+        model=settings.infomaniak_rerank_model,
         query=query,
-        documents=documents,
+        documents=[c.text for c in chunks],
         top_n=top_k or len(chunks),
     )
 
-    # Reorder chunks by Cohere's ranking
-    reranked = [chunks[result.index] for result in response.results]
-    return reranked
+    return [chunks[r.index] for r in response.results]

@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     infomaniak_chat_model: str
     infomaniak_embedding_product_id: str
     infomaniak_embedding_model: str = "bge_multilingual_gemma2"
-    cohere_api_key: str
-    cohere_rerank_model: str = "rerank-multilingual-v3.0"
+    infomaniak_rerank_product_id: str
+    infomaniak_rerank_model: str = "BAAI/bge-reranker-v2-m3"
     hf_token: str | None = None
 
 
