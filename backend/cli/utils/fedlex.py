@@ -64,6 +64,7 @@ def process_fedlex_articles(
                 "law_title": law_title,
                 "law_abbr": law_abbr,
                 "law_url": law_url,
+                "html_url": html_url,
                 "article_index": article_index,
                 "article_id": article_id,
                 "article_num": article_num,
