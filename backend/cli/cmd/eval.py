@@ -31,17 +31,23 @@ Answer:"""
 
 BATCH_SIZE = 20
 
-client = AsyncOpenAI(api_key=settings.openai_api_key)
+client = AsyncOpenAI(
+    api_key=settings.infomaniak_api_key,
+    base_url=f"https://api.infomaniak.com/1/ai/{settings.infomaniak_chat_product_id}/openai/v1",
+)
 
 Row = dict[str, Any]
 
 
 @click.command("eval")
-@click.option("--model", default="gpt-5.1", help="Model to use")
+@click.option(
+    "--model", default=None, help="Model to use (defaults to infomaniak_chat_model)"
+)
 @click.option("--output", "-o", default="eval_results.csv", help="Output CSV file")
 @click.option("--limit", "-n", type=int, default=None, help="Limit number of questions")
-def eval_command(model: str, output: str, limit: int | None):
-    results = asyncio.run(run_eval(model, limit))
+def eval_command(model: str | None, output: str, limit: int | None):
+    effective_model = model or settings.infomaniak_chat_model
+    results = asyncio.run(run_eval(effective_model, limit))
 
     click.echo(f"Writing {len(results)} results to {output}")
 
@@ -75,12 +81,14 @@ async def process_batch(rows: list[Row], model: str) -> list[Row]:
 
 async def process_row(row: Row, model: str) -> Row:
     prompt = QA_PROMPT.format(course_name=row["course"], question=row["question"])
-    response = await client.responses.create(
-        model=model, input=prompt, max_output_tokens=4096
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=4096,
     )
     return {
         "id": row["id"],
         "question": row["question"],
         "gold_answer": row["answer"],
-        "model_answer": response.output_text,
+        "model_answer": response.choices[0].message.content or "",
     }

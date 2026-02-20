@@ -1,4 +1,4 @@
-"""LLM text generation using OpenAI API."""
+"""LLM text generation using Infomaniak chat completions API."""
 
 import json
 from typing import Iterator
@@ -13,8 +13,6 @@ from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
 from app.schemas.chat import (
     DoneEvent,
-    ReasoningContentBlock,
-    ReasoningEvent,
     TextContentBlock,
     TextEvent,
     ToolCallContentBlock,
@@ -23,159 +21,113 @@ from app.schemas.chat import (
     ToolResultEvent,
 )
 
-client = OpenAI(api_key=settings.openai_api_key)
+client = OpenAI(
+    api_key=settings.infomaniak_api_key,
+    base_url=f"https://api.infomaniak.com/1/ai/{settings.infomaniak_chat_product_id}/openai/v1",
+)
 
 
 def generate_with_tools(
     *, db: Session, history: list[ChatMessage], lang: Language
-) -> Iterator[ReasoningEvent | TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent]:
-    """Generate response with automatic tool calling loop.
+) -> Iterator[TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent]:
+    messages: list[dict] = [
+        {"role": "system", "content": build_instructions(lang)},
+        *[{"role": msg.role, "content": msg.content} for msg in history],
+    ]
 
-    Yields deltas for streaming to frontend and final blocks for DB storage.
-
-    Args:
-        db: Database session for tool functions
-        history: Chat message history
-        lang: Language for instructions
-
-    Yields:
-        Delta events (type: "reasoning"/"text", delta: str) for frontend streaming
-        Tool events (type: "tool_call"/"tool_result") for frontend display
-        Done event (type: "done", blocks: list, content: str) for DB storage
-    """
-
-    input_items = _messages_to_openai_format(history)
-    output_items = []
-    output_texts = []
-    function_call_outputs = []
+    output_texts: list[str] = []
+    content_blocks: list[
+        TextContentBlock | ToolCallContentBlock | ToolResultContentBlock
+    ] = []
 
     while True:
-        stream = client.responses.create(
-            model=settings.openai_response_model,
-            input=input_items,  # type: ignore
-            instructions=build_instructions(lang),
+        stream = client.chat.completions.create(
+            model=settings.infomaniak_chat_model,
+            messages=messages,  # type: ignore
             tools=tools.ALL_TOOLS,
-            reasoning={"effort": "medium", "summary": "auto"},
-            store=False,
             stream=True,
         )
 
-        tool_calls = {}
+        tool_calls_acc: dict[int, dict] = {}
+        text_parts: list[str] = []
+        finish_reason = None
 
-        for event in stream:
-            match event.type:
-                case "response.output_text.delta":
-                    yield TextEvent(type="text", delta=event.delta)
+        for chunk in stream:
+            choice = chunk.choices[0]
+            delta = choice.delta
 
-                case "response.reasoning_summary_text.delta":
-                    yield ReasoningEvent(type="reasoning", delta=event.delta)
+            if delta.content:
+                text_parts.append(delta.content)
+                yield TextEvent(type="text", delta=delta.content)
 
-                case "response.output_item.added":
-                    if event.item.type == "function_call":
-                        tool_calls[event.output_index] = event.item
+            if delta.tool_calls:
+                for tc in delta.tool_calls:
+                    if tc.index not in tool_calls_acc:
+                        tool_calls_acc[tc.index] = {
+                            "id": tc.id or "",
+                            "name": tc.function.name if tc.function else "",
+                            "arguments": "",
+                        }
+                    if tc.function and tc.function.arguments:
+                        tool_calls_acc[tc.index]["arguments"] += tc.function.arguments
 
-                case "response.function_call_arguments.done":
-                    if event.output_index in tool_calls:
-                        tool_calls[event.output_index].arguments = event.arguments
+            if choice.finish_reason:
+                finish_reason = choice.finish_reason
 
-                case "response.output_item.done":
-                    if event.item.type == "message":
-                        input_items.append(event.item)
-                        output_items.append(event.item)
-                        output_texts.append(event.item.content[0].text)
-                    elif event.item.type == "function_call":
-                        input_items.append(event.item)
-                        output_items.append(event.item)
-                    elif event.item.type == "reasoning":
-                        output_items.append(event.item)
+        text = "".join(text_parts)
+        if text:
+            output_texts.append(text)
+            content_blocks.append(TextContentBlock(type="text", text=text))
 
-        if not tool_calls:
+        if finish_reason != "tool_calls":
             break
 
-        for tool_call in tool_calls.values():
-            args = json.loads(tool_call.arguments)
+        assistant_msg: dict = {
+            "role": "assistant",
+            "content": text or None,
+            "tool_calls": [
+                {
+                    "id": tc["id"],
+                    "type": "function",
+                    "function": {"name": tc["name"], "arguments": tc["arguments"]},
+                }
+                for tc in tool_calls_acc.values()
+            ],
+        }
+        messages.append(assistant_msg)
+
+        for tc in tool_calls_acc.values():
+            args = json.loads(tc["arguments"])
 
             yield ToolCallEvent(
-                type="tool_call",
-                id=tool_call.call_id,
-                name=tool_call.name,
-                arguments=args,
+                type="tool_call", id=tc["id"], name=tc["name"], arguments=args
             )
-
-            result = tools.call_function(db=db, name=tool_call.name, args=args)
-
+            result = tools.call_function(db=db, name=tc["name"], args=args)
             yield ToolResultEvent(
-                type="tool_result",
-                tool_call_id=tool_call.call_id,
-                result=result,
+                type="tool_result", tool_call_id=tc["id"], result=result
             )
 
-            item = {
-                "type": "function_call_output",
-                "call_id": tool_call.call_id,
-                "output": json.dumps(result),
-            }
-
-            input_items.append(item)
-            function_call_outputs.append(item)
-
-    content = "\n\n".join(output_texts)
-    content_blocks: list[
-        ReasoningContentBlock
-        | TextContentBlock
-        | ToolCallContentBlock
-        | ToolResultContentBlock
-    ] = []
-
-    for output_item in output_items:
-        match output_item.type:
-            case "reasoning":
-                if output_item.summary:
-                    content_blocks.append(
-                        ReasoningContentBlock(
-                            type="reasoning",
-                            text=output_item.summary[0].text,
-                        )
-                    )
-
-            case "message":
-                if output_item.content and output_item.content[0].type == "output_text":
-                    content_blocks.append(
-                        TextContentBlock(
-                            type="text",
-                            text=output_item.content[0].text,
-                        )
-                    )
-
-            case "function_call":
-                content_blocks.append(
-                    ToolCallContentBlock(
-                        type="tool_call",
-                        id=output_item.call_id,
-                        name=output_item.name,
-                        arguments=json.loads(output_item.arguments),
-                    )
+            content_blocks.append(
+                ToolCallContentBlock(
+                    type="tool_call", id=tc["id"], name=tc["name"], arguments=args
                 )
+            )
+            content_blocks.append(
+                ToolResultContentBlock(
+                    type="tool_result", tool_call_id=tc["id"], result=result
+                )
+            )
 
-                # Find matching output
-                for function_call_output in function_call_outputs:
-                    if function_call_output["call_id"] == output_item.call_id:
-                        result_data = json.loads(function_call_output["output"])
-                        content_blocks.append(
-                            ToolResultContentBlock(
-                                type="tool_result",
-                                tool_call_id=output_item.call_id,
-                                result=result_data,
-                            )
-                        )
-                        break
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": json.dumps(result),
+                }
+            )
 
     yield DoneEvent(
         type="done",
-        content=content,
+        content="\n\n".join(output_texts),
         content_blocks=content_blocks,
     )
-
-
-def _messages_to_openai_format(messages: list[ChatMessage]):
-    return [{"role": msg.role, "content": msg.content} for msg in messages]

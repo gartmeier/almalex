@@ -57,11 +57,6 @@ class ChatDetail(BaseModel):
     messages: list[MessageDetail]
 
 
-class ReasoningEvent(BaseModel):
-    type: Literal["reasoning"]
-    delta: str
-
-
 class TextEvent(BaseModel):
     type: Literal["text"]
     delta: str
@@ -84,14 +79,11 @@ class DoneEvent(BaseModel):
     type: Literal["done"]
     content: str
     content_blocks: list[
-        TextContentBlock
-        | ReasoningContentBlock
-        | ToolCallContentBlock
-        | ToolResultContentBlock
+        TextContentBlock | ToolCallContentBlock | ToolResultContentBlock
     ]
 
 
-StreamEvent = ReasoningEvent | TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent
+StreamEvent = TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent
 
 
 class SSEMessage(BaseModel):

@@ -35,8 +35,9 @@ class DocumentChunk(Base):
         index=True,
     )
     text: Mapped[str]
+    context: Mapped[str | None]
     order: Mapped[int] = mapped_column(index=True)
-    embedding: Mapped[Vector | None] = mapped_column(Vector(1536))
+    embedding: Mapped[Vector | None] = mapped_column(Vector(3584))
     text_search_vector = mapped_column(
         TSVECTOR,
         Computed("to_tsvector('simple', text)", persisted=True),
