@@ -30,8 +30,9 @@ def generate_context_openai(
         + suffix.format(chunk_text=chunk_text)
     )
     response = openai_client.chat.completions.create(
-        model="mistral3",
         messages=[{"role": "user", "content": input_}],
+        model="mistral3",
+        max_tokens=200,
     )
     return response.choices[0].message.content
 
@@ -41,8 +42,6 @@ def generate_context_anthropic(
 ) -> str:
     prefix, suffix = CONTEXT_PROMPTS[lang]
     message = anthropic_client.messages.create(
-        model="claude-haiku-4-5",
-        max_tokens=200,
         messages=[
             {
                 "role": "user",
@@ -59,5 +58,7 @@ def generate_context_anthropic(
                 ],
             }
         ],
+        model="claude-haiku-4-5",
+        max_tokens=200,
     )
     return message.content[0].text
