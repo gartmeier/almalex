@@ -65,6 +65,15 @@ class Act(Base):
 
     __table_args__ = (UniqueConstraint("sr_number", "lang", "applicability_date"),)
 
+    @property
+    def label(self) -> str:
+        parts = [f"SR {self.sr_number}"]
+        if self.title:
+            parts.append(self.title)
+        if self.abbr:
+            parts.append(f"({self.abbr})")
+        return " ".join(parts)
+
     articles = relationship(
         "Article", back_populates="act", cascade="all, delete-orphan"
     )

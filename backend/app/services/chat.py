@@ -1,11 +1,9 @@
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.types import Language
-from app.db.models import Chat, ChatMessage, DocumentChunk
-from app.services import chat as chat_service
+from app.db.models import Article, Chat, ChatMessage
 from app.services import llm
-from app.services import search as search_service
+from app.services.search import search_articles
 
 _SOURCE_LABELS = {"fedlex_article": "federal_law", "bge": "federal_court"}
 
@@ -45,18 +43,8 @@ def create_user_message(*, db: Session, chat_id: str, content: str) -> ChatMessa
     return db_message
 
 
-def _format_context(chunks: list[DocumentChunk]) -> str:
-    parts = []
-    for i, chunk in enumerate(chunks, 1):
-        source = _SOURCE_LABELS.get(chunk.document.source, chunk.document.source)
-        parts.append(
-            f"[{i}] {source} | {chunk.document.title} (ID: {chunk.document.id})\n{chunk.text}"
-        )
-    return "\n\n".join(parts)
-
-
-def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
-    chat_service.get_or_create_chat(db=db, chat_id=chat_id)
+def process_message(*, db: Session, chat_id: str, message: str, lang: str):
+    get_or_create_chat(db=db, chat_id=chat_id)
 
     user_msg = ChatMessage(
         chat_id=chat_id,
@@ -76,13 +64,8 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
     )
     history = list(reversed(history))
 
-    law_chunks = search_service.search(
-        db=db, query=message, source="federal_law", limit=5
-    )
-    court_chunks = search_service.search(
-        db=db, query=message, source="federal_court", limit=5
-    )
-    context = _format_context(law_chunks + court_chunks)
+    articles = search_articles(db, message, top_k=5)
+    context = _format_context(articles)
 
     for event in llm.generate(history=history, context=context, lang=lang):
         if event.type == "done":
@@ -96,3 +79,10 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: Language):
             db.commit()
         else:
             yield f"data: {event.model_dump_json()}\n\n"
+
+
+def _format_context(articles: list[Article]) -> str:
+    parts = []
+    for article in articles:
+        parts.append(f"[ID:article_{article.id}] {article.act.label}\n{article.text}")
+    return "\n\n".join(parts)

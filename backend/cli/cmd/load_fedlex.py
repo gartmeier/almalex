@@ -89,7 +89,7 @@ def load_fedlex_command(
 def _process_act(db: Session, act: Act):
     click.echo("    Fetching HTML...")
     act_soup = fetch_html(act.html_url)
-    act_label = _act_label(act)
+    act_label = act.label
 
     articles = _parse_articles(db, act, act_soup, act_label)
     chunks = _create_chunks(db, articles)
@@ -102,15 +102,6 @@ def _process_act(db: Session, act: Act):
 
     _embed_chunks(chunks)
     db.flush()
-
-
-def _act_label(act: Act) -> str:
-    parts = [f"SR {act.sr_number}"]
-    if act.title:
-        parts.append(act.title)
-    if act.abbr:
-        parts.append(f"({act.abbr})")
-    return " ".join(parts)
 
 
 def _parse_articles(db: Session, act: Act, act_soup, act_label: str) -> list[Article]:
