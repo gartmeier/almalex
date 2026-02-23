@@ -99,6 +99,7 @@ class ArticleChunk(Base):
     )
     text: Mapped[str]
     context: Mapped[str | None]
+    embedding_input: Mapped[str | None]
     embedding: Mapped[Vector | None] = mapped_column(Vector(3584))
     search_vector = mapped_column(
         TSVECTOR,

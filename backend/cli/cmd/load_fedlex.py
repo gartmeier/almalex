@@ -1,3 +1,4 @@
+import anthropic
 import click
 import openai
 from sqlalchemy import select
@@ -14,7 +15,7 @@ from app.core.config import settings
 from app.db.models import Act, ActConfig, Article, ArticleChunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
-from cli.utils.context import generate_context_anthropic
+from cli.utils.context import generate_context_anthropic as generate_context
 from cli.utils.html import fetch_html, md
 from cli.utils.text import normalize_text, split_text
 
@@ -23,7 +24,12 @@ from cli.utils.text import normalize_text, split_text
 @click.option("--lang", default="de", show_default=True)
 @click.option("--sr-number")
 @click.option("--force", is_flag=True, default=False)
-def load_fedlex_command(lang: str, sr_number: str | None, force: bool):
+@click.option("--enable-context", is_flag=True, default=False)
+def load_fedlex_command(
+    lang: str, sr_number: str | None, force: bool, enable_context: bool
+):
+    if enable_context:
+        force = True
     with SessionLocal() as db:
         rows = sparql.fetch_all(lang, sr_number)
         click.echo(f"Fetched {len(rows)} acts from Fedlex")
@@ -45,6 +51,14 @@ def load_fedlex_command(lang: str, sr_number: str | None, force: bool):
                 continue
 
             try:
+                if enable_context:
+                    config = db.get(ActConfig, row.sr_number) or ActConfig(
+                        sr_number=row.sr_number
+                    )
+                    config.generate_context = True
+                    db.merge(config)
+                    db.flush()
+
                 if act:
                     db.delete(act)
                     db.flush()
@@ -61,9 +75,10 @@ def load_fedlex_command(lang: str, sr_number: str | None, force: bool):
                 )
                 db.add(act)
                 db.flush()
+                click.echo(f"  {label}:")
                 _process_act(db, act)
                 db.commit()
-                click.echo(f"  {label}: done")
+                click.secho(f"  {label}: done", fg="green")
             except Exception as e:
                 db.rollback()
                 click.secho(f"  {label}: error — {e}", fg="yellow")
@@ -74,23 +89,38 @@ def load_fedlex_command(lang: str, sr_number: str | None, force: bool):
 def _process_act(db: Session, act: Act):
     click.echo("    Fetching HTML...")
     act_soup = fetch_html(act.html_url)
+    act_label = _act_label(act)
 
+    articles = _parse_articles(db, act, act_soup, act_label)
+    chunks = _create_chunks(db, articles)
+    click.echo(f"    {len(articles)} articles, {len(chunks)} chunks")
+
+    act_config = db.get(ActConfig, act.sr_number) or ActConfig()
+    if act_config.generate_context:
+        act_text = md.convert_soup(act_soup)
+        _generate_contexts(chunks, act_text, act.lang)
+
+    _embed_chunks(chunks)
+    db.flush()
+
+
+def _act_label(act: Act) -> str:
     parts = [f"SR {act.sr_number}"]
     if act.title:
         parts.append(act.title)
     if act.abbr:
         parts.append(f"({act.abbr})")
-    act_label = " ".join(parts)
+    return " ".join(parts)
 
+
+def _parse_articles(db: Session, act: Act, act_soup, act_label: str) -> list[Article]:
     articles = []
-
     for sort_order, article_tag in enumerate(act_soup.find_all("article")):
         eid = article_tag.get("id", "")
-        body = article_tag.find(class_="collapseable") or article_tag
-        article_text = normalize_text(md.convert_soup(body))
+        article_text = normalize_text(md.convert_soup(article_tag))
         breadcrumb_list = _section_headers(article_tag)
         breadcrumb_list.insert(0, act_label)
-        breadcrumb = f"[{' | '.join(breadcrumb_list)}]"
+        breadcrumb = " | ".join(breadcrumb_list)
         article = Article(
             act_id=act.id,
             eid=eid,
@@ -101,57 +131,53 @@ def _process_act(db: Session, act: Act):
         )
         db.add(article)
         articles.append(article)
-
-    click.echo(f"    Parsed {len(articles)} articles")
     db.flush()
+    return articles
 
-    act_config = db.get(ActConfig, act.sr_number) or ActConfig()
-    act_text = md.convert_soup(act_soup) if act_config.generate_context else None
 
-    chunk_pairs = []
+def _create_chunks(
+    db: Session, articles: list[Article]
+) -> list[tuple[Article, ArticleChunk]]:
+    chunks = []
     for article in articles:
         for chunk_text in split_text(article.text):
-            chunk = ArticleChunk(article_id=article.id, text=chunk_text)
-            if act_config.generate_context:
-                click.echo(
-                    f"    Generating context for chunk {len(chunk_pairs) + 1}..."
-                )
-                chunk.context = _generate_context(act_text, chunk.text, lang=act.lang)
+            embedding_input = f"[{article.breadcrumb}]\n\n{chunk_text}"
+            chunk = ArticleChunk(
+                article_id=article.id, text=chunk_text, embedding_input=embedding_input
+            )
             db.add(chunk)
-            chunk_pairs.append((article, chunk))
+            chunks.append((article, chunk))
+    return chunks
 
-    click.echo(f"    Embedding {len(chunk_pairs)} chunks...")
-    batch_size = 99  # Infomaniak requires less than 100
-    for i in range(0, len(chunk_pairs), batch_size):
-        batch = chunk_pairs[i : i + batch_size]
-        input_ = [_embed_input(article, chunk) for article, chunk in batch]
 
-        click.echo(
-            f"    Batch {i // batch_size + 1}/{(len(chunk_pairs) + batch_size - 1) // batch_size}..."
-        )
-        response = _create_embedding(input_)
-
-        for (_, chunk), embedding_data in zip(batch, response.data):
-            chunk.embedding = embedding_data.embedding
-
-    db.flush()
+def _generate_contexts(
+    chunks: list[tuple[Article, ArticleChunk]], act_text: str, lang: str
+):
+    with click.progressbar(chunks, label="    context") as bar:
+        for article, chunk in bar:
+            chunk.context = _generate_context(act_text, chunk.text, lang=lang)
+            chunk.embedding_input = (
+                f"{article.breadcrumb}\n\n{chunk.context}\n\n{chunk.text}"
+            )
 
 
 @retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
+    retry=retry_if_exception_type(anthropic.RateLimitError),
     wait=wait_exponential(multiplier=1, min=4, max=60),
     stop=stop_after_attempt(6),
 )
 def _generate_context(document_text, chunk_text, lang):
-    return generate_context_anthropic(document_text, chunk_text, lang)
+    return generate_context(document_text, chunk_text, lang)
 
 
-def _embed_input(article: Article, chunk: ArticleChunk):
-    parts = [article.breadcrumb]
-    if chunk.context:
-        parts.append(chunk.context)
-    parts.append(chunk.text)
-    return "\n\n".join(parts)
+def _embed_chunks(chunks: list[tuple[Article, ArticleChunk]]):
+    batch_size = 99  # Infomaniak requires less than 100
+    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
+    with click.progressbar(batches, label="    embed") as bar:
+        for batch in bar:
+            response = _create_embedding([c.embedding_input for (_, c) in batch])
+            for (_, chunk), data in zip(batch, response.data):
+                chunk.embedding = data.embedding
 
 
 @retry(
@@ -171,8 +197,8 @@ def _section_headers(tag):
     for section in tag.parents:
         if section.name != "section":
             continue
-        sibling = section.find_previous_sibling(class_="heading")
-        if sibling:
-            headers.append(sibling.get_text(" ", strip=True))
+        heading = section.find(class_="heading", recursive=False)
+        if heading:
+            headers.append(heading.get_text(" ", strip=True))
     headers.reverse()
     return headers
