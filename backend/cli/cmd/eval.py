@@ -32,8 +32,8 @@ Answer:"""
 BATCH_SIZE = 20
 
 client = AsyncOpenAI(
-    api_key=settings.infomaniak_api_key,
-    base_url=f"https://api.infomaniak.com/1/ai/{settings.infomaniak_chat_product_id}/openai/v1",
+    api_key=settings.openai_api_key,
+    base_url=settings.openai_base_url,
 )
 
 Row = dict[str, Any]

@@ -2,7 +2,7 @@ import click
 from IPython import embed
 from sqlalchemy import select
 
-from app.db.models import Chat, ChatMessage, Document, DocumentChunk
+from app.db.models import Act, Article, Chat, ChatMessage
 from app.db.session import SessionLocal
 
 
@@ -13,10 +13,10 @@ def shell():
     namespace = {
         "session": session,
         "select": select,
+        "Act": Act,
+        "Article": Article,
         "Chat": Chat,
         "ChatMessage": ChatMessage,
-        "Document": Document,
-        "DocumentChunk": DocumentChunk,
     }
 
     try:

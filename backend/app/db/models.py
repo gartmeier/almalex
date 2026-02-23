@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Computed, DateTime, ForeignKey, Index, func
+from sqlalchemy import Computed, DateTime, ForeignKey, Index, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -48,6 +48,74 @@ class DocumentChunk(Base):
     __table_args__ = (
         Index("idx_text_search_vector", "text_search_vector", postgresql_using="gin"),
     )
+
+
+class Act(Base):
+    __tablename__ = "act"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lang: Mapped[str] = mapped_column(index=True)
+    sr_number: Mapped[str] = mapped_column(index=True)
+    title: Mapped[str | None]
+    abbr: Mapped[str | None]
+    html_url: Mapped[str]
+    xml_url: Mapped[str]
+    applicability_date: Mapped[date]
+    applicability_end_date: Mapped[date | None]
+
+    __table_args__ = (UniqueConstraint("sr_number", "lang", "applicability_date"),)
+
+    articles = relationship(
+        "Article", back_populates="act", cascade="all, delete-orphan"
+    )
+
+
+class Article(Base):
+    __tablename__ = "article"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    act_id: Mapped[int] = mapped_column(
+        ForeignKey("act.id", ondelete="CASCADE"), index=True
+    )
+    eid: Mapped[str]
+    breadcrumb: Mapped[str | None]
+    html: Mapped[str]
+    text: Mapped[str]
+    context: Mapped[str | None]
+    sort_order: Mapped[int] = mapped_column(index=True)
+
+    act = relationship("Act", back_populates="articles")
+    chunks = relationship(
+        "ArticleChunk", back_populates="article", cascade="all, delete-orphan"
+    )
+
+
+class ArticleChunk(Base):
+    __tablename__ = "article_chunk"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("article.id", ondelete="CASCADE"), index=True
+    )
+    text: Mapped[str]
+    context: Mapped[str | None]
+    embedding: Mapped[Vector | None] = mapped_column(Vector(3584))
+    search_vector = mapped_column(
+        TSVECTOR,
+        Computed("to_tsvector('simple', text)", persisted=True),
+    )
+
+    article = relationship("Article", back_populates="chunks")
+
+    __table_args__ = (
+        Index("idx_article_chunk_tsv", "search_vector", postgresql_using="gin"),
+    )
+
+
+class ActConfig(Base):
+    __tablename__ = "act_config"
+    sr_number: Mapped[str] = mapped_column(primary_key=True)
+    generate_context: Mapped[bool] = mapped_column(default=False)
 
 
 class Chat(Base):

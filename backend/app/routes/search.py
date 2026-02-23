@@ -18,10 +18,16 @@ def search(
     return [
         DocumentChunkResult(
             id=chunk.id,
-            source=chunk.document.source,
-            title=chunk.document.title,
+            source="fedlex_article"
+            if hasattr(chunk, "article")
+            else chunk.document.source,
+            title=chunk.article.breadcrumb
+            if hasattr(chunk, "article")
+            else chunk.document.title,
             text=chunk.text,
-            url=chunk.document.url,
+            url=chunk.article.act.html_url
+            if hasattr(chunk, "article")
+            else chunk.document.url,
         )
         for chunk in chunks
     ]

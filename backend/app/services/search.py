@@ -5,7 +5,7 @@ import re
 from sqlalchemy import func, literal, or_, select, union_all
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.models import Document, DocumentChunk
+from app.db.models import Article, ArticleChunk, Document, DocumentChunk
 from app.services import embedding, ranking
 
 SOURCE_MAPPING = {
@@ -20,71 +20,31 @@ def search(
     query: str,
     source: str,
     limit: int = 20,
-) -> list[DocumentChunk]:
-    """Search documents using hybrid RRF + reranking.
-
-    Args:
-        db: Database session
-        query: Search query
-        source: Source type ("federal_law" or "federal_court")
-        limit: Max results to return
-
-    Returns:
-        Ranked document chunks with document preloaded
-    """
-    # Map friendly name to internal source
+) -> list:
     internal_source = SOURCE_MAPPING.get(source, source)
-
-    # Hybrid search with RRF
-    chunks = _hybrid_search(
-        db=db,
-        query=query,
-        source=internal_source,
-        top_k=limit * 2,
-    )
-
-    # Reranking
+    chunks = _hybrid_search(db=db, query=query, source=internal_source, top_k=limit * 2)
     return ranking.rerank(query, chunks, top_k=limit)
 
 
-def lookup_article(*, db: Session, article_reference: str) -> list[DocumentChunk]:
-    """Lookup law article by reference (e.g., 'Art. 334 OR').
-
-    Args:
-        db: Database session
-        article_reference: Article reference like "Art. 334 OR" or "334 OR"
-
-    Returns:
-        Matching article chunks
-    """
-    # Normalize reference: ensure "Art." prefix
+def lookup_article(*, db: Session, article_reference: str) -> list[ArticleChunk]:
     ref = article_reference.strip()
     if not ref.lower().startswith("art"):
         ref = f"Art. {ref}"
 
-    chunks = db.scalars(
-        select(DocumentChunk)
-        .join(DocumentChunk.document)
-        .where(Document.source == "fedlex_article")
-        .where(Document.title.ilike(ref))
-        .options(selectinload(DocumentChunk.document))
-        .order_by(DocumentChunk.order)
+    articles = db.scalars(
+        select(Article)
+        .where(Article.num.ilike(ref))
+        .options(selectinload(Article.chunks), selectinload(Article.act))
+        .order_by(Article.sort_order)
     ).all()
 
-    return chunks
+    result = []
+    for article in articles:
+        result.extend(article.chunks)
+    return result
 
 
 def lookup_decision(*, db: Session, citation: str) -> list[DocumentChunk]:
-    """Lookup court decision by BGE citation (e.g., '146 V 240').
-
-    Args:
-        db: Database session
-        citation: BGE citation like "146 V 240" or "BGE 146 V 240"
-
-    Returns:
-        Matching court decision chunks
-    """
-    # Parse BGE citation
     pattern = r"(?:BGE\s+)?(\d+)\s+([IVX]+)\s+(\d+)"
     match = re.search(pattern, citation, re.IGNORECASE)
 
@@ -94,7 +54,6 @@ def lookup_decision(*, db: Session, citation: str) -> list[DocumentChunk]:
     volume, part, page = match.groups()
     search_citation = f"BGE {volume} {part.upper()} {page}"
 
-    # Exact metadata match
     chunks = db.scalars(
         select(DocumentChunk)
         .join(DocumentChunk.document)
@@ -105,7 +64,6 @@ def lookup_decision(*, db: Session, citation: str) -> list[DocumentChunk]:
         .limit(10)
     ).all()
 
-    # Fallback to title/text search
     if not chunks:
         chunks = db.scalars(
             select(DocumentChunk)
@@ -126,29 +84,78 @@ def lookup_decision(*, db: Session, citation: str) -> list[DocumentChunk]:
 
 
 def _hybrid_search(
-    *,
-    db: Session,
-    query: str,
-    source: str,
-    top_k: int = 100,
-    rrf_k: int = 60,
+    *, db: Session, query: str, source: str, top_k: int = 100, rrf_k: int = 60
+) -> list:
+    if source == "fedlex_article":
+        return _hybrid_search_fedlex(db, query, top_k, rrf_k)
+    return _hybrid_search_bge(db, query, source, top_k, rrf_k)
+
+
+def _hybrid_search_fedlex(
+    db: Session, query: str, top_k: int, rrf_k: int
+) -> list[ArticleChunk]:
+    query_embedding = embedding.embed_text(query)
+    fts_query = func.plainto_tsquery("simple", query)
+
+    vector_cte = (
+        select(
+            ArticleChunk.id.label("emb_id"),
+            func.row_number()
+            .over(order_by=ArticleChunk.embedding.l2_distance(query_embedding))
+            .label("rank"),
+        )
+        .where(ArticleChunk.embedding.isnot(None))
+        .order_by(ArticleChunk.embedding.l2_distance(query_embedding))
+        .limit(top_k * 2)
+        .cte("fedlex_vector_ranks")
+    )
+
+    fts_cte = (
+        select(
+            ArticleChunk.id.label("emb_id"),
+            func.row_number()
+            .over(
+                order_by=func.ts_rank(ArticleChunk.text_search_vector, fts_query).desc()
+            )
+            .label("rank"),
+        )
+        .where(ArticleChunk.text_search_vector.op("@@")(fts_query))
+        .order_by(func.ts_rank(ArticleChunk.text_search_vector, fts_query).desc())
+        .limit(top_k * 2)
+        .cte("fedlex_fts_ranks")
+    )
+
+    combined = union_all(
+        select(fts_cte.c.emb_id, fts_cte.c.rank),
+        select(vector_cte.c.emb_id, vector_cte.c.rank),
+    ).subquery()
+
+    rrf_scores = (
+        select(
+            combined.c.emb_id,
+            func.sum(1.0 / (rrf_k + combined.c.rank)).label("rrf_score"),
+        )
+        .group_by(combined.c.emb_id)
+        .order_by(func.sum(1.0 / (rrf_k + combined.c.rank)).desc())
+        .limit(top_k)
+        .subquery()
+    )
+
+    return db.scalars(
+        select(ArticleChunk)
+        .join(rrf_scores, ArticleChunk.id == rrf_scores.c.emb_id)
+        .options(selectinload(ArticleChunk.article).selectinload(Article.act))
+        .order_by(rrf_scores.c.rrf_score.desc())
+    ).all()
+
+
+def _hybrid_search_bge(
+    db: Session, query: str, source: str, top_k: int, rrf_k: int
 ) -> list[DocumentChunk]:
-    """Hybrid full-text + vector search with RRF ranking.
-
-    Args:
-        db: Database session
-        query: Search query
-        source: Document source filter
-        top_k: Number of results to return
-        rrf_k: RRF constant (default 60)
-
-    Returns:
-        Document chunks ordered by RRF score with document preloaded
-    """
     query_embedding = embedding.embed_text(query)
     source_filter = Document.source == source
+    fts_query = func.plainto_tsquery("simple", query)
 
-    # Vector search CTE
     vector_cte = (
         select(
             DocumentChunk.id.label("chunk_id"),
@@ -165,8 +172,6 @@ def _hybrid_search(
         .cte("vector_ranks")
     )
 
-    # Full-text search CTE
-    fts_query = func.plainto_tsquery("simple", query)
     fts_cte = (
         select(
             DocumentChunk.id.label("chunk_id"),
@@ -187,13 +192,11 @@ def _hybrid_search(
         .cte("fts_ranks")
     )
 
-    # Union both search methods
     combined = union_all(
         select(fts_cte.c.chunk_id, fts_cte.c.rank, fts_cte.c.source),
         select(vector_cte.c.chunk_id, vector_cte.c.rank, vector_cte.c.source),
     ).subquery()
 
-    # Calculate RRF scores
     rrf_scores = (
         select(
             combined.c.chunk_id,
@@ -205,7 +208,6 @@ def _hybrid_search(
         .subquery()
     )
 
-    # Fetch chunks in RRF order with documents preloaded
     return db.scalars(
         select(DocumentChunk)
         .join(rrf_scores, DocumentChunk.id == rrf_scores.c.chunk_id)

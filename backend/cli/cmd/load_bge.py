@@ -2,17 +2,17 @@ from pathlib import Path
 
 import click
 import requests
-from bs4 import BeautifulSoup
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, DocumentChunk
 from app.db.session import SessionLocal
+from cli.utils.html import fetch_html
 from cli.utils.text import normalize_text, split_text
 
 
-@click.command(name="sync-bge")
-def sync_bge_command():
+@click.command(name="load-bge")
+def load_bge_command():
     with SessionLocal() as db:
         sync_bge(db)
 
@@ -75,12 +75,7 @@ def sync_bge(db: Session):
 
         path = metadata["HTML"]["Datei"]
         url = f"https://entscheidsuche.ch/docs/{path}"
-        response = requests.get(url)
-        response.raise_for_status()
-        response.encoding = response.apparent_encoding
-        html = response.text
-
-        soup = BeautifulSoup(html, "html.parser")
+        soup = fetch_html(url)
         text = normalize_text(soup.get_text())
         text_chunks = split_text(text)
 

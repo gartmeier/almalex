@@ -1,18 +1,18 @@
-"""Text embedding using Infomaniak AI API."""
-
-from openai import OpenAI
-
+from app.core.clients import openai_client
 from app.core.config import settings
 
-client = OpenAI(
-    api_key=settings.infomaniak_api_key,
-    base_url=f"https://api.infomaniak.com/1/ai/{settings.infomaniak_embedding_product_id}/openai/v1",
-)
 
-
-def embed_text(input: str) -> list[float]:
-    response = client.embeddings.create(
-        input=input,
-        model=settings.infomaniak_embedding_model,
+def embed_text(text: str) -> list[float]:
+    response = openai_client.embeddings.create(
+        input=text,
+        model=settings.openai_embedding_model,
     )
     return response.data[0].embedding
+
+
+def embed_texts(texts: list[str]) -> list[list[float]]:
+    response = openai_client.embeddings.create(
+        input=texts,
+        model=settings.openai_embedding_model,
+    )
+    return [d.embedding for d in response.data]

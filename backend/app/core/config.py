@@ -11,14 +11,13 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     sentry_dsn: str | None = None
     anthropic_api_key: str
-    infomaniak_api_key: str
-    infomaniak_chat_product_id: str
-    infomaniak_chat_model: str
-    infomaniak_embedding_product_id: str
-    infomaniak_embedding_model: str = "bge_multilingual_gemma2"
-    infomaniak_rerank_product_id: str
-    infomaniak_rerank_model: str = "BAAI/bge-reranker-v2-m3"
-    hf_token: str | None = None
+    openai_api_key: str
+    openai_base_url: str
+    openai_chat_model: str
+    openai_embedding_model: str
+    cohere_api_key: str
+    cohere_base_url: str
+    cohere_rerank_model: str
 
 
 @lru_cache()

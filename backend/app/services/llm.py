@@ -2,18 +2,12 @@
 
 from typing import Iterator
 
-from openai import OpenAI
-
+from app.core.clients import openai_client
 from app.core.config import settings
 from app.core.types import Language
 from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
 from app.schemas.chat import DoneEvent, TextContentBlock, TextEvent
-
-client = OpenAI(
-    api_key=settings.infomaniak_api_key,
-    base_url=f"https://api.infomaniak.com/1/ai/{settings.infomaniak_chat_product_id}/openai/v1",
-)
 
 
 def generate(
@@ -24,8 +18,8 @@ def generate(
         *[{"role": msg.role, "content": msg.content} for msg in history],
     ]
 
-    stream = client.chat.completions.create(
-        model=settings.infomaniak_chat_model,
+    stream = openai_client.chat.completions.create(
+        model=settings.openai_chat_model,
         messages=messages,  # type: ignore
         stream=True,
     )
