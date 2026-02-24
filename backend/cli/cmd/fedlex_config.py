@@ -1,7 +1,7 @@
 import click
 from sqlalchemy import func, select
 
-from app.db.models import Act, ActConfig, Article, ArticleChunk
+from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 
 
@@ -37,7 +37,7 @@ def act_status(sr_number: str | None, lang: str | None):
             .group_by(Article.act_id)
             .subquery()
         )
-        with_embeddings_sq = select(ArticleChunk.article_id).distinct().subquery()
+        with_embeddings_sq = select(Chunk.article_id).distinct().subquery()
         articles_with_emb_sq = (
             select(Article.act_id, func.count().label("cnt"))
             .join(with_embeddings_sq, Article.id == with_embeddings_sq.c.article_id)

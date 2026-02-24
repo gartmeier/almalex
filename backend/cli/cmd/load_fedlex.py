@@ -12,7 +12,7 @@ from tenacity import (
 
 from app.core.clients import openai_client
 from app.core.config import settings
-from app.db.models import Act, ActConfig, Article, ArticleChunk
+from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
 from cli.utils.context import generate_context_anthropic as generate_context
@@ -126,24 +126,23 @@ def _parse_articles(db: Session, act: Act, act_soup, act_label: str) -> list[Art
     return articles
 
 
-def _create_chunks(
-    db: Session, articles: list[Article]
-) -> list[tuple[Article, ArticleChunk]]:
+def _create_chunks(db: Session, articles: list[Article]) -> list[tuple[Article, Chunk]]:
     chunks = []
     for article in articles:
         for chunk_text in split_text(article.text):
             embedding_input = f"[{article.breadcrumb}]\n\n{chunk_text}"
-            chunk = ArticleChunk(
-                article_id=article.id, text=chunk_text, embedding_input=embedding_input
+            chunk = Chunk(
+                source_type="article",
+                article_id=article.id,
+                text=chunk_text,
+                embedding_input=embedding_input,
             )
             db.add(chunk)
             chunks.append((article, chunk))
     return chunks
 
 
-def _generate_contexts(
-    chunks: list[tuple[Article, ArticleChunk]], act_text: str, lang: str
-):
+def _generate_contexts(chunks: list[tuple[Article, Chunk]], act_text: str, lang: str):
     with click.progressbar(chunks, label="    context") as bar:
         for article, chunk in bar:
             chunk.context = _generate_context(act_text, chunk.text, lang=lang)
@@ -161,7 +160,7 @@ def _generate_context(document_text, chunk_text, lang):
     return generate_context(document_text, chunk_text, lang)
 
 
-def _embed_chunks(chunks: list[tuple[Article, ArticleChunk]]):
+def _embed_chunks(chunks: list[tuple[Article, Chunk]]):
     batch_size = 99  # Infomaniak requires less than 100
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     with click.progressbar(batches, label="    embed") as bar:

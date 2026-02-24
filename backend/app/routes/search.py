@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query
 
 from app.core.deps import SessionDep
 from app.schemas.search import DocumentChunkResult, SearchResults
-from app.services import search as search_service
+from app.services.search import search_articles
 
 router = APIRouter(prefix="/search", tags=["search"])
 
@@ -11,23 +11,16 @@ router = APIRouter(prefix="/search", tags=["search"])
 def search(
     db: SessionDep,
     q: str = Query(..., description="Search query"),
-    source: str = Query("federal_law", description='"federal_law" or "federal_court"'),
     limit: int = Query(10, ge=1, le=50),
 ):
-    chunks = search_service.search(db=db, query=q, source=source, limit=limit)
+    articles = search_articles(db=db, query=q, top_k=limit)
     return [
         DocumentChunkResult(
-            id=chunk.id,
-            source="fedlex_article"
-            if hasattr(chunk, "article")
-            else chunk.document.source,
-            title=chunk.article.breadcrumb
-            if hasattr(chunk, "article")
-            else chunk.document.title,
-            text=chunk.text,
-            url=chunk.article.act.html_url
-            if hasattr(chunk, "article")
-            else chunk.document.url,
+            id=article.id,
+            source="fedlex_article",
+            title=article.breadcrumb or article.eid,
+            text=article.text,
+            url=article.act.html_url,
         )
-        for chunk in chunks
+        for article in articles
     ]

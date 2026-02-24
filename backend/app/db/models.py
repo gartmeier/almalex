@@ -50,6 +50,40 @@ class DocumentChunk(Base):
     )
 
 
+class Decision(Base):
+    __tablename__ = "decision"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lang: Mapped[str] = mapped_column(index=True)
+    court: Mapped[str] = mapped_column(index=True)
+    reference: Mapped[str]
+    date: Mapped[date]
+    title: Mapped[str]
+    html_url: Mapped[str]
+    source_url: Mapped[str | None]
+    text: Mapped[str | None]
+    regeste: Mapped[str | None]
+
+    chunks = relationship(
+        "Chunk", back_populates="decision", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (UniqueConstraint("court", "reference"),)
+
+
+class DecisionSyncState(Base):
+    __tablename__ = "decision_sync_state"
+
+    court: Mapped[str] = mapped_column(primary_key=True)
+    last_job_sequence: Mapped[int | None]
+
+
+class ActConfig(Base):
+    __tablename__ = "act_config"
+    sr_number: Mapped[str] = mapped_column(primary_key=True)
+    generate_context: Mapped[bool] = mapped_column(default=False)
+
+
 class Act(Base):
     __tablename__ = "act"
 
@@ -95,16 +129,23 @@ class Article(Base):
 
     act = relationship("Act", back_populates="articles")
     chunks = relationship(
-        "ArticleChunk", back_populates="article", cascade="all, delete-orphan"
+        "Chunk",
+        back_populates="article",
+        cascade="all, delete-orphan",
+        foreign_keys="Chunk.article_id",
     )
 
 
-class ArticleChunk(Base):
-    __tablename__ = "article_chunk"
+class Chunk(Base):
+    __tablename__ = "chunk"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    article_id: Mapped[int] = mapped_column(
+    source_type: Mapped[str]
+    article_id: Mapped[int | None] = mapped_column(
         ForeignKey("article.id", ondelete="CASCADE"), index=True
+    )
+    decision_id: Mapped[int | None] = mapped_column(
+        ForeignKey("decision.id", ondelete="CASCADE"), index=True
     )
     text: Mapped[str]
     context: Mapped[str | None]
@@ -116,16 +157,9 @@ class ArticleChunk(Base):
     )
 
     article = relationship("Article", back_populates="chunks")
+    decision = relationship("Decision", back_populates="chunks")
 
-    __table_args__ = (
-        Index("idx_article_chunk_tsv", "search_vector", postgresql_using="gin"),
-    )
-
-
-class ActConfig(Base):
-    __tablename__ = "act_config"
-    sr_number: Mapped[str] = mapped_column(primary_key=True)
-    generate_context: Mapped[bool] = mapped_column(default=False)
+    __table_args__ = (Index("idx_chunk_tsv", "search_vector", postgresql_using="gin"),)
 
 
 class Chat(Base):
