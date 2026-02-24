@@ -1,6 +1,3 @@
-import re
-from html import unescape
-
 import click
 import openai
 import requests
@@ -18,6 +15,7 @@ from app.core.config import settings
 from app.db.models import Chunk, Decision, DecisionSyncState
 from app.db.session import SessionLocal
 from cli.utils.html import fetch_html
+from cli.utils.pdf import fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
 
 BASE_URL = "https://entscheidsuche.ch/docs"
@@ -25,14 +23,15 @@ BASE_URL = "https://entscheidsuche.ch/docs"
 
 @click.command(name="load-entscheidsuche")
 @click.option("--court", default="CH_BGE", show_default=True)
-def load_entscheidsuche_command(court: str):
+@click.option("--force", is_flag=True, default=False)
+def load_entscheidsuche_command(court: str, force: bool):
     with SessionLocal() as db:
-        load_entscheidsuche(db, court)
+        load_entscheidsuche(db, court, force=force)
 
 
-def load_entscheidsuche(db: Session, court: str):
-    court_name = _fetch_court_name(court)
-    click.echo(f"Court: {court_name}")
+def load_entscheidsuche(db: Session, court: str, *, force: bool = False):
+    facets = _fetch_json("Facetten_alle.json")
+    click.echo(f"Court: {court}")
 
     sync = db.get(DecisionSyncState, court)
     last_seq = sync.last_job_sequence if sync else None
@@ -40,6 +39,7 @@ def load_entscheidsuche(db: Session, court: str):
 
     last_job = _fetch_json(f"Jobs/{court}/last")
     all_chunks: list[Chunk] = []
+    processed = 0
 
     for file_path, file_info in last_job["dateien"].items():
         if not file_path.endswith(".json"):
@@ -53,16 +53,21 @@ def load_entscheidsuche(db: Session, court: str):
             continue
 
         try:
-            all_chunks += _process_decision(db, court, court_name, file_path)
+            chunks = _process_decision(db, court, facets, file_path, force=force)
+            all_chunks += chunks
+            if chunks:
+                processed += 1
+                if processed >= 100:  # TODO: remove temp limit
+                    break
         except Exception as e:
             db.rollback()
             click.secho(f"  Error {file_path}: {e}", fg="yellow")
 
     if all_chunks:
+        db.commit()
         _embed_chunks(all_chunks)
         db.commit()
 
-    # Update sync state
     job_seq = last_job.get("sequence")
     if job_seq is not None:
         sync = db.get(DecisionSyncState, court) or DecisionSyncState(court=court)
@@ -74,34 +79,43 @@ def load_entscheidsuche(db: Session, court: str):
 
 
 def _process_decision(
-    db: Session, court: str, court_name: str, file_path: str
+    db: Session, court: str, facets: dict, file_path: str, *, force: bool = False
 ) -> list[Chunk]:
     metadata = _fetch_json(file_path)
     reference = metadata["Num"][0]
+
+    existing = db.scalar(
+        select(Decision).where(Decision.court == court, Decision.reference == reference)
+    )
+    if existing and not force:
+        return []
+    if existing:
+        db.delete(existing)
+        db.flush()
+
     date_str = metadata["Datum"]
     year = date_str.split("-")[0]
     lang = metadata["Sprache"]
     title = f"{reference} ({year})"
+    click.echo(f"  Processing: {title}")
 
-    html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}"
-    source_url = metadata["HTML"].get("URL")
+    signatur = metadata.get("Signatur", court)
+    header = _build_header(facets, signatur, title, lang)
+    headline = _extract_headline(metadata)
 
-    regeste = _extract_regeste(metadata, lang)
+    html_url = None
+    pdf_url = None
 
-    # Fetch and normalize full text
-    soup = fetch_html(html_url)
-    text = normalize_text(soup.get_text())
-
-    # Upsert: delete existing then recreate
-    existing = db.scalar(
-        select(Decision).where(Decision.court == court, Decision.reference == reference)
-    )
-    if existing:
-        click.echo(f"  Updating: {title}")
-        db.delete(existing)
-        db.flush()
+    if "HTML" in metadata:
+        html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}"
+        soup = fetch_html(html_url)
+        text = normalize_text(soup.get_text())
+    elif "PDF" in metadata:
+        pdf_url = f"{BASE_URL}/{metadata['PDF']['Datei']}"
+        text = normalize_text(fetch_pdf_text(pdf_url))
     else:
-        click.echo(f"  Processing: {title}")
+        click.secho(f"  Skipping {reference}: no HTML or PDF", fg="yellow")
+        return []
 
     decision = Decision(
         lang=lang,
@@ -110,18 +124,17 @@ def _process_decision(
         date=date_str,
         title=title,
         html_url=html_url,
-        source_url=source_url,
+        pdf_url=pdf_url,
         text=text,
-        regeste=regeste,
+        chamber=signatur if signatur != court else None,
+        headline=headline,
     )
     db.add(decision)
     db.flush()
 
-    # Create chunks
     chunks = []
     for chunk_text in split_text(text):
-        regeste_section = f"\n\n{regeste}\n\n" if regeste else "\n\n"
-        embedding_input = f"[{court_name} | {title}]{regeste_section}{chunk_text}"
+        embedding_input = f"{header}\n\n{chunk_text}"
         chunk = Chunk(
             source_type="decision",
             decision_id=decision.id,
@@ -132,26 +145,23 @@ def _process_decision(
         chunks.append(chunk)
 
     db.flush()
-
     return chunks
 
 
-def _extract_regeste(metadata: dict, lang: str) -> str | None:
-    abstracts = metadata.get("Abstract", [])
-    for abstract in abstracts:
-        if abstract.get("Sprache") == lang:
-            raw = abstract.get("Text", "")
-            return _strip_html(raw) if raw else None
-    # Fallback: first abstract
-    if abstracts:
-        raw = abstracts[0].get("Text", "")
-        return _strip_html(raw) if raw else None
-    return None
+def _build_header(facets: dict, signatur: str, title: str, lang: str) -> str:
+    canton = signatur.split("_")[0]
+    for court_key, court_info in facets.get(canton, {}).get("gerichte", {}).items():
+        if signatur in court_info.get("kammern", {}):
+            gericht = court_info.get(lang, court_key)
+            kammer = court_info["kammern"][signatur].get(lang, "")
+            parts = [p for p in (gericht, kammer, title) if p]
+            return " ".join(parts)
+    return title
 
 
-def _strip_html(html: str) -> str:
-    text = re.sub(r"<[^>]+>", "", html)
-    return unescape(text).strip()
+def _extract_headline(metadata: dict) -> dict:
+    kopfzeile = metadata.get("Kopfzeile", {})
+    return {k: v for k, v in kopfzeile.items() if k in ("de", "fr", "it") and v}
 
 
 def _embed_chunks(chunks: list[Chunk]):
@@ -174,15 +184,6 @@ def _create_embedding(input_: list[str]):
         model=settings.openai_embedding_model,
         input=input_,
     )
-
-
-def _fetch_court_name(court: str, lang: str = "de") -> str:
-    facets = _fetch_json("Facetten_alle.json")
-    canton = court.split("_")[0]
-    try:
-        return facets["data"][canton]["gerichte"][court][lang]
-    except KeyError:
-        return court
 
 
 def _fetch_json(path: str):
