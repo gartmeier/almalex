@@ -87,7 +87,7 @@ def _process_decision(
 
     date_str = metadata["Datum"]
     year = date_str.split("-")[0]
-    lang = metadata["Sprache"]
+    lang = metadata.get("Sprache", "de")
     title = f"{reference} ({year})"
     click.echo(f"  Processing: {title}")
 
@@ -95,15 +95,13 @@ def _process_decision(
     header = _build_header(facets, signatur, title, lang)
     headline = _extract_headline(metadata)
 
-    html_url = None
-    pdf_url = None
+    html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}" if "HTML" in metadata else None
+    pdf_url = f"{BASE_URL}/{metadata['PDF']['Datei']}" if "PDF" in metadata else None
 
-    if "HTML" in metadata:
-        html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}"
+    if html_url:
         soup = fetch_html(html_url)
         text = normalize_text(soup.get_text())
-    elif "PDF" in metadata:
-        pdf_url = f"{BASE_URL}/{metadata['PDF']['Datei']}"
+    elif pdf_url:
         text = normalize_text(fetch_pdf_text(pdf_url))
     else:
         click.secho(f"  Skipping {reference}: no HTML or PDF", fg="yellow")
@@ -152,8 +150,15 @@ def _build_header(facets: dict, signatur: str, title: str, lang: str) -> str:
 
 
 def _extract_headline(metadata: dict) -> dict:
-    kopfzeile = metadata.get("Kopfzeile", {})
-    return {k: v for k, v in kopfzeile.items() if k in ("de", "fr", "it") and v}
+    result = {}
+    for entry in metadata.get("Kopfzeile", []):
+        text = entry.get("Text")
+        if not text:
+            continue
+        for lang in entry.get("Sprachen", []):
+            if lang in ("de", "fr", "it"):
+                result[lang] = text
+    return result
 
 
 def _fetch_json(path: str):
