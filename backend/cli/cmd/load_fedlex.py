@@ -1,6 +1,5 @@
 import anthropic
 import click
-import openai
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from tenacity import (
@@ -10,12 +9,11 @@ from tenacity import (
     wait_exponential,
 )
 
-from app.core.clients import openai_client
-from app.core.config import settings
 from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
 from cli.utils.context import generate_context_anthropic as generate_context
+from cli.utils.embedding import embed_chunks
 from cli.utils.html import fetch_html, md
 from cli.utils.text import normalize_text, split_text
 
@@ -100,7 +98,7 @@ def _process_act(db: Session, act: Act):
         act_text = md.convert_soup(act_soup)
         _generate_contexts(chunks, act_text, act.lang)
 
-    _embed_chunks(chunks)
+    embed_chunks([c for _, c in chunks])
     db.flush()
 
 
@@ -158,28 +156,6 @@ def _generate_contexts(chunks: list[tuple[Article, Chunk]], act_text: str, lang:
 )
 def _generate_context(document_text, chunk_text, lang):
     return generate_context(document_text, chunk_text, lang)
-
-
-def _embed_chunks(chunks: list[tuple[Article, Chunk]]):
-    batch_size = 99  # Infomaniak requires less than 100
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
-    with click.progressbar(batches, label="    embed") as bar:
-        for batch in bar:
-            response = _create_embedding([c.embedding_input for (_, c) in batch])
-            for (_, chunk), data in zip(batch, response.data):
-                chunk.embedding = data.embedding
-
-
-@retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
-    wait=wait_exponential(multiplier=1, min=4, max=60),
-    stop=stop_after_attempt(6),
-)
-def _create_embedding(input_: list[str]):
-    return openai_client.embeddings.create(
-        model=settings.openai_embedding_model,
-        input=input_,
-    )
 
 
 def _section_headers(tag):

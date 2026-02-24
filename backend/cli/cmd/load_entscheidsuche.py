@@ -1,19 +1,11 @@
 import click
-import openai
 import requests
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 
-from app.core.clients import openai_client
-from app.core.config import settings
 from app.db.models import Chunk, Decision, DecisionSyncState
 from app.db.session import SessionLocal
+from cli.utils.embedding import embed_chunks
 from cli.utils.html import fetch_html
 from cli.utils.pdf import fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
@@ -65,7 +57,7 @@ def load_entscheidsuche(db: Session, court: str, *, force: bool = False):
 
     if all_chunks:
         db.commit()
-        _embed_chunks(all_chunks)
+        embed_chunks(all_chunks)
         db.commit()
 
     job_seq = last_job.get("sequence")
@@ -162,28 +154,6 @@ def _build_header(facets: dict, signatur: str, title: str, lang: str) -> str:
 def _extract_headline(metadata: dict) -> dict:
     kopfzeile = metadata.get("Kopfzeile", {})
     return {k: v for k, v in kopfzeile.items() if k in ("de", "fr", "it") and v}
-
-
-def _embed_chunks(chunks: list[Chunk]):
-    batch_size = 99
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
-    with click.progressbar(batches, label="    embed") as bar:
-        for batch in bar:
-            response = _create_embedding([c.embedding_input for c in batch])
-            for chunk, data in zip(batch, response.data):
-                chunk.embedding = data.embedding
-
-
-@retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
-    wait=wait_exponential(multiplier=1, min=4, max=60),
-    stop=stop_after_attempt(6),
-)
-def _create_embedding(input_: list[str]):
-    return openai_client.embeddings.create(
-        model=settings.openai_embedding_model,
-        input=input_,
-    )
 
 
 def _fetch_json(path: str):
