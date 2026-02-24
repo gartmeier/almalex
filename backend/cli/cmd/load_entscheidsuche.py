@@ -39,6 +39,7 @@ def load_entscheidsuche(db: Session, court: str):
     click.echo(f"Last job sequence: {last_seq}")
 
     last_job = _fetch_json(f"Jobs/{court}/last")
+    all_chunks: list[Chunk] = []
 
     for file_path, file_info in last_job["dateien"].items():
         if not file_path.endswith(".json"):
@@ -52,10 +53,14 @@ def load_entscheidsuche(db: Session, court: str):
             continue
 
         try:
-            _process_decision(db, court, court_name, file_path)
+            all_chunks += _process_decision(db, court, court_name, file_path)
         except Exception as e:
             db.rollback()
             click.secho(f"  Error {file_path}: {e}", fg="yellow")
+
+    if all_chunks:
+        _embed_chunks(all_chunks)
+        db.commit()
 
     # Update sync state
     job_seq = last_job.get("sequence")
@@ -68,7 +73,9 @@ def load_entscheidsuche(db: Session, court: str):
     click.secho("Done", fg="green")
 
 
-def _process_decision(db: Session, court: str, court_name: str, file_path: str):
+def _process_decision(
+    db: Session, court: str, court_name: str, file_path: str
+) -> list[Chunk]:
     metadata = _fetch_json(file_path)
     reference = metadata["Num"][0]
     date_str = metadata["Datum"]
@@ -126,9 +133,7 @@ def _process_decision(db: Session, court: str, court_name: str, file_path: str):
 
     db.flush()
 
-    # Embed
-    _embed_chunks(chunks)
-    db.commit()
+    return chunks
 
 
 def _extract_regeste(metadata: dict, lang: str) -> str | None:
