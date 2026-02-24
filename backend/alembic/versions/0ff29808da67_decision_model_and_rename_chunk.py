@@ -80,6 +80,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index(op.f("ix_chunk_decision_id"), table_name="chunk")
     op.drop_constraint("fk_chunk_decision_id", "chunk", type_="foreignkey")
+    op.execute("DELETE FROM chunk WHERE article_id IS NULL")
     op.drop_column("chunk", "decision_id")
 
     op.alter_column("chunk", "article_id", existing_type=sa.Integer(), nullable=False)

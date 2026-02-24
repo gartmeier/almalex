@@ -25,6 +25,7 @@ dependencies = [
     "sqlalchemy>=2.0.40",
     "markdownify>=1.2.2",
     "tenacity>=9.1.4",
+    "pymupdf>=1.27.1",
 ]
 
 [dependency-groups]

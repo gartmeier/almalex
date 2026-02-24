@@ -59,10 +59,11 @@ class Decision(Base):
     reference: Mapped[str]
     date: Mapped[date]
     title: Mapped[str]
-    html_url: Mapped[str]
-    source_url: Mapped[str | None]
+    html_url: Mapped[str | None]
+    pdf_url: Mapped[str | None]
     text: Mapped[str | None]
-    regeste: Mapped[str | None]
+    chamber: Mapped[str | None]
+    headline: Mapped[dict | None] = mapped_column(JSONB)
 
     chunks = relationship(
         "Chunk", back_populates="decision", cascade="all, delete-orphan"
