@@ -9,76 +9,6 @@ from app.db.session import Base
 from app.utils.helpers import nanoid
 
 
-class Document(Base):
-    __tablename__ = "document"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
-    source: Mapped[str] = mapped_column(index=True)
-    language: Mapped[str] = mapped_column(index=True)
-    url: Mapped[str | None] = mapped_column(index=True)
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
-
-    chunks = relationship(
-        "DocumentChunk",
-        back_populates="document",
-        cascade="all, delete-orphan",
-    )
-
-
-class DocumentChunk(Base):
-    __tablename__ = "document_chunk"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    document_id: Mapped[int] = mapped_column(
-        ForeignKey("document.id", ondelete="CASCADE"),
-        index=True,
-    )
-    text: Mapped[str]
-    context: Mapped[str | None]
-    order: Mapped[int] = mapped_column(index=True)
-    embedding: Mapped[Vector | None] = mapped_column(Vector(3584))
-    text_search_vector = mapped_column(
-        TSVECTOR,
-        Computed("to_tsvector('simple', text)", persisted=True),
-    )
-
-    document = relationship("Document", back_populates="chunks")
-
-    __table_args__ = (
-        Index("idx_text_search_vector", "text_search_vector", postgresql_using="gin"),
-    )
-
-
-class Decision(Base):
-    __tablename__ = "decision"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    lang: Mapped[str] = mapped_column(index=True)
-    court: Mapped[str] = mapped_column(index=True)
-    reference: Mapped[str]
-    date: Mapped[date]
-    title: Mapped[str]
-    html_url: Mapped[str | None]
-    pdf_url: Mapped[str | None]
-    text: Mapped[str | None]
-    chamber: Mapped[str | None]
-    headline: Mapped[dict | None] = mapped_column(JSONB)
-
-    chunks = relationship(
-        "Chunk", back_populates="decision", cascade="all, delete-orphan"
-    )
-
-    __table_args__ = (UniqueConstraint("court", "reference"),)
-
-
-class DecisionSyncState(Base):
-    __tablename__ = "decision_sync_state"
-
-    court: Mapped[str] = mapped_column(primary_key=True)
-    last_job_sequence: Mapped[int | None]
-
-
 class ActConfig(Base):
     __tablename__ = "act_config"
     sr_number: Mapped[str] = mapped_column(primary_key=True)
@@ -122,10 +52,9 @@ class Article(Base):
         ForeignKey("act.id", ondelete="CASCADE"), index=True
     )
     eid: Mapped[str]
-    breadcrumb: Mapped[str | None]
+    number: Mapped[str]
     html: Mapped[str]
     text: Mapped[str]
-    context: Mapped[str | None]
     sort_order: Mapped[int] = mapped_column(index=True)
 
     act = relationship("Act", back_populates="articles")
@@ -135,6 +64,45 @@ class Article(Base):
         cascade="all, delete-orphan",
         foreign_keys="Chunk.article_id",
     )
+
+    @property
+    def citation(self) -> str:
+        if self.number and self.act.abbr:
+            return f"{self.number} {self.act.abbr}"
+
+        sr_prefix = "SR" if self.act.lang == "de" else "RS"
+        return f"{self.number} {self.act.title} {self.act.applicability_date} ({sr_prefix} {self.act.sr_number})"
+
+
+class DecisionSyncState(Base):
+    __tablename__ = "decision_sync_state"
+
+    spider: Mapped[str] = mapped_column(primary_key=True)
+    last_job_sequence: Mapped[int]
+
+
+class Decision(Base):
+    __tablename__ = "decision"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lang: Mapped[str] = mapped_column(index=True)
+    spider: Mapped[str] = mapped_column(index=True)
+    number: Mapped[str]
+    title: Mapped[dict] = mapped_column(JSONB)
+    text: Mapped[str]
+    html_url: Mapped[str | None]
+    pdf_url: Mapped[str | None]
+    date: Mapped[date]
+
+    chunks = relationship(
+        "Chunk", back_populates="decision", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (UniqueConstraint("spider", "number"),)
+
+    @property
+    def citation(self) -> str:
+        return f"{self.number} ({self.date.year})"
 
 
 class Chunk(Base):

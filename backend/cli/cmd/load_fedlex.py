@@ -1,13 +1,6 @@
-import anthropic
 import click
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 
 from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
@@ -86,76 +79,68 @@ def load_fedlex_command(
 
 def _process_act(db: Session, act: Act):
     click.echo("    Fetching HTML...")
+
+    act_config = db.get(ActConfig, act.sr_number) or ActConfig(
+        sr_number=act.sr_number,
+        generate_context=False,
+    )
+
     act_soup = fetch_html(act.html_url)
-    act_label = act.label
+    act_text = md.convert_soup(act_soup) if act_config.generate_context else None
 
-    articles = _parse_articles(db, act, act_soup, act_label)
-    chunks = _create_chunks(db, articles)
-    click.echo(f"    {len(articles)} articles, {len(chunks)} chunks")
-
-    act_config = db.get(ActConfig, act.sr_number) or ActConfig()
-    if act_config.generate_context:
-        act_text = md.convert_soup(act_soup)
-        _generate_contexts(chunks, act_text, act.lang)
-
-    embed_chunks([c for _, c in chunks])
-    db.flush()
-
-
-def _parse_articles(db: Session, act: Act, act_soup, act_label: str) -> list[Article]:
     articles = []
+    chunks = []
+
     for sort_order, article_tag in enumerate(act_soup.find_all("article")):
-        eid = article_tag.get("id", "")
-        article_text = normalize_text(md.convert_soup(article_tag))
-        breadcrumb_list = _section_headers(article_tag)
-        breadcrumb_list.insert(0, act_label)
-        breadcrumb = " | ".join(breadcrumb_list)
+        eid = article_tag.get("id")
+        assert eid, f"article at position {sort_order} has no id"
+
+        number_tag = article_tag.select_one(".heading > a")
+        assert number_tag, f"no .heading > a in article {eid}"
+        number = normalize_text(md.convert_soup(number_tag))
+
+        collapseable = article_tag.find("div", class_="collapseable")
+        assert collapseable, f"no .collapseable in article {eid}"
+        text = normalize_text(md.convert_soup(collapseable))
+
         article = Article(
             act_id=act.id,
             eid=eid,
-            breadcrumb=breadcrumb,
+            number=number,
             html=str(article_tag),
-            text=article_text,
+            text=text,
             sort_order=sort_order,
         )
         db.add(article)
         articles.append(article)
-    db.flush()
-    return articles
+        db.flush()
 
+        breadcrumb = " > ".join(_section_headers(article_tag))
+        context_header = f"{act.label} | {breadcrumb}"
 
-def _create_chunks(db: Session, articles: list[Article]) -> list[tuple[Article, Chunk]]:
-    chunks = []
-    for article in articles:
         for chunk_text in split_text(article.text):
-            embedding_input = f"[{article.breadcrumb}]\n\n{chunk_text}"
+            context_parts = [context_header]
+
+            if act_config.generate_context:
+                context_parts.append(generate_context(act_text, chunk_text, act.lang))
+
+            chunk_body = f"{article.citation}\n\n{chunk_text}"
+            embedding_input = "\n\n".join(context_parts) + f"\n\n{chunk_body}"
+
             chunk = Chunk(
                 source_type="article",
                 article_id=article.id,
-                text=chunk_text,
+                text=chunk_body,
                 embedding_input=embedding_input,
             )
-            db.add(chunk)
-            chunks.append((article, chunk))
-    return chunks
+            chunks.append(chunk)
 
+    embed_chunks(chunks)
 
-def _generate_contexts(chunks: list[tuple[Article, Chunk]], act_text: str, lang: str):
-    with click.progressbar(chunks, label="    context") as bar:
-        for article, chunk in bar:
-            chunk.context = _generate_context(act_text, chunk.text, lang=lang)
-            chunk.embedding_input = (
-                f"{article.breadcrumb}\n\n{chunk.context}\n\n{chunk.text}"
-            )
+    db.add_all(chunks)
+    db.flush()
 
-
-@retry(
-    retry=retry_if_exception_type(anthropic.RateLimitError),
-    wait=wait_exponential(multiplier=1, min=4, max=60),
-    stop=stop_after_attempt(6),
-)
-def _generate_context(document_text, chunk_text, lang):
-    return generate_context(document_text, chunk_text, lang)
+    click.echo(f"    {len(articles)} articles, {len(chunks)} chunks")
 
 
 def _section_headers(tag):
