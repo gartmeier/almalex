@@ -14,13 +14,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `alembic revision --autogenerate -m "description"` - Create new migration
 
 ### CLI Tools
-- `python -m cli.main` - Access CLI commands for data loading and search
+- `python -m cli.main` - Access CLI commands
 - `python -m cli.main load-fedlex` - Load Swiss legal documents
-- `python -m cli.main load-bge` - Load BGE (Bundesgerichtsentscheide) documents
-- `python -m cli.main search "query"` - Search documents with vector similarity
-- `python -m cli.main prompt "question"` - Get AI-generated answer based on document context
+- `python -m cli.main load-entscheidsuche` - Load court decision documents
+- `python -m cli.main act-status` - Check act processing status
+- `python -m cli.main configure-act` - Configure act settings
+- `python -m cli.main eval` - Run evaluation
 - `python -m cli.main cleanup-chats` - Clean up old chat sessions
-- `python -m cli.main fix-fedlex-urls` - Fix/update Fedlex document URLs
 - `python -m cli.main shell` - Interactive shell with database access
 
 ### Application
@@ -31,28 +31,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a FastAPI-based RAG (Retrieval-Augmented Generation) system for Swiss legal documents with the following key components:
+This is a FastAPI-based RAG (Retrieval-Augmented Generation) system for Swiss legal documents using clean architecture:
 
-### Core Services
-- **Search Functions** (`app/crud.py`): Vector similarity search using pgvector - `search()` and `search_similar()` functions handle document retrieval
-- **AI Service** (`app/ai/service.py`): OpenAI integration for embeddings (`create_embedding()`), chat completion (`generate_text()`), and title generation
-- **Redis** (`app/redis.py`): Caching layer for API responses
-- **Rate Limiting** (`app/limiter.py`): SlowAPI-based rate limiting middleware
+### Layered Architecture
+- **`app/api/v1/`** — Versioned API endpoints (chats)
+- **`app/services/`** — Business logic: ChatService, EmbeddingService, LLMService
+- **`app/repositories/`** — Data access: ChatRepository, ChunkRepository (hybrid RRF search)
+- **`app/prompts/`** — System prompt construction (DE/EN/FR)
+- **`app/core/`** — Infrastructure: config, clients, deps, redis, limiter, exceptions
+- **`app/db/`** — SQLAlchemy models and session management
+- **`app/schemas/`** — Pydantic request/response models
 
 ### Data Models
-- **Document/DocumentChunk**: Legal documents stored with vector embeddings (1536 dimensions)
-- **Chat/ChatMessage**: Conversation history with user interactions
+- **Chunk**: Legal document chunks with vector embeddings (3584 dimensions via pgvector)
+- **Act, ActConfig, Article**: Structured legal act data
+- **Decision, DecisionSyncState**: Court decisions and sync tracking
+- **Chat, ChatMessage**: Conversation history
 - Uses PostgreSQL with pgvector extension for similarity search
 
 ### API Structure
-- `/api/chats` - Chat management and message streaming endpoints
-- Main app (`app/main.py`) includes API router with `/api` prefix
+- `/api/chats/{chat_id}` - Chat management and message streaming
+- Main app (`app/main.py`) includes versioned API router
 - Sentry integration for error tracking (when `SENTRY_DSN` configured)
 
 ### Key Dependencies
 - FastAPI with SQLAlchemy for web framework and ORM
 - pgvector for vector similarity search
-- OpenAI API for embeddings and chat completion (models: gpt-4.1-nano, text-embedding-3-small)
+- OpenAI SDK for chat (`openai/gpt-oss-120b`) and embeddings (`bge_multilingual_gemma2`)
+- Anthropic SDK, Cohere, Tenacity for additional AI/retry capabilities
 - Redis for caching
 - Alembic for database migrations
 
@@ -61,9 +67,13 @@ Environment variables loaded via Pydantic Settings from `.env`:
 - `DATABASE_URL` - PostgreSQL connection with pgvector extension
 - `REDIS_URL` - Redis connection
 - `OPENAI_API_KEY` - OpenAI authentication
+- `OPENAI_BASE_URL` - OpenAI-compatible API base URL
+- `OPENAI_CHAT_MODEL` - Chat model identifier
+- `OPENAI_EMBEDDING_MODEL` - Embedding model identifier
+- `ANTHROPIC_API_KEY` - Anthropic authentication
 - `SECRET_KEY` - JWT signing key
 - `SENTRY_DSN` - Optional Sentry error tracking
 
 ### Additional Components
-- **CLI Module** (`cli/`): Standalone tools for data management, search, and interactive prompting
+- **CLI Module** (`cli/`): Data loading, evaluation, and interactive tools
 - **Database Migrations** (`alembic/versions/`): Schema versioning with pgvector support
