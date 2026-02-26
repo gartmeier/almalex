@@ -78,7 +78,7 @@ def upgrade() -> None:
         sa.Column("pdf_url", sa.String(), nullable=True),
         sa.Column("date", sa.Date(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("spider", "number"),
+        sa.UniqueConstraint("spider", "number", "date"),
     )
     op.create_index(op.f("ix_decision_lang"), "decision", ["lang"], unique=False)
     op.create_index(op.f("ix_decision_spider"), "decision", ["spider"], unique=False)
