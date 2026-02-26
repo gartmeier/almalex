@@ -87,7 +87,7 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
                     )
                 )
 
-            db.commit()
+                db.commit()
 
             embed_missing_chunks(db)
 

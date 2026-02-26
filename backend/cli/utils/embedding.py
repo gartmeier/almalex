@@ -30,10 +30,11 @@ def embed_missing_chunks(db: Session):
 
             try:
                 response = _create_embedding(input_)
-            except openai.InternalServerError:
+            except openai.InternalServerError as e:
                 lengths = [len(s) for s in input_]
+                chunk_ids = [c.id for c in batch]
                 click.secho(
-                    f"Embedding failed. Batch size: {len(input_)}, input lengths: {lengths}",
+                    f"Embedding failed: {e}. Batch size: {len(input_)}, input lengths: {lengths}, chunk IDs: {chunk_ids}",
                     fg="red",
                 )
                 continue
