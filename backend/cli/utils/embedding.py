@@ -15,7 +15,9 @@ from app.core.clients import bulk_embedding_client as client
 from app.core.config import settings
 from app.db.models import Chunk
 
-MAX_WORKERS = 4
+embedding_model = settings.bulk_embedding_model
+batch_size = settings.bulk_embedding_batch_size
+max_workers = settings.bulk_embedding_max_workers
 
 
 def embed_missing_chunks(db: Session):
@@ -24,11 +26,11 @@ def embed_missing_chunks(db: Session):
         click.echo("  No chunks to embed")
         return
 
-    batches = _batch(chunks, settings.bulk_embedding_batch_size)
+    batches = _batch(chunks, batch_size)
 
     with click.progressbar(length=len(batches), label="    embed") as bar:
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-            for window in _batch(batches, MAX_WORKERS):
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for window in _batch(batches, max_workers):
                 _embed_parallel(pool, window, bar)
                 db.commit()
 
@@ -72,6 +74,6 @@ def _batch(items, size):
 )
 def _call_api(input_: list[str]):
     return client.embeddings.create(
-        model=settings.bulk_embedding_model,
+        model=embedding_model,
         input=input_,
     )

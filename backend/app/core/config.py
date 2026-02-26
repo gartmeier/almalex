@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     bulk_embedding_api_key: str
     bulk_embedding_base_url: str
     bulk_embedding_model: str
-    bulk_embedding_batch_size: int = 100
+    bulk_embedding_batch_size: int
+    bulk_embedding_max_workers: int
 
 
 settings = Settings()  # type: ignore
