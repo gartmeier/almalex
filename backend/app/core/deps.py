@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Annotated
 
 import redis
@@ -9,6 +10,15 @@ from app.db.session import SessionLocal
 
 
 def get_session():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@contextmanager
+def session_context():
     db = SessionLocal()
     try:
         yield db
