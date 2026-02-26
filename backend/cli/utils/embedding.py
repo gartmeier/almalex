@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import click
 import openai
 from sqlalchemy import select
@@ -13,6 +15,8 @@ from app.core.clients import bulk_embedding_client as client
 from app.core.config import settings
 from app.db.models import Chunk
 
+MAX_WORKERS = 4
+
 
 def embed_missing_chunks(db: Session):
     chunks = db.scalars(select(Chunk).where(Chunk.embedding.is_(None))).all()
@@ -20,30 +24,39 @@ def embed_missing_chunks(db: Session):
         click.echo("  No chunks to embed")
         return
 
-    batch_size = settings.bulk_embedding_batch_size
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
+    batches = _batch(chunks, settings.bulk_embedding_batch_size)
 
-    with click.progressbar(batches, label="    embed") as bar:
-        for batch in bar:
-            input_ = [c.embedding_input for c in batch]
+    with click.progressbar(length=len(batches), label="    embed") as bar:
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+            for window in _batch(batches, MAX_WORKERS):
+                _embed_parallel(pool, window, bar)
+                db.commit()
 
-            try:
-                response = _create_embedding(input_)
-            except openai.InternalServerError as e:
-                # Skip batch on server error to avoid blocking the entire job.
-                # Chunk IDs are logged for manual inspection.
-                lengths = [len(s) for s in input_]
-                chunk_ids = [c.id for c in batch]
-                click.secho(
-                    f"Embedding failed: {e}. Batch size: {len(input_)}, input lengths: {lengths}, chunk IDs: {chunk_ids}",
-                    fg="red",
-                )
-                continue
 
+def _embed_parallel(pool, batches, bar):
+    futures = {
+        pool.submit(_call_api, [c.embedding_input for c in batch]): batch
+        for batch in batches
+    }
+    for future in as_completed(futures):
+        batch = futures[future]
+        try:
+            response = future.result()
+        except openai.InternalServerError as e:
+            _log_failure(batch, e)
+        else:
             for chunk, data in zip(batch, response.data):
                 chunk.embedding = data.embedding
+        bar.update(1)
 
-            db.commit()
+
+def _log_failure(batch, error):
+    chunk_ids = [c.id for c in batch]
+    click.secho(f"Embedding failed for chunks {chunk_ids}: {error}", fg="red")
+
+
+def _batch(items, size):
+    return [items[i : i + size] for i in range(0, len(items), size)]
 
 
 @retry(
@@ -57,7 +70,7 @@ def embed_missing_chunks(db: Session):
     wait=wait_exponential(multiplier=1, min=4, max=60),
     stop=stop_after_attempt(6),
 )
-def _create_embedding(input_: list[str]):
+def _call_api(input_: list[str]):
     return client.embeddings.create(
         model=settings.bulk_embedding_model,
         input=input_,
