@@ -42,12 +42,28 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
         click.echo(f"Spider: {spider}")
 
         try:
+            last_job = _fetch_json(f"Jobs/{spider}/last")
+
             if force:
                 db.execute(delete(DecisionFile).where(DecisionFile.spider == spider))
                 db.execute(delete(Decision).where(Decision.spider == spider))
                 db.flush()
                 known_files = {}
             else:
+                obsolete = []
+                for file_path, file_info in last_job["dateien"].items():
+                    if (
+                        file_path.endswith(".json")
+                        and file_info.get("status") == "nicht_mehr_da"
+                    ):
+                        obsolete.append(file_path)
+
+                if obsolete:
+                    db.execute(
+                        delete(DecisionFile).where(DecisionFile.file.in_(obsolete))
+                    )
+                    db.flush()
+
                 known_files = {
                     row[0]: row[1]
                     for row in db.execute(
@@ -57,10 +73,11 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
                     ).all()
                 }
 
-            last_job = _fetch_json(f"Jobs/{spider}/last")
-
             for file_path, file_info in last_job["dateien"].items():
                 if not file_path.endswith(".json"):
+                    continue
+
+                if file_info.get("status") == "nicht_mehr_da":
                     continue
 
                 checksum = file_info.get("checksum")

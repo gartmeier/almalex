@@ -14,7 +14,7 @@ class DecisionFile(Base):
     spider: Mapped[str] = mapped_column(index=True)
     checksum: Mapped[str | None]
     decision_id: Mapped[int | None] = mapped_column(
-        ForeignKey("decision.id", ondelete="SET NULL")
+        ForeignKey("decision.id", ondelete="CASCADE")
     )
 
     decision = relationship("Decision")
@@ -37,7 +37,7 @@ class Decision(Base):
         "Chunk", back_populates="decision", cascade="all, delete-orphan"
     )
 
-    __table_args__ = (UniqueConstraint("spider", "number", "date"),)
+    __table_args__ = (UniqueConstraint("spider", "number"),)
 
     @property
     def citation(self) -> str:

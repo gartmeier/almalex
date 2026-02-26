@@ -78,7 +78,7 @@ def upgrade() -> None:
         sa.Column("pdf_url", sa.String(), nullable=True),
         sa.Column("date", sa.Date(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("spider", "number", "date"),
+        sa.UniqueConstraint("spider", "number"),
     )
     op.create_index(op.f("ix_decision_lang"), "decision", ["lang"], unique=False)
     op.create_index(op.f("ix_decision_spider"), "decision", ["spider"], unique=False)
@@ -128,7 +128,7 @@ def upgrade() -> None:
         sa.Column("spider", sa.String(), nullable=False),
         sa.Column("checksum", sa.String(), nullable=True),
         sa.Column("decision_id", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["decision_id"], ["decision.id"], ondelete="SET NULL"),
+        sa.ForeignKeyConstraint(["decision_id"], ["decision.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("file"),
     )
     op.create_index(
