@@ -44,47 +44,9 @@ class MessageDetail(BaseModel):
     ]
 
 
-class ChatCreate(BaseModel):
-    id: str
-    message: str
-
-
 class ChatDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
     title: str | None
     messages: list[MessageDetail]
-
-
-class TextEvent(BaseModel):
-    type: Literal["text"]
-    delta: str
-
-
-class ToolCallEvent(BaseModel):
-    type: Literal["tool_call"]
-    id: str
-    name: str
-    arguments: dict[str, Any]
-
-
-class ToolResultEvent(BaseModel):
-    type: Literal["tool_result"]
-    tool_call_id: str
-    result: Any
-
-
-class DoneEvent(BaseModel):
-    type: Literal["done"]
-    content: str
-    content_blocks: list[
-        TextContentBlock | ToolCallContentBlock | ToolResultContentBlock
-    ]
-
-
-StreamEvent = TextEvent | ToolCallEvent | ToolResultEvent | DoneEvent
-
-
-class SSEMessage(BaseModel):
-    data: StreamEvent

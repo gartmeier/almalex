@@ -1,10 +1,8 @@
-from functools import lru_cache
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     secret_key: str
     database_url: str
@@ -15,14 +13,6 @@ class Settings(BaseSettings):
     openai_base_url: str
     openai_chat_model: str
     openai_embedding_model: str
-    cohere_api_key: str
-    cohere_base_url: str
-    cohere_rerank_model: str
 
 
-@lru_cache()
-def get_settings():
-    return Settings()  # type: ignore
-
-
-settings = get_settings()
+settings = Settings()  # type: ignore

@@ -5,7 +5,7 @@ from openai import OpenAI
 from app.core.config import settings
 from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
-from app.schemas.chat import DoneEvent, TextContentBlock, TextEvent
+from app.schemas.events import DoneEvent, TextContentBlock, TextEvent
 
 
 class LLMService:
