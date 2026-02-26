@@ -1,5 +1,7 @@
 import click
 import openai
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -11,15 +13,35 @@ from app.core.clients import openai_client
 from app.core.config import settings
 from app.db.models import Chunk
 
+BATCH_SIZE = 99  # Infomaniak requires less than 100
 
-def embed_chunks(chunks: list[Chunk]):
-    batch_size = 99  # Infomaniak requires less than 100
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
+
+def embed_missing_chunks(db: Session):
+    chunks = db.scalars(select(Chunk).where(Chunk.embedding.is_(None))).all()
+    if not chunks:
+        click.echo("  No chunks to embed")
+        return
+
+    batches = [chunks[i : i + BATCH_SIZE] for i in range(0, len(chunks), BATCH_SIZE)]
+
     with click.progressbar(batches, label="    embed") as bar:
         for batch in bar:
-            response = _create_embedding([c.embedding_input for c in batch])
+            input_ = [c.embedding_input for c in batch]
+
+            try:
+                response = _create_embedding(input_)
+            except openai.InternalServerError:
+                lengths = [len(s) for s in input_]
+                click.secho(
+                    f"Embedding failed. Batch size: {len(input_)}, input lengths: {lengths}",
+                    fg="red",
+                )
+                continue
+
             for chunk, data in zip(batch, response.data):
                 chunk.embedding = data.embedding
+
+            db.commit()
 
 
 @retry(

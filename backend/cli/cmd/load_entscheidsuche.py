@@ -2,13 +2,13 @@ from datetime import date
 
 import click
 import requests
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.db.models import Chunk, Decision, DecisionSyncState
+from app.db.models import Chunk, Decision, DecisionFile
 from app.db.session import SessionLocal
-from cli.utils.embedding import embed_chunks
+from cli.utils.embedding import embed_missing_chunks
 from cli.utils.html import fetch_html
 from cli.utils.pdf import fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
@@ -42,41 +42,54 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
         click.echo(f"Spider: {spider}")
 
         try:
-            sync = db.get(DecisionSyncState, spider)
-            last_seq = sync.last_job_sequence if sync else None
-            click.echo(f"Last job sequence: {last_seq}")
+            if force:
+                db.execute(delete(DecisionFile).where(DecisionFile.spider == spider))
+                db.execute(delete(Decision).where(Decision.spider == spider))
+                db.flush()
+                known_files = {}
+            else:
+                known_files = {
+                    row[0]: row[1]
+                    for row in db.execute(
+                        select(DecisionFile.file, DecisionFile.checksum).where(
+                            DecisionFile.spider == spider
+                        )
+                    ).all()
+                }
 
             last_job = _fetch_json(f"Jobs/{spider}/last")
-            all_chunks = []
 
             for file_path, file_info in last_job["dateien"].items():
                 if not file_path.endswith(".json"):
                     continue
 
-                if "last_change" in file_info:
-                    file_seq = int(file_info["last_change"].split("/")[-1])
-                    if last_seq is not None and file_seq <= last_seq:
-                        continue
-                elif file_info.get("status") != "update":
+                checksum = file_info.get("checksum")
+                if known_files.get(file_path) == checksum:
                     continue
 
-                all_chunks += _process_decision(db, spider, facets, file_path)
+                metadata = _fetch_json(file_path)
+                decision = _process_decision(db, spider, facets, metadata)
 
-            if all_chunks:
-                embed_chunks(all_chunks)
-
-            job_id = last_job["job"]
-            job_sequence = int(job_id.split("/")[-1])
-            db.execute(
-                insert(DecisionSyncState)
-                .values(spider=spider, last_job_sequence=job_sequence)
-                .on_conflict_do_update(
-                    index_elements=["spider"],
-                    set_={"last_job_sequence": job_sequence},
+                db.execute(
+                    insert(DecisionFile)
+                    .values(
+                        file=file_path,
+                        spider=spider,
+                        checksum=checksum,
+                        decision_id=decision.id if decision else None,
+                    )
+                    .on_conflict_do_update(
+                        index_elements=["file"],
+                        set_={
+                            "checksum": checksum,
+                            "decision_id": decision.id if decision else None,
+                        },
+                    )
                 )
-            )
 
             db.commit()
+
+            embed_missing_chunks(db)
 
             click.secho("Done", fg="green")
         except Exception as e:
@@ -85,16 +98,9 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
 
 
 def _process_decision(
-    db: Session, spider: str, facets: dict, file_path: str
-) -> list[Chunk]:
-    metadata = _fetch_json(file_path)
+    db: Session, spider: str, facets: dict, metadata: dict
+) -> Decision | None:
     number = metadata["Num"][0]
-
-    db.execute(
-        delete(Decision).where(Decision.spider == spider, Decision.number == number)
-    )
-    db.flush()
-
     lang = metadata.get("Sprache", "de")
     title = _extract_title(metadata)
     html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}" if "HTML" in metadata else None
@@ -110,7 +116,7 @@ def _process_decision(
         text = normalize_text(fetch_pdf_text(pdf_url))
     else:
         click.secho(f"  Skipping {number}: no HTML or PDF", fg="yellow")
-        return []
+        return None
 
     decision = Decision(
         lang=lang,
@@ -140,7 +146,7 @@ def _process_decision(
     db.add_all(chunks)
     db.flush()
 
-    return chunks
+    return decision
 
 
 def _extract_title(metadata: dict) -> dict:

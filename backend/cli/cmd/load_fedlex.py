@@ -6,7 +6,7 @@ from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
 from cli.utils.context import generate_context_anthropic as generate_context
-from cli.utils.embedding import embed_chunks
+from cli.utils.embedding import embed_missing_chunks
 from cli.utils.html import fetch_html, md
 from cli.utils.text import normalize_text, split_text
 
@@ -69,6 +69,7 @@ def load_fedlex_command(
                 click.echo(f"  {label}:")
                 _process_act(db, act)
                 db.commit()
+                embed_missing_chunks(db)
                 click.secho(f"  {label}: done", fg="green")
             except Exception as e:
                 db.rollback()
@@ -134,8 +135,6 @@ def _process_act(db: Session, act: Act):
                 embedding_input=embedding_input,
             )
             chunks.append(chunk)
-
-    embed_chunks(chunks)
 
     db.add_all(chunks)
     db.flush()

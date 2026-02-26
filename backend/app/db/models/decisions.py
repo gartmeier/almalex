@@ -1,17 +1,23 @@
 from datetime import date
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 
-class DecisionSyncState(Base):
-    __tablename__ = "decision_sync_state"
+class DecisionFile(Base):
+    __tablename__ = "decision_file"
 
-    spider: Mapped[str] = mapped_column(primary_key=True)
-    last_job_sequence: Mapped[int]
+    file: Mapped[str] = mapped_column(primary_key=True)
+    spider: Mapped[str] = mapped_column(index=True)
+    checksum: Mapped[str | None]
+    decision_id: Mapped[int | None] = mapped_column(
+        ForeignKey("decision.id", ondelete="SET NULL")
+    )
+
+    decision = relationship("Decision")
 
 
 class Decision(Base):
