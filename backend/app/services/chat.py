@@ -1,9 +1,9 @@
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.models import Article, Chat, ChatMessage
+from app.db.models import Chat, ChatMessage, Chunk
 from app.services import llm
-from app.services.search import search_articles
+from app.services.search import search_chunks
 
 _SOURCE_LABELS = {"fedlex_article": "federal_law", "bge": "federal_court"}
 
@@ -55,17 +55,19 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: str):
     db.add(user_msg)
     db.commit()
 
-    history = (
-        db.query(ChatMessage)
-        .filter(ChatMessage.chat_id == chat_id)
-        .order_by(desc(ChatMessage.created_at))
+    history = db.scalars(
+        select(ChatMessage)
+        .where(ChatMessage.chat_id == chat_id)
+        .order_by(ChatMessage.created_at.desc())
         .limit(10)
-        .all()
-    )
+    ).all()
     history = list(reversed(history))
 
-    articles = search_articles(db, message, top_k=5)
-    context = _format_context(articles)
+    article_chunks = search_chunks(db, message, source_type="article", top_k=12)
+    decision_chunks = search_chunks(db, message, source_type="decision", top_k=8)
+    all_chunks = article_chunks + decision_chunks
+
+    context = _format_context(all_chunks)
 
     for event in llm.generate(history=history, context=context, lang=lang):
         if event.type == "done":
@@ -81,8 +83,8 @@ def process_message(*, db: Session, chat_id: str, message: str, lang: str):
             yield f"data: {event.model_dump_json()}\n\n"
 
 
-def _format_context(articles: list[Article]) -> str:
+def _format_context(chunks: list[Chunk]) -> str:
     parts = []
-    for article in articles:
-        parts.append(f"[ID:article_{article.id}] {article.act.label}\n{article.text}")
-    return "\n\n".join(parts)
+    for chunk in chunks:
+        parts.append(f"ID: {chunk.id}\n\n{chunk.text}")
+    return "\n---\n".join(parts)

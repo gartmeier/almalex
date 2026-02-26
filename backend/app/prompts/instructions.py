@@ -1,9 +1,4 @@
-"""System instructions for RAG-based legal assistant."""
-
-from app.core.types import Language
-
-
-def build_instructions(lang: Language = "de", context: str = "") -> str:
+def build_instructions(lang: str = "de", context: str = "") -> str:
     return {
         "de": _build_de,
         "en": _build_en,

@@ -1,17 +1,14 @@
-"""LLM text generation using Infomaniak chat completions API."""
-
 from typing import Iterator
 
 from app.core.clients import openai_client
 from app.core.config import settings
-from app.core.types import Language
 from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
 from app.schemas.chat import DoneEvent, TextContentBlock, TextEvent
 
 
 def generate(
-    *, history: list[ChatMessage], context: str, lang: Language
+    *, history: list[ChatMessage], context: str, lang: str
 ) -> Iterator[TextEvent | DoneEvent]:
     messages: list[dict] = [
         {"role": "system", "content": build_instructions(lang=lang, context=context)},
