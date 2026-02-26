@@ -1,21 +1,21 @@
 """init
 
-Revision ID: 9f0d4ce7ed40
+Revision ID: e3d01afb9bab
 Revises:
-Create Date: 2026-02-25 20:08:08.827054
+Create Date: 2026-02-26 11:50:26.122671
 
 """
 
 from typing import Sequence, Union
 
 import sqlalchemy as sa
-from pgvector.sqlalchemy import VECTOR
+from pgvector.sqlalchemy.vector import VECTOR
 from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "9f0d4ce7ed40"
+revision: str = "e3d01afb9bab"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -83,12 +83,6 @@ def upgrade() -> None:
     op.create_index(op.f("ix_decision_lang"), "decision", ["lang"], unique=False)
     op.create_index(op.f("ix_decision_spider"), "decision", ["spider"], unique=False)
     op.create_table(
-        "decision_sync_state",
-        sa.Column("spider", sa.String(), nullable=False),
-        sa.Column("last_job_sequence", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint("spider"),
-    )
-    op.create_table(
         "article",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("act_id", sa.Integer(), nullable=False),
@@ -129,6 +123,18 @@ def upgrade() -> None:
         op.f("ix_chat_message_created_at"), "chat_message", ["created_at"], unique=False
     )
     op.create_table(
+        "decision_file",
+        sa.Column("file", sa.String(), nullable=False),
+        sa.Column("spider", sa.String(), nullable=False),
+        sa.Column("checksum", sa.String(), nullable=True),
+        sa.Column("decision_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["decision_id"], ["decision.id"], ondelete="SET NULL"),
+        sa.PrimaryKeyConstraint("file"),
+    )
+    op.create_index(
+        op.f("ix_decision_file_spider"), "decision_file", ["spider"], unique=False
+    )
+    op.create_table(
         "chunk",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("source_type", sa.String(), nullable=False),
@@ -166,13 +172,14 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_chunk_article_id"), table_name="chunk")
     op.drop_index("idx_chunk_tsv", table_name="chunk", postgresql_using="gin")
     op.drop_table("chunk")
+    op.drop_index(op.f("ix_decision_file_spider"), table_name="decision_file")
+    op.drop_table("decision_file")
     op.drop_index(op.f("ix_chat_message_created_at"), table_name="chat_message")
     op.drop_index(op.f("ix_chat_message_chat_id"), table_name="chat_message")
     op.drop_table("chat_message")
     op.drop_index(op.f("ix_article_sort_order"), table_name="article")
     op.drop_index(op.f("ix_article_act_id"), table_name="article")
     op.drop_table("article")
-    op.drop_table("decision_sync_state")
     op.drop_index(op.f("ix_decision_spider"), table_name="decision")
     op.drop_index(op.f("ix_decision_lang"), table_name="decision")
     op.drop_table("decision")
