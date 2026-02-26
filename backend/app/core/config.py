@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     openai_base_url: str
     openai_chat_model: str
     openai_embedding_model: str
+    bulk_embedding_api_key: str
+    bulk_embedding_base_url: str
+    bulk_embedding_model: str
+    bulk_embedding_batch_size: int = 100
 
 
 settings = Settings()  # type: ignore

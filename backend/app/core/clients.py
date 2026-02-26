@@ -8,6 +8,11 @@ openai_client = OpenAI(
     base_url=settings.openai_base_url,
 )
 
+bulk_embedding_client = OpenAI(
+    api_key=settings.bulk_embedding_api_key,
+    base_url=settings.bulk_embedding_base_url,
+)
+
 anthropic_client = Anthropic(
     api_key=settings.anthropic_api_key,
 )

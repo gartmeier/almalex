@@ -9,11 +9,9 @@ from tenacity import (
     wait_exponential,
 )
 
-from app.core.clients import openai_client
+from app.core.clients import bulk_embedding_client as client
 from app.core.config import settings
 from app.db.models import Chunk
-
-BATCH_SIZE = 99  # Infomaniak requires less than 100
 
 
 def embed_missing_chunks(db: Session):
@@ -22,7 +20,8 @@ def embed_missing_chunks(db: Session):
         click.echo("  No chunks to embed")
         return
 
-    batches = [chunks[i : i + BATCH_SIZE] for i in range(0, len(chunks), BATCH_SIZE)]
+    batch_size = settings.bulk_embedding_batch_size
+    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
 
     with click.progressbar(batches, label="    embed") as bar:
         for batch in bar:
@@ -31,6 +30,8 @@ def embed_missing_chunks(db: Session):
             try:
                 response = _create_embedding(input_)
             except openai.InternalServerError as e:
+                # Skip batch on server error to avoid blocking the entire job.
+                # Chunk IDs are logged for manual inspection.
                 lengths = [len(s) for s in input_]
                 chunk_ids = [c.id for c in batch]
                 click.secho(
@@ -46,12 +47,18 @@ def embed_missing_chunks(db: Session):
 
 
 @retry(
-    retry=retry_if_exception_type(openai.RateLimitError),
+    retry=retry_if_exception_type(
+        (
+            openai.RateLimitError,
+            openai.APITimeoutError,
+            openai.APIConnectionError,
+        )
+    ),
     wait=wait_exponential(multiplier=1, min=4, max=60),
     stop=stop_after_attempt(6),
 )
 def _create_embedding(input_: list[str]):
-    return openai_client.embeddings.create(
-        model=settings.openai_embedding_model,
+    return client.embeddings.create(
+        model=settings.bulk_embedding_model,
         input=input_,
     )

@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, Decision, DecisionFile
 from app.db.session import SessionLocal
-from cli.utils.embedding import embed_missing_chunks
 from cli.utils.html import fetch_html
 from cli.utils.pdf import fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
@@ -103,10 +102,7 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
                         },
                     )
                 )
-
                 db.commit()
-
-            embed_missing_chunks(db)
 
             click.secho("Done", fg="green")
         except Exception as e:
