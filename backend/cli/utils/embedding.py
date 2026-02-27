@@ -2,8 +2,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
 import openai
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, defer
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -21,21 +21,41 @@ max_workers = settings.bulk_embedding_max_workers
 
 
 def embed_missing_chunks(db: Session):
-    chunks = db.scalars(select(Chunk).where(Chunk.embedding.is_(None))).all()
-    if not chunks:
-        click.echo("  No chunks to embed")
-        return
+    page_size = batch_size * max_workers
+    total = 0
 
-    batches = _batch(chunks, batch_size)
+    while True:
+        remaining = db.scalar(
+            select(func.count()).select_from(Chunk).where(Chunk.embedding.is_(None))
+        )
+        if not remaining:
+            if total == 0:
+                click.echo("  No chunks to embed")
+            else:
+                click.echo(f"    done — {total} chunks embedded")
+            return
 
-    with click.progressbar(length=len(batches), label="    embed") as bar:
+        click.echo(
+            f"    {remaining} remaining, embedding next {min(remaining, page_size)}..."
+        )
+        chunks = db.scalars(
+            select(Chunk)
+            .where(Chunk.embedding.is_(None))
+            .options(defer(Chunk.search_vector))
+            .order_by(Chunk.id)
+            .limit(page_size)
+        ).all()
+
+        batches = _batch(chunks, batch_size)
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             for window in _batch(batches, max_workers):
-                _embed_parallel(pool, window, bar)
-                db.commit()
+                _embed_parallel(pool, window)
+        total += len(chunks)
+        db.commit()
+        db.expire_all()
 
 
-def _embed_parallel(pool, batches, bar):
+def _embed_parallel(pool, batches):
     futures = {
         pool.submit(_call_api, [c.embedding_input for c in batch]): batch
         for batch in batches
@@ -49,7 +69,6 @@ def _embed_parallel(pool, batches, bar):
         else:
             for chunk, data in zip(batch, response.data):
                 chunk.embedding = data.embedding
-        bar.update(1)
 
 
 def _log_failure(batch, error):
