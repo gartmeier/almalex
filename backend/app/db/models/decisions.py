@@ -37,7 +37,7 @@ class Decision(Base):
         "Chunk", back_populates="decision", cascade="all, delete-orphan"
     )
 
-    __table_args__ = (UniqueConstraint("spider", "number"),)
+    __table_args__ = (UniqueConstraint("spider", "number", "date"),)
 
     @property
     def citation(self) -> str:
