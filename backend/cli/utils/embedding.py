@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
@@ -20,9 +21,20 @@ batch_size = settings.bulk_embedding_batch_size
 max_workers = settings.bulk_embedding_max_workers
 
 
+def _fmt_eta(seconds: float) -> str:
+    m, s = divmod(int(seconds), 60)
+    h, m = divmod(m, 60)
+    if h:
+        return f"{h}h{m:02d}m"
+    if m:
+        return f"{m}m{s:02d}s"
+    return f"{s}s"
+
+
 def embed_missing_chunks(db: Session):
-    page_size = batch_size * max_workers
+    page_size = 1000
     total = 0
+    t0 = time.monotonic()
 
     while True:
         remaining = db.scalar(
@@ -35,8 +47,12 @@ def embed_missing_chunks(db: Session):
                 click.echo(f"    done — {total} chunks embedded")
             return
 
+        eta = ""
+        if total > 0:
+            rate = total / (time.monotonic() - t0)
+            eta = f" (ETA {_fmt_eta(remaining / rate)})"
         click.echo(
-            f"    {remaining} remaining, embedding next {min(remaining, page_size)}..."
+            f"    {remaining} remaining, embedding next {min(remaining, page_size)}...{eta}"
         )
         chunks = db.scalars(
             select(Chunk)
@@ -48,27 +64,22 @@ def embed_missing_chunks(db: Session):
 
         batches = _batch(chunks, batch_size)
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            for window in _batch(batches, max_workers):
-                _embed_parallel(pool, window)
+            futures = {
+                pool.submit(_call_api, [c.embedding_input for c in b]): b
+                for b in batches
+            }
+            for future in as_completed(futures):
+                batch = futures[future]
+                try:
+                    response = future.result()
+                except openai.InternalServerError as e:
+                    _log_failure(batch, e)
+                else:
+                    for chunk, data in zip(batch, response.data):
+                        chunk.embedding = data.embedding
         total += len(chunks)
         db.commit()
         db.expire_all()
-
-
-def _embed_parallel(pool, batches):
-    futures = {
-        pool.submit(_call_api, [c.embedding_input for c in batch]): batch
-        for batch in batches
-    }
-    for future in as_completed(futures):
-        batch = futures[future]
-        try:
-            response = future.result()
-        except openai.InternalServerError as e:
-            _log_failure(batch, e)
-        else:
-            for chunk, data in zip(batch, response.data):
-                chunk.embedding = data.embedding
 
 
 def _log_failure(batch, error):
