@@ -1,15 +1,13 @@
 from datetime import date
 
 import click
-import requests
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, Decision, DecisionFile
 from app.db.session import SessionLocal
-from cli.utils.html import fetch_html
-from cli.utils.pdf import fetch_pdf_text
+from cli.utils.http import fetch_html, fetch_json, fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
 
 BASE_URL = "https://entscheidsuche.ch/docs"
@@ -26,7 +24,7 @@ def load_entscheidsuche_command(spider: str, force: bool):
 def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
     selected_spider = spider
 
-    facets = _fetch_json("Facetten_alle.json")
+    facets = fetch_json(f"{BASE_URL}/Facetten_alle.json")
     spiders = set()
 
     if selected_spider:
@@ -41,7 +39,7 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
         click.echo(f"Spider: {spider}")
 
         try:
-            last_job = _fetch_json(f"Jobs/{spider}/last")
+            last_job = fetch_json(f"{BASE_URL}/Jobs/{spider}/last")
 
             if force:
                 db.execute(delete(DecisionFile).where(DecisionFile.spider == spider))
@@ -83,7 +81,7 @@ def load_entscheidsuche(db: Session, spider: str, *, force: bool = False):
                 if known_files.get(file_path) == checksum:
                     continue
 
-                metadata = _fetch_json(file_path)
+                metadata = fetch_json(f"{BASE_URL}/{file_path}")
                 decision = _process_decision(db, spider, facets, metadata)
 
                 db.execute(
@@ -188,9 +186,3 @@ def _extract_title(metadata: dict) -> dict:
             result[lang] = entry["Text"]
 
     return result
-
-
-def _fetch_json(path: str):
-    response = requests.get(f"{BASE_URL}/{path}")
-    response.raise_for_status()
-    return response.json()

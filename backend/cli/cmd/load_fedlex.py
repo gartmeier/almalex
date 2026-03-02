@@ -6,7 +6,8 @@ from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
 from cli.utils.context import generate_context_anthropic as generate_context
-from cli.utils.html import fetch_html, md
+from cli.utils.html import md
+from cli.utils.http import fetch_html
 from cli.utils.text import normalize_text, split_text
 
 

@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     bulk_embedding_model: str
     bulk_embedding_batch_size: int
     bulk_embedding_max_workers: int
+    contact_email: str | None = None
 
 
 settings = Settings()  # type: ignore
