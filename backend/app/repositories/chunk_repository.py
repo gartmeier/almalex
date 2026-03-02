@@ -1,3 +1,4 @@
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import func, select, union_all
 from sqlalchemy.orm import Session, selectinload
 
@@ -17,7 +18,8 @@ class ChunkRepository:
         top_k: int = 20,
         rrf_k: int = 60,
     ) -> list[Chunk]:
-        vector_distance = Chunk.embedding.l2_distance(query_embedding)
+        halfvec_embedding = Chunk.embedding.cast(HALFVEC(3584))
+        vector_distance = halfvec_embedding.l2_distance(query_embedding)
 
         vector_q = (
             select(

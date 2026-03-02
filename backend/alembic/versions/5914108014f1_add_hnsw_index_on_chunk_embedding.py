@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.execute(
         "CREATE INDEX ix_chunk_embedding_hnsw ON chunk "
-        "USING hnsw (embedding vector_l2_ops)"
+        "USING hnsw ((embedding::halfvec(3584)) halfvec_l2_ops)"
     )
 
 
