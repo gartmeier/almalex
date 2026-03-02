@@ -118,7 +118,25 @@ def _process_decision(
     title = _extract_title(metadata)
     html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}" if "HTML" in metadata else None
     pdf_url = f"{BASE_URL}/{metadata['PDF']['Datei']}" if "PDF" in metadata else None
-    date_ = date.fromisoformat(metadata["Datum"])
+
+    try:
+        date_ = date.fromisoformat(metadata["Datum"])
+    except ValueError:
+        click.secho(
+            f"  Skipping {number}: invalid date {metadata['Datum']!r}", fg="yellow"
+        )
+        return None
+
+    existing = db.execute(
+        select(Decision).where(
+            Decision.spider == spider,
+            Decision.number == number,
+            Decision.date == date_,
+        )
+    ).scalar_one_or_none()
+    if existing:
+        click.echo(f"  Skipping {number} ({date_.year}): already exists")
+        return existing
 
     click.echo(f"  Processing: {number} ({date_.year})")
 

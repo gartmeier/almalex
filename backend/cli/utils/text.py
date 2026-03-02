@@ -4,6 +4,7 @@ import unicodedata
 
 def normalize_text(text):
     """Normalize text by removing excessive whitespace and linebreaks"""
+    text = text.replace("\x00", "")
     # First trim whitespace from beginning and end
     text = text.strip()
     # Replace any sequence of whitespace that includes 2+ newlines with two newlines
