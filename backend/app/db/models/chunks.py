@@ -17,6 +17,9 @@ class Chunk(Base):
     decision_id: Mapped[int | None] = mapped_column(
         ForeignKey("decision.id", ondelete="CASCADE"), index=True
     )
+    active: Mapped[bool] = mapped_column(
+        default=True, server_default="true", index=True
+    )
     text: Mapped[str]
     context: Mapped[str | None]
     embedding_input: Mapped[str | None]

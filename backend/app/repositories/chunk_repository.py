@@ -24,6 +24,7 @@ class ChunkRepository:
                 Chunk.id.label("chunk_id"),
                 func.row_number().over(order_by=vector_distance).label("rank"),
             )
+            .where(Chunk.active.is_(True))
             .where(Chunk.embedding.isnot(None))
             .order_by(vector_distance)
             .limit(top_k * 2)
@@ -40,6 +41,7 @@ class ChunkRepository:
                 Chunk.id.label("chunk_id"),
                 func.row_number().over(order_by=text_rank).label("rank"),
             )
+            .where(Chunk.active.is_(True))
             .where(Chunk.search_vector.op("@@")(fts_query))
             .order_by(text_rank)
             .limit(top_k * 2)

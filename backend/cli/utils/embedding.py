@@ -38,7 +38,10 @@ def embed_missing_chunks(db: Session):
 
     while True:
         remaining = db.scalar(
-            select(func.count()).select_from(Chunk).where(Chunk.embedding.is_(None))
+            select(func.count())
+            .select_from(Chunk)
+            .where(Chunk.active.is_(True))
+            .where(Chunk.embedding.is_(None))
         )
         if not remaining:
             if total == 0:
@@ -56,6 +59,7 @@ def embed_missing_chunks(db: Session):
         )
         chunks = db.scalars(
             select(Chunk)
+            .where(Chunk.active.is_(True))
             .where(Chunk.embedding.is_(None))
             .options(defer(Chunk.search_vector))
             .order_by(Chunk.id)
