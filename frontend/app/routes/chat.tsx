@@ -17,6 +17,10 @@ import {
 import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
 import type {
+  ArticlesEvent,
+  ArticleSource,
+  DecisionsEvent,
+  DecisionSource,
   ReasoningDeltaEvent,
   TextDeltaEvent,
   ToolCallEvent,
@@ -33,6 +37,9 @@ export default function Component({ params }: Route.ComponentProps) {
   let [input, setInput] = useState("");
   let [messages, setMessages] = useState<MessageDetail[]>([]);
   let [isLoading, setIsLoading] = useState(false);
+  let [status, setStatus] = useState<string | null>(null);
+  let [articles, setArticles] = useState<ArticleSource[]>([]);
+  let [decisions, setDecisions] = useState<DecisionSource[]>([]);
 
   let hasInitialized = useRef(false);
   let shouldScrollRef = useRef(false);
@@ -185,6 +192,9 @@ export default function Component({ params }: Route.ComponentProps) {
     };
     currentMessage.current = message;
     currentBlock.current = null;
+    setStatus(null);
+    setArticles([]);
+    setDecisions([]);
     setMessages((prev) => [...prev, message]);
 
     while (true) {
@@ -205,6 +215,15 @@ export default function Component({ params }: Route.ComponentProps) {
             break;
           case "tool_result":
             handleToolResultEvent(event);
+            break;
+          case "status":
+            setStatus(event.status);
+            break;
+          case "articles":
+            setArticles(event.articles);
+            break;
+          case "decisions":
+            setDecisions(event.decisions);
             break;
         }
       }
@@ -263,6 +282,46 @@ export default function Component({ params }: Route.ComponentProps) {
     <ScrollToBottomProvider>
       <div className="mx-auto max-w-3xl px-4 pb-[82px]">
         <MessageList messages={messages} />
+        {status && (
+          <p className="text-muted-foreground my-2 text-sm">{status}...</p>
+        )}
+        {articles.length > 0 && (
+          <div className="my-2">
+            <p className="text-muted-foreground text-xs font-medium">
+              Articles
+            </p>
+            <ul className="text-muted-foreground text-xs">
+              {articles.map((a) => (
+                <li key={a.article_id}>{a.citation}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {decisions.length > 0 && (
+          <div className="my-2">
+            <p className="text-muted-foreground text-xs font-medium">
+              Decisions
+            </p>
+            <ul className="text-muted-foreground text-xs">
+              {decisions.map((d) => (
+                <li key={d.decision_id}>
+                  {d.html_url ? (
+                    <a
+                      href={d.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      {d.citation}
+                    </a>
+                  ) : (
+                    d.citation
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="fixed right-0 bottom-0 left-0 z-10">
         <div className="mb-2 flex justify-center">

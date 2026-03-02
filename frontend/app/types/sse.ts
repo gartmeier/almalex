@@ -21,8 +21,36 @@ export type ToolResultEvent = {
   result: unknown;
 };
 
+export type StatusEvent = {
+  type: "status";
+  status: string;
+};
+
+export type ArticleSource = {
+  article_id: number;
+  citation: string;
+  article_number: string;
+  act_sr_number: string;
+  act_abbr: string | null;
+  act_title: string | null;
+};
+
+export type DecisionSource = {
+  decision_id: number;
+  citation: string;
+  decision_number: string;
+  decision_date: string;
+  html_url: string | null;
+};
+
+export type ArticlesEvent = { type: "articles"; articles: ArticleSource[] };
+export type DecisionsEvent = { type: "decisions"; decisions: DecisionSource[] };
+
 export type ServerSentEvent =
   | ReasoningDeltaEvent
   | TextDeltaEvent
   | ToolCallEvent
-  | ToolResultEvent;
+  | ToolResultEvent
+  | StatusEvent
+  | ArticlesEvent
+  | DecisionsEvent;
