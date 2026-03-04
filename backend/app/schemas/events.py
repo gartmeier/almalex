@@ -8,15 +8,25 @@ class TextContentBlock(BaseModel):
     text: str
 
 
+class ReasoningContentBlock(BaseModel):
+    type: Literal["reasoning"]
+    text: str
+
+
 class TextEvent(BaseModel):
     type: Literal["text"]
+    delta: str
+
+
+class ReasoningEvent(BaseModel):
+    type: Literal["reasoning"]
     delta: str
 
 
 class DoneEvent(BaseModel):
     type: Literal["done"]
     content: str
-    content_blocks: list[TextContentBlock]
+    content_blocks: list[TextContentBlock | ReasoningContentBlock]
 
 
 class StatusEvent(BaseModel):
