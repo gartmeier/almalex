@@ -1,0 +1,18 @@
+tmux rename-window -t "=$session" "nvim"
+tmux send-keys "nvim TODO.md" C-m
+
+tmux new-window -t "=$session" -n "zsh" -c "$selected"
+
+tmux new-window -t "=$session" -n "claude" -c "$selected"
+tmux send-keys "claude --continue" C-m
+
+tmux new-window -t "=$session" -n "lazygit" -c "$selected"
+tmux send-keys "lazygit" C-m
+
+tmux new-window -t "=$session" -n "backend" -c "$selected"
+tmux send-keys "make backend-dev" C-m
+
+tmux new-window -t "=$session" -n "frontend" -c "$selected"
+tmux send-keys "make frontend-dev" C-m
+
+tmux select-window -t "=$session:1"
