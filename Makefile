@@ -1,7 +1,7 @@
-.PHONY: backend-run frontend-run
+.PHONY: backend-dev frontend-dev
 
-backend-run:
+backend-dev:
 	cd backend && uv run fastapi dev app/main.py
 
-frontend-run:
+frontend-dev:
 	cd frontend && pnpm dev
