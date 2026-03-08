@@ -4,8 +4,8 @@ from openai import OpenAI
 
 from app.core.config import settings
 from app.core.types import Language
-from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
+from app.schemas.chat import Message
 from app.schemas.events import Event, TextDelta, ThinkingDelta
 
 
@@ -14,19 +14,19 @@ class LLMService:
         self.client = client
 
     def generate(
-        self, *, history: list[ChatMessage], context: str, lang: Language
+        self, *, messages: list[Message], context: str, lang: Language
     ) -> Iterator[Event]:
-        messages: list[dict] = [
+        openai_messages: list[dict] = [
             {
                 "role": "system",
                 "content": build_instructions(lang=lang, context=context),
             },
-            *[{"role": msg.role, "content": msg.content} for msg in history],
+            *[{"role": msg.role, "content": msg.content} for msg in messages],
         ]
 
         stream = self.client.chat.completions.create(
             model=settings.openai_chat_model,
-            messages=messages,  # type: ignore
+            messages=openai_messages,  # type: ingore
             stream=True,
             extra_body={"reasoning_effort": settings.openai_reasoning_effort},
         )

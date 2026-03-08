@@ -1,6 +1,5 @@
 import click
 
-from cli.cmd.cleanup_chats import cleanup_chats
 from cli.cmd.embed import embed_command
 from cli.cmd.eval import eval_command
 from cli.cmd.fedlex_config import act_status, configure_act
@@ -15,7 +14,6 @@ def main():
 
 
 main.add_command(act_status)
-main.add_command(cleanup_chats)
 main.add_command(configure_act)
 main.add_command(eval_command)
 main.add_command(load_fedlex_command)

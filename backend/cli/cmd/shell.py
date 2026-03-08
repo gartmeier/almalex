@@ -2,7 +2,7 @@ import click
 from IPython import embed
 from sqlalchemy import select
 
-from app.db.models import Act, Article, Chat, ChatMessage
+from app.db.models import Act, Article
 from app.db.session import SessionLocal
 
 
@@ -15,8 +15,6 @@ def shell():
         "select": select,
         "Act": Act,
         "Article": Article,
-        "Chat": Chat,
-        "ChatMessage": ChatMessage,
     }
 
     try:
