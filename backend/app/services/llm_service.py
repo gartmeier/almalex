@@ -3,15 +3,10 @@ from typing import Iterator
 from openai import OpenAI
 
 from app.core.config import settings
+from app.core.types import Language
 from app.db.models import ChatMessage
 from app.prompts.instructions import build_instructions
-from app.schemas.events import (
-    DoneEvent,
-    ReasoningContentBlock,
-    ReasoningEvent,
-    TextContentBlock,
-    TextEvent,
-)
+from app.schemas.events import Event, TextDelta, ThinkingDelta
 
 
 class LLMService:
@@ -19,8 +14,8 @@ class LLMService:
         self.client = client
 
     def generate(
-        self, *, history: list[ChatMessage], context: str, lang: str
-    ) -> Iterator[TextEvent | ReasoningEvent | DoneEvent]:
+        self, *, history: list[ChatMessage], context: str, lang: Language
+    ) -> Iterator[Event]:
         messages: list[dict] = [
             {
                 "role": "system",
@@ -31,35 +26,21 @@ class LLMService:
 
         stream = self.client.chat.completions.create(
             model=settings.openai_chat_model,
-            messages=messages,
+            messages=messages,  # type: ignore
             stream=True,
             extra_body={"reasoning_effort": settings.openai_reasoning_effort},
         )
 
-        reasoning_parts: list[str] = []
-        text_parts: list[str] = []
         for chunk in stream:
+            if not chunk.choices:
+                continue
+
             delta = chunk.choices[0].delta
 
-            reasoning_content = getattr(delta, "reasoning_content", None)
-            if reasoning_content:
-                reasoning_parts.append(reasoning_content)
-                yield ReasoningEvent(type="reasoning", delta=reasoning_content)
+            if hasattr(delta, "reasoning_content"):
+                yield ThinkingDelta(
+                    type="thinking_delta", delta=delta.reasoning_content
+                )
 
-            if delta.content:
-                text_parts.append(delta.content)
-                yield TextEvent(type="text", delta=delta.content)
-
-        text = "".join(text_parts)
-        content_blocks: list[TextContentBlock | ReasoningContentBlock] = []
-        if reasoning_parts:
-            content_blocks.append(
-                ReasoningContentBlock(type="reasoning", text="".join(reasoning_parts))
-            )
-        content_blocks.append(TextContentBlock(type="text", text=text))
-
-        yield DoneEvent(
-            type="done",
-            content=text,
-            content_blocks=content_blocks,
-        )
+            elif delta.content:
+                yield TextDelta(type="text_delta", delta=delta.content)

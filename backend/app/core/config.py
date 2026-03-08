@@ -30,5 +30,9 @@ class Settings(BaseSettings):
     # Anthropic
     anthropic_api_key: str
 
+    # Search settings
+    search_article_top_k: int = 12
+    search_decision_top_k: int = 8
+
 
 settings = Settings()  # type: ignore

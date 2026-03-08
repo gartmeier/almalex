@@ -3,59 +3,35 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class TextContentBlock(BaseModel):
-    type: Literal["text"]
-    text: str
-
-
-class ReasoningContentBlock(BaseModel):
-    type: Literal["reasoning"]
-    text: str
-
-
-class TextEvent(BaseModel):
-    type: Literal["text"]
-    delta: str
-
-
-class ReasoningEvent(BaseModel):
-    type: Literal["reasoning"]
-    delta: str
-
-
-class DoneEvent(BaseModel):
-    type: Literal["done"]
-    content: str
-    content_blocks: list[TextContentBlock | ReasoningContentBlock]
-
-
-class StatusEvent(BaseModel):
+class Status(BaseModel):
     type: Literal["status"]
     status: str
 
 
-class ArticleSource(BaseModel):
-    article_id: int
-    citation: str
-    article_number: str
-    act_sr_number: str
-    act_abbr: str | None
-    act_title: str | None
+class TextDelta(BaseModel):
+    type: Literal["text_delta"]
+    delta: str
 
 
-class DecisionSource(BaseModel):
-    decision_id: int
-    citation: str
-    decision_number: str
-    decision_date: str
-    html_url: str | None
+class ThinkingDelta(BaseModel):
+    type: Literal["thinking_delta"]
+    delta: str
 
 
-class ArticlesEvent(BaseModel):
-    type: Literal["articles"]
-    articles: list[ArticleSource]
+class Error(BaseModel):
+    type: Literal["error"]
+    message: str
 
 
-class DecisionsEvent(BaseModel):
-    type: Literal["decisions"]
-    decisions: list[DecisionSource]
+class Source(BaseModel):
+    id: str
+    reference: str
+    url: str
+
+
+class Sources(BaseModel):
+    type: Literal["sources"]
+    sources: list[Source]
+
+
+Event = Status | TextDelta | ThinkingDelta | Error | Sources

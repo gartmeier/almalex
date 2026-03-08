@@ -69,3 +69,7 @@ class Article(Base):
 
         sr_prefix = "SR" if self.act.lang == "de" else "RS"
         return f"{self.number} {self.act.title} {self.act.applicability_date} ({sr_prefix} {self.act.sr_number})"
+
+    @property
+    def source_url(self) -> str:
+        return f"https://www.fedlex.admin.ch/eli/cc/{self.act.sr_number}/{self.eid}"

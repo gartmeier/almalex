@@ -1,15 +1,16 @@
-from app.db.models import Chat, Chunk
+import logging
+from typing import Iterator
+
+from app.core.config import settings
+from app.core.types import Language
+from app.db.models import Chat, ChatMessage, Chunk
 from app.repositories.chat_repository import ChatRepository
 from app.repositories.chunk_repository import ChunkRepository
-from app.schemas.events import (
-    ArticlesEvent,
-    ArticleSource,
-    DecisionsEvent,
-    DecisionSource,
-    StatusEvent,
-)
+from app.schemas.events import Error, Event, Source, Sources, Status
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -28,7 +29,20 @@ class ChatService:
     def get_chat(self, chat_id: str) -> Chat | None:
         return self.chat_repo.get_with_messages(chat_id)
 
-    def process_message(self, *, chat_id: str, message: str, lang: str):
+    def process_message(
+        self, *, chat_id: str, message: str, lang: Language
+    ) -> Iterator[Event]:
+        try:
+            yield from self._process_message(
+                chat_id=chat_id, message=message, lang=lang
+            )
+        except Exception as e:
+            logger.exception("Error processing message")
+            yield Error(type="error", message=str(e))
+
+    def _process_message(
+        self, *, chat_id: str, message: str, lang: Language
+    ) -> Iterator[Event]:
         self.chat_repo.get_or_create(chat_id)
         self.chat_repo.save_message(
             chat_id=chat_id,
@@ -40,81 +54,72 @@ class ChatService:
 
         query_embedding = self.embedding_service.embed_text(message)
 
-        yield self._status_line("searching_articles")
-        articles = self.chunk_repo.search_chunks(
-            query_embedding, message, source_type="article", top_k=12
-        )
-        yield f"data: {self._build_articles_event(articles).model_dump_json()}\n\n"
+        yield Status(type="status", status="searching")
 
-        yield self._status_line("searching_decisions")
-        decisions = self.chunk_repo.search_chunks(
-            query_embedding, message, source_type="decision", top_k=8
+        articles = self.chunk_repo.search_chunks(
+            query_embedding,
+            message,
+            source_type="article",
+            top_k=settings.search_article_top_k,
         )
-        yield f"data: {self._build_decisions_event(decisions).model_dump_json()}\n\n"
+        decisions = self.chunk_repo.search_chunks(
+            query_embedding,
+            message,
+            source_type="decision",
+            top_k=settings.search_decision_top_k,
+        )
+
+        yield self._build_sources_event(articles, decisions)
 
         context = self._build_context(articles + decisions)
 
-        yield self._status_line("generating")
+        yield Status(type="status", status="generating")
         yield from self._generate(
             chat_id=chat_id, history=history, context=context, lang=lang
-        )
-
-    def _status_line(self, status: str) -> str:
-        return (
-            f"data: {StatusEvent(type='status', status=status).model_dump_json()}\n\n"
         )
 
     def _build_context(self, chunks: list[Chunk]) -> str:
         return "\n---\n".join(f"ID: {c.id}\n\n{c.text}" for c in chunks)
 
-    def _generate(self, *, chat_id: str, history, context: str, lang: str):
-        for event in self.llm_service.generate(
+    def _generate(
+        self, *, chat_id: str, history: list[ChatMessage], context: str, lang: Language
+    ) -> Iterator[Event]:
+        yield from self.llm_service.generate(
             history=history, context=context, lang=lang
-        ):
-            if event.type == "done":
-                self.chat_repo.save_message(
-                    chat_id=chat_id,
-                    role="assistant",
-                    content=event.content,
-                    content_blocks=[b.model_dump() for b in event.content_blocks],
-                )
-            yield f"data: {event.model_dump_json()}\n\n"
+        )
 
-    def _build_articles_event(self, chunks: list[Chunk]) -> ArticlesEvent:
-        seen: set[int] = set()
-        articles: list[ArticleSource] = []
-        for c in chunks:
-            if c.article_id is None or c.article_id in seen:
+    def _build_sources_event(
+        self, article_chunks: list[Chunk], decision_chunks: list[Chunk]
+    ) -> Sources:
+        seen_articles: set[int] = set()
+        seen_decisions: set[int] = set()
+        sources: list[Source] = []
+
+        for c in article_chunks:
+            if c.article_id is None or c.article_id in seen_articles:
                 continue
-            seen.add(c.article_id)
+            seen_articles.add(c.article_id)
             a = c.article
-            articles.append(
-                ArticleSource(
-                    article_id=a.id,
-                    citation=a.citation,
-                    article_number=a.number,
-                    act_sr_number=a.act.sr_number,
-                    act_abbr=a.act.abbr,
-                    act_title=a.act.title,
+            sources.append(
+                Source(
+                    id=str(a.id),
+                    reference=a.citation,
+                    url=a.source_url,
                 )
             )
-        return ArticlesEvent(type="articles", articles=articles)
 
-    def _build_decisions_event(self, chunks: list[Chunk]) -> DecisionsEvent:
-        seen: set[int] = set()
-        decisions: list[DecisionSource] = []
-        for c in chunks:
-            if c.decision_id is None or c.decision_id in seen:
+        for c in decision_chunks:
+            if c.decision_id is None or c.decision_id in seen_decisions:
                 continue
-            seen.add(c.decision_id)
+            seen_decisions.add(c.decision_id)
             d = c.decision
-            decisions.append(
-                DecisionSource(
-                    decision_id=d.id,
-                    citation=d.citation,
-                    decision_number=d.number,
-                    decision_date=str(d.date),
-                    html_url=d.html_url,
+            if d.source_url:
+                sources.append(
+                    Source(
+                        id=str(d.id),
+                        reference=d.citation,
+                        url=d.source_url,
+                    )
                 )
-            )
-        return DecisionsEvent(type="decisions", decisions=decisions)
+
+        return Sources(type="sources", sources=sources)

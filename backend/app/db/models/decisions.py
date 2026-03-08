@@ -42,3 +42,7 @@ class Decision(Base):
     @property
     def citation(self) -> str:
         return f"{self.number} ({self.date.year})"
+
+    @property
+    def source_url(self) -> str | None:
+        return self.html_url
