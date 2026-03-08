@@ -1,5 +1,5 @@
 import Markdown from "react-markdown";
-import type { MessageDetail } from "~/lib/api";
+import type { MessageDetail } from "~/types/messages";
 
 type UserMessageProps = {
   message: MessageDetail;

@@ -11,6 +11,7 @@ import * as Sentry from "@sentry/react";
 import React from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { ChatStorageProvider } from "./contexts/chat-storage";
 import { client } from "./lib/api/client.gen";
 import "./lib/i18n";
 
@@ -81,7 +82,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   client.setConfig({ baseUrl: "/" });
-  return <Outlet />;
+  return (
+    <ChatStorageProvider>
+      <Outlet />
+    </ChatStorageProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

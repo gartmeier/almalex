@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
-import type { MessageDetail } from "~/lib/api";
+import type { MessageDetail } from "~/types/messages";
 import { AssistantMessage } from "./assistant-message";
 import { UserMessage } from "./user-message";
 

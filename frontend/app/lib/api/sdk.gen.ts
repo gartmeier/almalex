@@ -6,16 +6,7 @@ import type {
   TDataShape,
 } from "@hey-api/client-fetch";
 import { client as _heyApiClient } from "./client.gen";
-import type {
-  CreateMessageData,
-  CreateMessageError,
-  ReadChatData,
-  ReadChatError,
-  ReadChatResponse,
-  ReadDocumentData,
-  ReadDocumentError,
-  ReadDocumentResponse,
-} from "./types.gen";
+import type { CreateMessageData, CreateMessageError } from "./types.gen";
 
 export type Options<
   TData extends TDataShape = TDataShape,
@@ -35,22 +26,6 @@ export type Options<
 };
 
 /**
- * Read Chat
- */
-export const readChat = <ThrowOnError extends boolean = false>(
-  options: Options<ReadChatData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).get<
-    ReadChatResponse,
-    ReadChatError,
-    ThrowOnError
-  >({
-    url: "/api/chats/{chat_id}",
-    ...options,
-  });
-};
-
-/**
  * Create Message
  */
 export const createMessage = <ThrowOnError extends boolean = false>(
@@ -61,27 +36,11 @@ export const createMessage = <ThrowOnError extends boolean = false>(
     CreateMessageError,
     ThrowOnError
   >({
-    url: "/api/chats/{chat_id}/messages",
+    url: "/api/chat",
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
     },
-  });
-};
-
-/**
- * Read Document
- */
-export const readDocument = <ThrowOnError extends boolean = false>(
-  options: Options<ReadDocumentData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).get<
-    ReadDocumentResponse,
-    ReadDocumentError,
-    ThrowOnError
-  >({
-    url: "/api/documents/{document_id}",
-    ...options,
   });
 };

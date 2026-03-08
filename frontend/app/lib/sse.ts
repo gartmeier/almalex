@@ -5,7 +5,10 @@ export function createSSEParser() {
   let buffer = "";
   let decoder = new TextDecoder();
 
-  return function parse(chunk: Uint8Array, done: boolean = false): ServerSentEvent[] {
+  return function parse(
+    chunk: Uint8Array,
+    done: boolean = false,
+  ): ServerSentEvent[] {
     buffer += decoder.decode(chunk, { stream: !done });
 
     let events: ServerSentEvent[] = [];

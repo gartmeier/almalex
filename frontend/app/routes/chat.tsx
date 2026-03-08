@@ -5,27 +5,16 @@ import { toast } from "sonner";
 import { MessageInput } from "~/components/message-input";
 import { MessageList } from "~/components/message-list";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
+import { useChatStorage } from "~/contexts/chat-storage";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
-import {
-  readChat,
-  type MessageDetail,
-  type ReasoningContentBlock,
-  type TextContentBlock,
-  type ToolCallContentBlock,
-  type ToolResultContentBlock,
-} from "~/lib/api";
 import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
+import type { TextDeltaEvent, ThinkingDeltaEvent } from "~/types";
 import type {
-  ArticlesEvent,
-  ArticleSource,
-  DecisionsEvent,
-  DecisionSource,
-  ReasoningDeltaEvent,
-  TextDeltaEvent,
-  ToolCallEvent,
-  ToolResultEvent,
-} from "~/types";
+  MessageDetail,
+  ReasoningContentBlock,
+  TextContentBlock,
+} from "~/types/messages";
 import type { Route } from "./+types/chat";
 
 export default function Component({ params }: Route.ComponentProps) {
@@ -33,19 +22,22 @@ export default function Component({ params }: Route.ComponentProps) {
   let location = useLocation();
   let navigate = useNavigate();
   let { t } = useTranslation();
+  let { loadChat, saveChat } = useChatStorage();
 
   let [input, setInput] = useState("");
   let [messages, setMessages] = useState<MessageDetail[]>([]);
   let [isLoading, setIsLoading] = useState(false);
-  let [status, setStatus] = useState<string | null>(null);
-  let [articles, setArticles] = useState<ArticleSource[]>([]);
-  let [decisions, setDecisions] = useState<DecisionSource[]>([]);
+  let [sources, setSources] = useState<
+    { id: string; reference: string; url: string }[]
+  >([]);
 
   let hasInitialized = useRef(false);
   let shouldScrollRef = useRef(false);
 
   let currentMessage = useRef<MessageDetail | null>(null);
-  let currentBlock = useRef<MessageDetail["content_blocks"][number] | null>(null);
+  let currentBlock = useRef<MessageDetail["content_blocks"][number] | null>(
+    null,
+  );
   let pendingUpdate = useRef(false);
 
   useEffect(() => {
@@ -82,12 +74,14 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      let res = await fetch(`/api/chats/${chatId}/messages`, {
+      let res = await fetch(`/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chat_id: chatId, content: message }),
+        body: JSON.stringify({
+          messages: [{ role: "user", content: message }],
+        }),
       });
 
       if (res.status === 429) {
@@ -102,6 +96,7 @@ export default function Component({ params }: Route.ComponentProps) {
       }
 
       await processStreamingResponse(res);
+      saveCurrentChat();
     } catch (error) {
       setMessages([]);
       setInput(message);
@@ -113,11 +108,13 @@ export default function Component({ params }: Route.ComponentProps) {
 
   async function loadExistingMessages() {
     try {
-      let res = await readChat({
-        path: { chat_id: chatId },
-        throwOnError: true,
-      });
-      setMessages(res.data.messages);
+      let chat = loadChat(chatId);
+      if (!chat) {
+        toast.error("Chat not found");
+        navigate("/");
+        return;
+      }
+      setMessages(chat.messages);
       shouldScrollRef.current = true;
     } catch (e) {
       toast.error("Failed to load chat");
@@ -137,12 +134,20 @@ export default function Component({ params }: Route.ComponentProps) {
     setIsLoading(true);
 
     try {
-      let res = await fetch(`/api/chats/${chatId}/messages`, {
+      let res = await fetch(`/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chat_id: chatId, content: input }),
+        body: JSON.stringify({
+          messages: [
+            ...messages.map((msg) => ({
+              role: msg.role,
+              content: msg.content,
+            })),
+            { role: "user", content: input },
+          ],
+        }),
       });
 
       if (res.status === 429) {
@@ -157,6 +162,7 @@ export default function Component({ params }: Route.ComponentProps) {
       }
 
       await processStreamingResponse(res);
+      saveCurrentChat();
     } catch (error) {
       setInput(input);
       setMessages((prev) => prev.slice(0, -1));
@@ -180,6 +186,16 @@ export default function Component({ params }: Route.ComponentProps) {
     }
   }
 
+  function saveCurrentChat() {
+    let chat = {
+      id: chatId,
+      title: null,
+      messages: messages,
+      createdAt: new Date().toISOString(),
+    };
+    saveChat(chat);
+  }
+
   async function processStreamingResponse(response: Response) {
     let reader = response.body!.getReader();
     let parse = createSSEParser();
@@ -192,9 +208,7 @@ export default function Component({ params }: Route.ComponentProps) {
     };
     currentMessage.current = message;
     currentBlock.current = null;
-    setStatus(null);
-    setArticles([]);
-    setDecisions([]);
+    setSources([]);
     setMessages((prev) => [...prev, message]);
 
     while (true) {
@@ -204,26 +218,14 @@ export default function Component({ params }: Route.ComponentProps) {
 
       for (let event of events) {
         switch (event.type) {
-          case "reasoning":
-            handleReasoningDeltaEvent(event);
-            break;
-          case "text":
+          case "text_delta":
             handleTextDeltaEvent(event);
             break;
-          case "tool_call":
-            handleToolCallEvent(event);
+          case "thinking_delta":
+            handleThinkingDeltaEvent(event);
             break;
-          case "tool_result":
-            handleToolResultEvent(event);
-            break;
-          case "status":
-            setStatus(event.status);
-            break;
-          case "articles":
-            setArticles(event.articles);
-            break;
-          case "decisions":
-            setDecisions(event.decisions);
+          case "sources":
+            setSources(event.sources);
             break;
         }
       }
@@ -232,17 +234,6 @@ export default function Component({ params }: Route.ComponentProps) {
         break;
       }
     }
-  }
-
-  function handleReasoningDeltaEvent(event: ReasoningDeltaEvent) {
-    if (currentBlock.current?.type !== "reasoning") {
-      let block: ReasoningContentBlock = { type: "reasoning", text: event.delta };
-      currentBlock.current = block;
-      currentMessage.current!.content_blocks.push(block);
-    } else {
-      (currentBlock.current as ReasoningContentBlock).text += event.delta;
-    }
-    scheduleUpdate();
   }
 
   function handleTextDeltaEvent(event: TextDeltaEvent) {
@@ -256,25 +247,17 @@ export default function Component({ params }: Route.ComponentProps) {
     scheduleUpdate();
   }
 
-  function handleToolCallEvent(event: ToolCallEvent) {
-    let block: ToolCallContentBlock = {
-      type: "tool_call",
-      id: event.id,
-      name: event.name,
-      arguments: event.arguments,
-    };
-    currentMessage.current!.content_blocks.push(block);
-    currentBlock.current = null;
-    scheduleUpdate();
-  }
-
-  function handleToolResultEvent(event: ToolResultEvent) {
-    let block: ToolResultContentBlock = {
-      type: "tool_result",
-      tool_call_id: event.tool_call_id,
-      result: event.result,
-    };
-    currentMessage.current!.content_blocks.push(block);
+  function handleThinkingDeltaEvent(event: ThinkingDeltaEvent) {
+    if (currentBlock.current?.type !== "reasoning") {
+      let block: ReasoningContentBlock = {
+        type: "reasoning",
+        text: event.delta,
+      };
+      currentBlock.current = block;
+      currentMessage.current!.content_blocks.push(block);
+    } else {
+      (currentBlock.current as ReasoningContentBlock).text += event.delta;
+    }
     scheduleUpdate();
   }
 
@@ -282,41 +265,20 @@ export default function Component({ params }: Route.ComponentProps) {
     <ScrollToBottomProvider>
       <div className="mx-auto max-w-3xl px-4 pb-[82px]">
         <MessageList messages={messages} />
-        {status && (
-          <p className="text-muted-foreground my-2 text-sm">{status}...</p>
-        )}
-        {articles.length > 0 && (
+        {sources.length > 0 && (
           <div className="my-2">
-            <p className="text-muted-foreground text-xs font-medium">
-              Articles
-            </p>
+            <p className="text-muted-foreground text-xs font-medium">Sources</p>
             <ul className="text-muted-foreground text-xs">
-              {articles.map((a) => (
-                <li key={a.article_id}>{a.citation}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {decisions.length > 0 && (
-          <div className="my-2">
-            <p className="text-muted-foreground text-xs font-medium">
-              Decisions
-            </p>
-            <ul className="text-muted-foreground text-xs">
-              {decisions.map((d) => (
-                <li key={d.decision_id}>
-                  {d.html_url ? (
-                    <a
-                      href={d.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      {d.citation}
-                    </a>
-                  ) : (
-                    d.citation
-                  )}
+              {sources.map((s) => (
+                <li key={s.id}>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {s.reference}
+                  </a>
                 </li>
               ))}
             </ul>

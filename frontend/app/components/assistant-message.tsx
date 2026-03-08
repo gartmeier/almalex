@@ -2,13 +2,13 @@ import * as Sentry from "@sentry/react";
 import { Brain, ChevronDown, FileText, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
+import type { SearchResult } from "~/types";
 import type {
   MessageDetail,
   ReasoningContentBlock,
   ToolCallContentBlock,
   ToolResultContentBlock,
-} from "~/lib/api";
-import type { SearchResult } from "~/types";
+} from "~/types/messages";
 
 type AssistantMessageProps = {
   message: MessageDetail;
@@ -65,7 +65,9 @@ function ToolUseBlock({
 }) {
   let [isExpanded, setIsExpanded] = useState(false);
   let isLoading = !toolResult;
-  let results = Array.isArray(toolResult?.result) ? (toolResult.result as SearchResult[]) : [];
+  let results = Array.isArray(toolResult?.result)
+    ? (toolResult.result as SearchResult[])
+    : [];
   let args = toolCall.arguments as { query?: string; reference?: string };
   let query = args.query || args.reference || "";
 
