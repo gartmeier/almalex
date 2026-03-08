@@ -1,10 +1,12 @@
 tmux rename-window -t "=$session" "nvim"
+tmux send-keys "source backend/.venv/bin/activate" C-m
 tmux send-keys "nvim TODO.md" C-m
 
 tmux new-window -t "=$session" -n "zsh" -c "$selected"
+tmux send-keys "source backend/.venv/bin/activate" C-m
 
-tmux new-window -t "=$session" -n "claude" -c "$selected"
-tmux send-keys "claude --continue" C-m
+tmux new-window -t "=$session" -n "opencode" -c "$selected"
+tmux send-keys "opencode --continue" C-m
 
 tmux new-window -t "=$session" -n "lazygit" -c "$selected"
 tmux send-keys "lazygit" C-m
