@@ -10,9 +10,11 @@ tmux send-keys "source backend/.venv/bin/activate" C-m
 tmux send-keys "opencode --continue" C-m
 
 tmux new-window -t "=$session" -n "lazygit" -c "$selected"
+tmux send-keys "source backend/.venv/bin/activate" C-m
 tmux send-keys "lazygit" C-m
 
 tmux new-window -t "=$session" -n "backend" -c "$selected"
+tmux send-keys "source backend/.venv/bin/activate" C-m
 tmux send-keys "make backend-dev" C-m
 
 tmux new-window -t "=$session" -n "frontend" -c "$selected"
