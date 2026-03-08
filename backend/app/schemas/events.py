@@ -3,11 +3,6 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class Status(BaseModel):
-    type: Literal["status"]
-    status: str
-
-
 class TextDelta(BaseModel):
     type: Literal["text_delta"]
     delta: str
@@ -34,4 +29,4 @@ class Sources(BaseModel):
     sources: list[Source]
 
 
-Event = Status | TextDelta | ThinkingDelta | Error | Sources
+Event = TextDelta | ThinkingDelta | Error | Sources

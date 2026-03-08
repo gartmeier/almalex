@@ -37,7 +37,7 @@ class LLMService:
 
             delta = chunk.choices[0].delta
 
-            if hasattr(delta, "reasoning_content"):
+            if hasattr(delta, "reasoning_content") and delta.reasoning_content:
                 yield ThinkingDelta(
                     type="thinking_delta", delta=delta.reasoning_content
                 )

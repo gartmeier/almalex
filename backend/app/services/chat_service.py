@@ -6,7 +6,7 @@ from app.core.types import Language
 from app.db.models import Chunk
 from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.chat import Message
-from app.schemas.events import Error, Event, Source, Sources, Status
+from app.schemas.events import Error, Event, Source, Sources
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
 
@@ -39,8 +39,6 @@ class ChatService:
         query = messages[-1].content
         query_embedding = self.embedding_service.embed_text(query)
 
-        yield Status(type="status", status="searching")
-
         articles = self.chunk_repo.search_chunks(
             query_embedding,
             query,
@@ -58,7 +56,6 @@ class ChatService:
 
         context = self._build_context(articles + decisions)
 
-        yield Status(type="status", status="generating")
         yield from self._generate(messages=messages, context=context, lang=lang)
 
     def _build_context(self, chunks: list[Chunk]) -> str:
