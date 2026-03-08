@@ -6,6 +6,7 @@ tmux new-window -t "=$session" -n "zsh" -c "$selected"
 tmux send-keys "source backend/.venv/bin/activate" C-m
 
 tmux new-window -t "=$session" -n "opencode" -c "$selected"
+tmux send-keys "source backend/.venv/bin/activate" C-m
 tmux send-keys "opencode --continue" C-m
 
 tmux new-window -t "=$session" -n "lazygit" -c "$selected"
