@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Badge } from "~/components/ui/badge";
 import type { Message, ThinkingBlock } from "~/types/messages";
 
@@ -38,7 +39,7 @@ function ThinkingBlockView({
 
       {isExpanded && (
         <div className="prose prose-neutral dark:prose-invert prose-sm text-muted-foreground mt-2 max-w-none italic">
-          <Markdown>{block.text}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]}>{block.text}</Markdown>
         </div>
       )}
     </div>
@@ -58,6 +59,7 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
               className="prose prose-neutral dark:prose-invert inline-block max-w-none"
             >
               <Markdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   a: ({ href, children, ...props }) => {
                     if (href?.match(/^#\d+$/)) {
