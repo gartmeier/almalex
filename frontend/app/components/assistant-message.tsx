@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -16,14 +17,14 @@ function ThinkingBlockView({
 
   if (isStreaming) {
     return (
-      <p className="text-muted-foreground my-4 animate-pulse text-sm italic">
+      <p className="text-muted-foreground mb-2.5 animate-pulse text-sm italic">
         {t("chat.thinking")}
       </p>
     );
   }
 
   return (
-    <div className="my-4">
+    <div className="mb-2.5">
       <button
         className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-sm transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -44,13 +45,9 @@ function ThinkingBlockView({
   );
 }
 
-export function AssistantMessageBlock({
-  message,
-  isStreaming,
-}: {
-  message: Message;
-  isStreaming: boolean;
-}) {
+export function AssistantMessageBlock({ message }: { message: Message }) {
+  let isStreaming = message.status === "streaming";
+
   return (
     <div className="py-5">
       {message.content.map((block, index) => {
@@ -77,23 +74,15 @@ export function AssistantMessageBlock({
 
         return null;
       })}
-      {message.sources && message.sources.length > 0 && (
-        <div className="my-2">
-          <p className="text-muted-foreground text-xs font-medium">Sources</p>
-          <ul className="text-muted-foreground text-xs">
-            {message.sources.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  {s.citation}
-                </a>
-              </li>
-            ))}
-          </ul>
+      {!isStreaming && message.sources && message.sources.length > 0 && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {message.sources.map((s) => (
+            <Badge key={s.id} variant="secondary" asChild>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">
+                {s.citation}
+              </a>
+            </Badge>
+          ))}
         </div>
       )}
     </div>

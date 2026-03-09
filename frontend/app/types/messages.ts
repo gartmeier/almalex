@@ -21,4 +21,5 @@ export type Message = {
   role: "user" | "assistant";
   content: Block[];
   sources?: Source[];
+  status?: "streaming" | "done";
 };
