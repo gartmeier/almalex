@@ -7,7 +7,6 @@ import { MessageList } from "~/components/message-list";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { useChatStorage } from "~/contexts/chat-storage";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
-import { useRefState } from "~/hooks/use-ref-state";
 import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
 import type { TextDeltaEvent, ThinkingDeltaEvent } from "~/types";
@@ -27,15 +26,11 @@ export default function Component({ params }: Route.ComponentProps) {
   let { loadChat, saveChat } = useChatStorage();
 
   let [input, setInput] = useState("");
-  let [messages, setMessages, messagesRef] = useRefState<Message[]>([]);
+  let [messages, setMessages] = useState<Message[]>([]);
   let [isLoading, setIsLoading] = useState(false);
 
   let hasInitialized = useRef(false);
   let shouldScrollRef = useRef(false);
-
-  let currentMessage = useRef<Message | null>(null);
-  let currentBlock = useRef<Block | null>(null);
-  let pendingUpdate = useRef(false);
 
   useEffect(() => {
     if (hasInitialized.current) return;
@@ -79,29 +74,18 @@ export default function Component({ params }: Route.ComponentProps) {
       content: [{ type: "text", text }],
     };
 
-    if (isInitial) {
-      setMessages([userMessage]);
-    } else {
-      setMessages((prev) => [...prev, userMessage]);
-    }
+    let prevMessages = isInitial ? [] : messages;
+    let withUser = [...prevMessages, userMessage];
+    setMessages(withUser);
     setInput("");
     setIsLoading(true);
-
-    function rollback() {
-      if (isInitial) {
-        setMessages([]);
-      } else {
-        setMessages((prev) => prev.slice(0, -1));
-      }
-      setInput(text);
-    }
 
     try {
       let res = await fetch(`/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: messagesRef.current.map((msg) => ({
+          messages: withUser.map((msg) => ({
             role: msg.role,
             content: msg.content
               .filter((b): b is TextBlock => b.type === "text")
@@ -112,7 +96,8 @@ export default function Component({ params }: Route.ComponentProps) {
       });
 
       if (res.status === 429) {
-        rollback();
+        setMessages(prevMessages);
+        setInput(text);
         toast.error(t("chat.error.rateLimited"));
         return;
       }
@@ -121,58 +106,48 @@ export default function Component({ params }: Route.ComponentProps) {
         throw new Error("Failed to send message");
       }
 
-      await processStreamingResponse(res);
+      let finalMessages = await processStreamingResponse(res, withUser);
       saveChat({
         id: chatId,
-
-        messages: messagesRef.current,
+        messages: finalMessages,
         createdAt: new Date().toISOString(),
       });
     } catch (error) {
-      rollback();
+      setMessages(prevMessages);
+      setInput(text);
       toast.error("Failed to send message");
     } finally {
       setIsLoading(false);
     }
   }
 
-  function snapshotMessage(): Message {
-    let msg = currentMessage.current!;
-    return {
-      ...msg,
-      content: msg.content.map((b) => ({ ...b })),
-      sources: msg.sources ? [...msg.sources] : undefined,
-    };
-  }
-
-  function flushSnapshot() {
-    if (!pendingUpdate.current) {
-      pendingUpdate.current = true;
-      requestAnimationFrame(() => {
-        setMessages((prev) => {
-          let next = [...prev];
-          next[next.length - 1] = snapshotMessage();
-          return next;
-        });
-        pendingUpdate.current = false;
-      });
-    }
-  }
-
-  async function processStreamingResponse(response: Response) {
+  async function processStreamingResponse(
+    response: Response,
+    preceding: Message[],
+  ): Promise<Message[]> {
     let reader = response.body!.getReader();
     let parse = createSSEParser();
 
-    currentMessage.current = {
+    let assistantMessage: Message = {
       id: nanoid(),
       role: "assistant",
       content: [],
       status: "streaming",
     };
-    currentBlock.current = null;
+    let currentBlock: Block | null = null;
+    let pendingFlush = false;
 
-    // Add empty placeholder to state
-    setMessages((prev) => [...prev, snapshotMessage()]);
+    function flush() {
+      if (!pendingFlush) {
+        pendingFlush = true;
+        requestAnimationFrame(() => {
+          setMessages([...preceding, { ...assistantMessage, content: [...assistantMessage.content] }]);
+          pendingFlush = false;
+        });
+      }
+    }
+
+    setMessages([...preceding, { ...assistantMessage, content: [] }]);
 
     while (true) {
       let { done, value } = await reader.read();
@@ -180,15 +155,29 @@ export default function Component({ params }: Route.ComponentProps) {
 
       for (let event of events) {
         switch (event.type) {
-          case "text_delta":
-            handleTextDelta(event);
+          case "text_delta": {
+            if (currentBlock?.type !== "text") {
+              currentBlock = { type: "text", text: event.delta };
+              assistantMessage.content.push(currentBlock);
+            } else {
+              (currentBlock as TextBlock).text += event.delta;
+            }
+            flush();
             break;
-          case "thinking_delta":
-            handleThinkingDelta(event);
+          }
+          case "thinking_delta": {
+            if (currentBlock?.type !== "thinking") {
+              currentBlock = { type: "thinking", text: event.delta };
+              assistantMessage.content.push(currentBlock);
+            } else {
+              (currentBlock as ThinkingBlock).text += event.delta;
+            }
+            flush();
             break;
+          }
           case "sources":
-            currentMessage.current!.sources = event.sources;
-            flushSnapshot();
+            assistantMessage.sources = event.sources;
+            flush();
             break;
         }
       }
@@ -196,39 +185,15 @@ export default function Component({ params }: Route.ComponentProps) {
       if (done) break;
     }
 
-    currentMessage.current!.status = "done";
-    setMessages((prev) => {
-      let next = [...prev];
-      next[next.length - 1] = snapshotMessage();
-      return next;
-    });
-  }
-
-  function handleTextDelta(event: TextDeltaEvent) {
-    let msg = currentMessage.current!;
-    if (currentBlock.current?.type !== "text") {
-      let block: TextBlock = { type: "text", text: event.delta };
-      currentBlock.current = block;
-      msg.content.push(block);
-    } else {
-      (currentBlock.current as TextBlock).text += event.delta;
-    }
-    flushSnapshot();
-  }
-
-  function handleThinkingDelta(event: ThinkingDeltaEvent) {
-    let msg = currentMessage.current!;
-    if (currentBlock.current?.type !== "thinking") {
-      let block: ThinkingBlock = {
-        type: "thinking",
-        text: event.delta,
-      };
-      currentBlock.current = block;
-      msg.content.push(block);
-    } else {
-      (currentBlock.current as ThinkingBlock).text += event.delta;
-    }
-    flushSnapshot();
+    let finalMessage: Message = {
+      ...assistantMessage,
+      content: assistantMessage.content.map((b) => ({ ...b })),
+      sources: assistantMessage.sources ? [...assistantMessage.sources] : undefined,
+      status: "done",
+    };
+    let finalMessages = [...preceding, finalMessage];
+    setMessages(finalMessages);
+    return finalMessages;
   }
 
   return (
