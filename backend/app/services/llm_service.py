@@ -37,10 +37,9 @@ class LLMService:
 
             delta = chunk.choices[0].delta
 
-            if delta.reasoning_content:
-                yield ThinkingDelta(
-                    type="thinking_delta", delta=delta.reasoning_content
-                )
+            reasoning_content = getattr(delta, "reasoning_content", None)
+            if reasoning_content:
+                yield ThinkingDelta(type="thinking_delta", delta=reasoning_content)
 
             elif delta.content:
                 yield TextDelta(type="text_delta", delta=delta.content)
