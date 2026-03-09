@@ -11,7 +11,7 @@ export type ThinkingBlock = {
 export type Block = TextBlock | ThinkingBlock;
 
 export type Source = {
-  id: string;
+  id: number;
   citation: string;
   url: string;
 };

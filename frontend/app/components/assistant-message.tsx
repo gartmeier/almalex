@@ -1,8 +1,8 @@
 import { ChevronRight } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+import { Badge } from "~/components/ui/badge";
 import type { Message, ThinkingBlock } from "~/types/messages";
 
 function ThinkingBlockView({
@@ -24,7 +24,7 @@ function ThinkingBlockView({
   }
 
   return (
-    <div className="mb-2.5">
+    <div className="mb-5">
       <button
         className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-sm transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -57,7 +57,37 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
               key={index}
               className="prose prose-neutral dark:prose-invert inline-block max-w-none"
             >
-              <Markdown>{block.text}</Markdown>
+              <Markdown
+                components={{
+                  a: ({ href, children, ...props }) => {
+                    if (href?.match(/^#\d+$/)) {
+                      let sourceId = parseInt(href.slice(1));
+                      let source = message.sources?.find(
+                        (result) => result.id === sourceId,
+                      );
+                      if (source) {
+                        return (
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      }
+                    }
+                    return (
+                      <a href={href} {...props}>
+                        {children}
+                      </a>
+                    );
+                  },
+                }}
+              >
+                {block.text}
+              </Markdown>
             </div>
           );
         }

@@ -71,35 +71,26 @@ class ChatService:
     def _build_sources_event(
         self, article_chunks: list[Chunk], decision_chunks: list[Chunk]
     ) -> Sources:
-        seen_articles: set[int] = set()
-        seen_decisions: set[int] = set()
         sources: list[Source] = []
 
         for c in article_chunks:
-            if c.article_id is None or c.article_id in seen_articles:
-                continue
-            seen_articles.add(c.article_id)
             a = c.article
             sources.append(
                 Source(
-                    id=str(a.id),
+                    id=c.id,
                     citation=a.citation,
                     url=a.source_url,
                 )
             )
 
         for c in decision_chunks:
-            if c.decision_id is None or c.decision_id in seen_decisions:
-                continue
-            seen_decisions.add(c.decision_id)
             d = c.decision
-            if d.source_url:
-                sources.append(
-                    Source(
-                        id=str(d.id),
-                        citation=d.citation,
-                        url=d.source_url,
-                    )
+            sources.append(
+                Source(
+                    id=c.id,
+                    citation=d.citation,
+                    url=d.source_url,
                 )
+            )
 
         return Sources(type="sources", sources=sources)
