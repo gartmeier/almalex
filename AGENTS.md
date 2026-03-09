@@ -1,0 +1,4 @@
+- Be extremely concise. Sacrifice grammar for concision.
+- Use comments sparingly. Only when code alone unclear.
+- Prefer self-documenting code (clear names, simple logic). Comment "why" not "what".
+- Use a single-line commit message. No body.
