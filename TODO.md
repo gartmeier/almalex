@@ -1,6 +1,8 @@
 # Next
 
-- [x] refactor backend events
-- [x] disable storing chats to database
+- [ ] fix source urls
+- [ ] fix citations in assistant message
+- [x] test frontend changes
 - [x] update frontend
-- [ ] test frontend changes
+- [x] disable storing chats to database
+- [x] refactor backend events
