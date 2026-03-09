@@ -233,7 +233,7 @@ export default function Component({ params }: Route.ComponentProps) {
   return (
     <ScrollToBottomProvider>
       <div className="mx-auto max-w-3xl px-4 pb-[82px]">
-        <MessageList messages={messages} />
+        <MessageList messages={messages} isLoading={isLoading} />
       </div>
       <div className="fixed right-0 bottom-0 left-0 z-10">
         <div className="mb-2 flex justify-center">

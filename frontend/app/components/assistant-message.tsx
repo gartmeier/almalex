@@ -1,49 +1,56 @@
-import { Brain, ChevronDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import type { Message, ThinkingBlock } from "~/types/messages";
 
-function ThinkingBlockView({ block }: { block: ThinkingBlock }) {
+function ThinkingBlockView({
+  block,
+  isStreaming,
+}: {
+  block: ThinkingBlock;
+  isStreaming: boolean;
+}) {
   let [isExpanded, setIsExpanded] = useState(false);
+  let { t } = useTranslation();
+
+  if (isStreaming) {
+    return (
+      <p className="text-muted-foreground my-4 animate-pulse text-sm italic">
+        {t("chat.thinking")}
+      </p>
+    );
+  }
 
   return (
-    <div className="font-ui bg-muted/50 my-4 flex min-h-[2.625rem] flex-col rounded-lg border border-dashed leading-normal tracking-tight transition-all duration-400 ease-out">
+    <div className="my-4">
       <button
-        className="group/row text-muted-foreground hover:text-foreground flex h-[2.625rem] cursor-pointer flex-row items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors duration-200"
+        className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-sm transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex min-w-0 flex-row items-center gap-2">
-          <div className="text-muted-foreground flex h-5 w-5 items-center justify-center">
-            <Brain size={16} />
-          </div>
-          <div className="font-base text-muted-foreground relative bottom-[0.5px] flex-grow overflow-hidden text-left leading-tight overflow-ellipsis whitespace-nowrap">
-            Thinking
-          </div>
-        </div>
-        <div
-          className={`ease-snappy-out text-muted-foreground relative bottom-[0.5px] flex transform items-center justify-center transition-transform duration-400 ${isExpanded ? "-rotate-180" : "rotate-0"}`}
-          style={{ width: "16px", height: "16px" }}
-        >
-          <ChevronDown size={16} />
-        </div>
+        <ChevronRight
+          size={14}
+          className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+        />
+        <span>{t("chat.thinkingDone")}</span>
       </button>
 
-      <div
-        className="shrink-0 overflow-hidden"
-        style={{
-          opacity: isExpanded ? 1 : 0,
-          height: isExpanded ? "auto" : "0px",
-        }}
-      >
-        <div className="text-muted-foreground max-h-[300px] overflow-y-auto px-3 pb-3 text-sm whitespace-pre-wrap">
+      {isExpanded && (
+        <div className="text-muted-foreground mt-2 max-h-[300px] overflow-y-auto pl-5 text-sm italic whitespace-pre-wrap">
           {block.text}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-export function AssistantMessageBlock({ message }: { message: Message }) {
+export function AssistantMessageBlock({
+  message,
+  isStreaming,
+}: {
+  message: Message;
+  isStreaming: boolean;
+}) {
   return (
     <div className="py-5">
       {message.content.map((block, index) => {
@@ -59,7 +66,13 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
         }
 
         if (block.type === "thinking") {
-          return <ThinkingBlockView key={index} block={block} />;
+          return (
+            <ThinkingBlockView
+              key={index}
+              block={block}
+              isStreaming={isStreaming && message.content.length === 1}
+            />
+          );
         }
 
         return null;
