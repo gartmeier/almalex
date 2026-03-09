@@ -20,6 +20,7 @@ class Act(Base):
     sr_number: Mapped[str] = mapped_column(index=True)
     title: Mapped[str | None]
     abbr: Mapped[str | None]
+    source_url: Mapped[str | None]
     html_url: Mapped[str]
     xml_url: Mapped[str]
     applicability_date: Mapped[date]
@@ -72,4 +73,4 @@ class Article(Base):
 
     @property
     def source_url(self) -> str:
-        return f"https://www.fedlex.admin.ch/eli/cc/{self.act.sr_number}/{self.eid}"
+        return f"{self.act.source_url}#{self.eid}"

@@ -1,5 +1,7 @@
 import click
 
+from cli.cmd.backfill_act_source_url import backfill_source_url
+from cli.cmd.backfill_decision_source_url import backfill_decision_source_url
 from cli.cmd.embed import embed_command
 from cli.cmd.eval import eval_command
 from cli.cmd.fedlex_config import act_status, configure_act
@@ -14,6 +16,8 @@ def main():
 
 
 main.add_command(act_status)
+main.add_command(backfill_decision_source_url)
+main.add_command(backfill_source_url)
 main.add_command(configure_act)
 main.add_command(eval_command)
 main.add_command(load_fedlex_command)

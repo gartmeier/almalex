@@ -59,6 +59,7 @@ def load_fedlex_command(
                     sr_number=row.sr_number,
                     title=row.title,
                     abbr=row.abbr,
+                    source_url=row.source_url,
                     html_url=row.html_url,
                     xml_url=row.xml_url,
                     applicability_date=row.applicability_date,

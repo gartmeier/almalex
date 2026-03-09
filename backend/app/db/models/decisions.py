@@ -31,6 +31,7 @@ class Decision(Base):
     text: Mapped[str]
     html_url: Mapped[str | None]
     pdf_url: Mapped[str | None]
+    source_url: Mapped[str | None]
     date: Mapped[date]
 
     chunks = relationship(
@@ -42,7 +43,3 @@ class Decision(Base):
     @property
     def citation(self) -> str:
         return f"{self.number} ({self.date.year})"
-
-    @property
-    def source_url(self) -> str | None:
-        return self.html_url

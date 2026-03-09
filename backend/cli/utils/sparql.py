@@ -18,7 +18,7 @@ PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT ?srNumber ?title ?abbr ?consolidationUrl ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
+SELECT DISTINCT ?srNumber ?title ?abbr ?collectionUrl ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
 WHERE {{
   # Configuration: language
   BIND(<http://publications.europa.eu/resource/authority/language/{language}> AS ?languageUri)
@@ -67,7 +67,7 @@ WHERE {{
   }}
   
   # Reformat output values
-  BIND(STR(?consolidation) AS ?consolidationUrl)
+  BIND(STR(?collection) AS ?collectionUrl)
   BIND(STR(?srNotationRaw) AS ?srNumber)
 
   {sr_filter}
@@ -120,7 +120,7 @@ def _optional_value(item, key) -> str | None:
 
 
 def _source_url(item, lang: str) -> str:
-    url = item["consolidationUrl"]["value"]
+    url = item["collectionUrl"]["value"]
     url = url.replace(FEDLEX_DATA_HOST, FEDLEX_PUBLIC_HOST)
     url = url + "/" + lang
     return url
