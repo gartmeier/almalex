@@ -1,13 +1,12 @@
-import type { MessageDetail } from "~/types/messages";
+import type { Message } from "~/types/messages";
 
 export type Chat = {
   id: string;
-  title: string | null;
-  messages: MessageDetail[];
+  messages: Message[];
   createdAt: string;
 };
 
-const STORAGE_KEY = "chats";
+const STORAGE_KEY = "almalex_chats";
 
 function getStorage(): Record<string, Chat> {
   try {

@@ -12,9 +12,10 @@ import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
 import type { TextDeltaEvent, ThinkingDeltaEvent } from "~/types";
 import type {
-  MessageDetail,
-  ReasoningContentBlock,
-  TextContentBlock,
+  Block,
+  Message,
+  TextBlock,
+  ThinkingBlock,
 } from "~/types/messages";
 import type { Route } from "./+types/chat";
 
@@ -26,17 +27,14 @@ export default function Component({ params }: Route.ComponentProps) {
   let { loadChat, saveChat } = useChatStorage();
 
   let [input, setInput] = useState("");
-  let [messages, setMessages, messagesRef] = useRefState<MessageDetail[]>([]);
+  let [messages, setMessages, messagesRef] = useRefState<Message[]>([]);
   let [isLoading, setIsLoading] = useState(false);
 
   let hasInitialized = useRef(false);
   let shouldScrollRef = useRef(false);
 
-  // Mutable working copies for streaming — never placed directly in state
-  let currentMessage = useRef<MessageDetail | null>(null);
-  let currentBlock = useRef<MessageDetail["content_blocks"][number] | null>(
-    null,
-  );
+  let currentMessage = useRef<Message | null>(null);
+  let currentBlock = useRef<Block | null>(null);
   let pendingUpdate = useRef(false);
 
   useEffect(() => {
@@ -75,11 +73,10 @@ export default function Component({ params }: Route.ComponentProps) {
   }
 
   async function sendMessage(text: string, isInitial = false) {
-    let userMessage: MessageDetail = {
-      id: `tmp-${nanoid()}`,
+    let userMessage: Message = {
+      id: nanoid(),
       role: "user",
-      content: text,
-      content_blocks: [{ type: "text", text }],
+      content: [{ type: "text", text }],
     };
 
     if (isInitial) {
@@ -106,7 +103,10 @@ export default function Component({ params }: Route.ComponentProps) {
         body: JSON.stringify({
           messages: messagesRef.current.map((msg) => ({
             role: msg.role,
-            content: msg.content,
+            content: msg.content
+              .filter((b): b is TextBlock => b.type === "text")
+              .map((b) => b.text)
+              .join(""),
           })),
         }),
       });
@@ -124,7 +124,7 @@ export default function Component({ params }: Route.ComponentProps) {
       await processStreamingResponse(res);
       saveChat({
         id: chatId,
-        title: null,
+
         messages: messagesRef.current,
         createdAt: new Date().toISOString(),
       });
@@ -136,11 +136,11 @@ export default function Component({ params }: Route.ComponentProps) {
     }
   }
 
-  function snapshotMessage(): MessageDetail {
+  function snapshotMessage(): Message {
     let msg = currentMessage.current!;
     return {
       ...msg,
-      content_blocks: msg.content_blocks.map((b) => ({ ...b })),
+      content: msg.content.map((b) => ({ ...b })),
       sources: msg.sources ? [...msg.sources] : undefined,
     };
   }
@@ -164,10 +164,9 @@ export default function Component({ params }: Route.ComponentProps) {
     let parse = createSSEParser();
 
     currentMessage.current = {
-      id: `tmp-${nanoid()}`,
+      id: nanoid(),
       role: "assistant",
-      content: "",
-      content_blocks: [],
+      content: [],
     };
     currentBlock.current = null;
 
@@ -196,13 +195,6 @@ export default function Component({ params }: Route.ComponentProps) {
       if (done) break;
     }
 
-    // Build content string for follow-up API calls
-    let msg = currentMessage.current!;
-    msg.content = msg.content_blocks
-      .filter((b): b is TextContentBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("");
-
     // Final immutable snapshot
     setMessages((prev) => {
       let next = [...prev];
@@ -214,26 +206,26 @@ export default function Component({ params }: Route.ComponentProps) {
   function handleTextDelta(event: TextDeltaEvent) {
     let msg = currentMessage.current!;
     if (currentBlock.current?.type !== "text") {
-      let block: TextContentBlock = { type: "text", text: event.delta };
+      let block: TextBlock = { type: "text", text: event.delta };
       currentBlock.current = block;
-      msg.content_blocks.push(block);
+      msg.content.push(block);
     } else {
-      (currentBlock.current as TextContentBlock).text += event.delta;
+      (currentBlock.current as TextBlock).text += event.delta;
     }
     flushSnapshot();
   }
 
   function handleThinkingDelta(event: ThinkingDeltaEvent) {
     let msg = currentMessage.current!;
-    if (currentBlock.current?.type !== "reasoning") {
-      let block: ReasoningContentBlock = {
-        type: "reasoning",
+    if (currentBlock.current?.type !== "thinking") {
+      let block: ThinkingBlock = {
+        type: "thinking",
         text: event.delta,
       };
       currentBlock.current = block;
-      msg.content_blocks.push(block);
+      msg.content.push(block);
     } else {
-      (currentBlock.current as ReasoningContentBlock).text += event.delta;
+      (currentBlock.current as ThinkingBlock).text += event.delta;
     }
     flushSnapshot();
   }

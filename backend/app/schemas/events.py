@@ -20,7 +20,7 @@ class Error(BaseModel):
 
 class Source(BaseModel):
     id: str
-    reference: str
+    citation: str
     url: str
 
 

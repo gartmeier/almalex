@@ -1,9 +1,9 @@
 import { Brain, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
-import type { MessageDetail, ReasoningContentBlock } from "~/types/messages";
+import type { Message, ThinkingBlock } from "~/types/messages";
 
-function ReasoningBlock({ block }: { block: ReasoningContentBlock }) {
+function ThinkingBlockView({ block }: { block: ThinkingBlock }) {
   let [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -43,12 +43,10 @@ function ReasoningBlock({ block }: { block: ReasoningContentBlock }) {
   );
 }
 
-export function AssistantMessage({ message }: { message: MessageDetail }) {
-  let blocks = message.content_blocks || [];
-
+export function AssistantMessageBlock({ message }: { message: Message }) {
   return (
     <div className="py-5">
-      {blocks.map((block, index) => {
+      {message.content.map((block, index) => {
         if (block.type === "text") {
           return (
             <div
@@ -60,8 +58,8 @@ export function AssistantMessage({ message }: { message: MessageDetail }) {
           );
         }
 
-        if (block.type === "reasoning") {
-          return <ReasoningBlock key={index} block={block} />;
+        if (block.type === "thinking") {
+          return <ThinkingBlockView key={index} block={block} />;
         }
 
         return null;
@@ -78,7 +76,7 @@ export function AssistantMessage({ message }: { message: MessageDetail }) {
                   rel="noopener noreferrer"
                   className="underline"
                 >
-                  {s.reference}
+                  {s.citation}
                 </a>
               </li>
             ))}

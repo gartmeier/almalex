@@ -1,23 +1,24 @@
-export type TextContentBlock = {
+export type TextBlock = {
   type: "text";
   text: string;
 };
 
-export type ReasoningContentBlock = {
-  type: "reasoning";
+export type ThinkingBlock = {
+  type: "thinking";
   text: string;
 };
 
+export type Block = TextBlock | ThinkingBlock;
+
 export type Source = {
   id: string;
-  reference: string;
+  citation: string;
   url: string;
 };
 
-export type MessageDetail = {
+export type Message = {
   id: string;
-  role: string;
-  content: string;
-  content_blocks: Array<TextContentBlock | ReasoningContentBlock>;
+  role: "user" | "assistant";
+  content: Block[];
   sources?: Source[];
 };

@@ -83,7 +83,7 @@ class ChatService:
             sources.append(
                 Source(
                     id=str(a.id),
-                    reference=a.citation,
+                    citation=a.citation,
                     url=a.source_url,
                 )
             )
@@ -97,7 +97,7 @@ class ChatService:
                 sources.append(
                     Source(
                         id=str(d.id),
-                        reference=d.citation,
+                        citation=d.citation,
                         url=d.source_url,
                     )
                 )
