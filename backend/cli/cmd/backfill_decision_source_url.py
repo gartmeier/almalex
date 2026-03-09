@@ -45,7 +45,9 @@ def backfill_decision_source_url(spider: str | None, force: bool, batch_size: in
 
             try:
                 metadata = fetch_json(f"{BASE_URL}/{file_path}")
-                source_url = metadata.get("HTML", {}).get("URL")
+                source_url = metadata.get("HTML", {}).get("URL") or metadata.get(
+                    "PDF", {}
+                ).get("URL")
 
                 if source_url:
                     decision.source_url = source_url
