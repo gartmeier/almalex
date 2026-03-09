@@ -29,15 +29,15 @@ function ThinkingBlockView({
         className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-sm transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
+        <span>{t("chat.thinkingDone")}</span>
         <ChevronRight
           size={14}
           className={`transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
         />
-        <span>{t("chat.thinkingDone")}</span>
       </button>
 
       {isExpanded && (
-        <div className="text-muted-foreground mt-2 max-h-[300px] overflow-y-auto pl-5 text-sm italic whitespace-pre-wrap">
+        <div className="text-muted-foreground mt-2 max-h-[300px] overflow-y-auto text-sm italic whitespace-pre-wrap">
           {block.text}
         </div>
       )}
