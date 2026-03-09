@@ -9,12 +9,16 @@ LANGUAGE_CODES = {
     "en": "ENG",
 }
 
+SPARQL_ENDPOINT = "https://fedlex.data.admin.ch/sparqlendpoint"
+FEDLEX_DATA_HOST = "fedlex.data.admin.ch"
+FEDLEX_PUBLIC_HOST = "fedlex.admin.ch"
+
 FETCH_ALL_QUERY = """
 PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT ?srNumber ?title ?abbr ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
+SELECT DISTINCT ?srNumber ?title ?abbr ?consolidationUrl ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
 WHERE {{
   # Configuration: language
   BIND(<http://publications.europa.eu/resource/authority/language/{language}> AS ?languageUri)
@@ -63,6 +67,7 @@ WHERE {{
   }}
   
   # Reformat output values
+  BIND(STR(?consolidation) AS ?consolidationUrl)
   BIND(STR(?srNotationRaw) AS ?srNumber)
 
   {sr_filter}
@@ -74,6 +79,7 @@ ORDER BY ?srNumber
 @dataclass
 class Row:
     sr_number: str
+    source_url: str
     html_url: str
     xml_url: str
     applicability_date: str
@@ -84,28 +90,37 @@ class Row:
 
 def fetch_all(lang: str, sr_number: str | None):
     sr_filter = f'FILTER(?srNumber = "{sr_number}")' if sr_number else ""
-    return _fetch(
-        FETCH_ALL_QUERY.format(language=LANGUAGE_CODES[lang], sr_filter=sr_filter)
-    )
+    query = FETCH_ALL_QUERY.format(language=LANGUAGE_CODES[lang], sr_filter=sr_filter)
 
-
-def _fetch(query: str):
     response = requests.post(
-        "https://fedlex.data.admin.ch/sparqlendpoint",
+        SPARQL_ENDPOINT,
         data={"query": query},
         headers={"accept": "application/sparql-results+json"},
     )
     response.raise_for_status()
     data = response.json()
+
     return [
         Row(
             sr_number=item["srNumber"]["value"],
+            source_url=_source_url(item, lang),
             html_url=item["htmlUrl"]["value"],
             xml_url=item["xmlUrl"]["value"],
             applicability_date=item["applicabilityDate"]["value"],
-            title=item.get("title", {}).get("value"),
-            abbr=item.get("abbr", {}).get("value"),
-            applicability_end_date=item.get("endApplicabilityDate", {}).get("value"),
+            title=_optional_value(item, "title"),
+            abbr=_optional_value(item, "abbr"),
+            applicability_end_date=_optional_value(item, "endApplicabilityDate"),
         )
         for item in data["results"]["bindings"]
     ]
+
+
+def _optional_value(item, key) -> str | None:
+    return item.get(key, {}).get("value")
+
+
+def _source_url(item, lang: str) -> str:
+    url = item["consolidationUrl"]["value"]
+    url = url.replace(FEDLEX_DATA_HOST, FEDLEX_PUBLIC_HOST)
+    url = url + "/" + lang
+    return url
