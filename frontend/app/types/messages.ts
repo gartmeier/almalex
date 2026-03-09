@@ -8,27 +8,16 @@ export type ReasoningContentBlock = {
   text: string;
 };
 
-export type ToolCallContentBlock = {
-  type: "tool_call";
+export type Source = {
   id: string;
-  name: string;
-  arguments: Record<string, unknown>;
-};
-
-export type ToolResultContentBlock = {
-  type: "tool_result";
-  tool_call_id: string;
-  result: unknown;
+  reference: string;
+  url: string;
 };
 
 export type MessageDetail = {
   id: string;
   role: string;
   content: string;
-  content_blocks: Array<
-    | TextContentBlock
-    | ReasoningContentBlock
-    | ToolCallContentBlock
-    | ToolResultContentBlock
-  >;
+  content_blocks: Array<TextContentBlock | ReasoningContentBlock>;
+  sources?: Source[];
 };
