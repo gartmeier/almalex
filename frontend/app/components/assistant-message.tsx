@@ -37,8 +37,8 @@ function ThinkingBlockView({
       </button>
 
       {isExpanded && (
-        <div className="text-muted-foreground mt-2 max-h-[300px] overflow-y-auto text-sm italic whitespace-pre-wrap">
-          {block.text}
+        <div className="prose prose-neutral dark:prose-invert prose-sm text-muted-foreground mt-2 max-w-none italic">
+          <Markdown>{block.text}</Markdown>
         </div>
       )}
     </div>
