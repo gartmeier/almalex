@@ -1,6 +1,6 @@
 export let DEFAULT_MODEL = "openai/gpt-oss-120b";
 
-let STORAGE_KEY = "almalex:model";
+let STORAGE_KEY = "almalex_model";
 
 export let models = [
   { id: "openai/gpt-oss-120b", name: "GPT-OSS 120B" },
