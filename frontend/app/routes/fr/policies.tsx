@@ -14,23 +14,33 @@ export default function Component() {
           </h2>
           <div className="prose prose-neutral dark:prose-invert max-w-none">
             <p className="text-muted-foreground mb-4 text-sm">
-              Dernière mise à jour : Janvier 2025
+              Dernière mise à jour : mars 2026
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">1. Introduction</h3>
             <p className="mb-4">
-              Alma Lex est un projet de démonstration de Joshua Gartmeier. Cette
+              Alma Lex est un projet de showcase de Joshua Gartmeier. Cette
               politique de confidentialité vous informe sur la gestion des
-              données dans cette démo technique. Veuillez noter que tous les
-              chats sont publiquement accessibles.
+              données dans ce showcase. Les messages sont stockés uniquement sur
+              votre appareil.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
               2. Collecte de données
             </h3>
-            <p className="mb-4">Cette démo stocke :</p>
+            <p className="mb-4">Ce showcase stocke :</p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Historiques de chat (publiquement accessibles via URL)</li>
+              <li>
+                Toutes les conversations restent stockées sur votre appareil
+              </li>
+              <li>
+                Les messages sont traités temporairement sur des serveurs
+                suisses et européens
+              </li>
+              <li>
+                Aucune information utilisateur n'est conservée ou utilisée pour
+                l'entraînement
+              </li>
               <li>Aucune donnée personnelle ou compte utilisateur</li>
               <li>Données techniques minimales pour le fonctionnement</li>
             </ul>
@@ -40,7 +50,8 @@ export default function Component() {
             </h3>
             <p className="mb-4">Les données minimales sont utilisées pour :</p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Fournir la fonctionnalité de démonstration</li>
+              <li>Fournir la fonctionnalité du showcase</li>
+              <li>Génération de réponses IA</li>
               <li>Analyse technique des erreurs</li>
             </ul>
 
@@ -48,48 +59,38 @@ export default function Component() {
               4. Stockage des données
             </h3>
             <p className="mb-4">
-              Les chats sont publiquement accessibles via leur URL et peuvent
-              être consultés par quiconque connaît le lien. Les chats sont
-              automatiquement supprimés 30 jours après la dernière activité.
-              Aucune donnée personnelle n'est collectée ou stockée.
+              Toutes les conversations restent stockées sur votre appareil. Les
+              messages sont traités temporairement sur des serveurs suisses et
+              européens avec des protections strictes de la vie privée. Aucune
+              donnée n'est conservée ou utilisée pour l'entraînement.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
-              5. Nature publique des chats
+              5. Votre contrôle
             </h3>
             <p className="mb-4">
-              Veuillez noter que tous les chats sont publics. Toute personne
-              connaissant l'URL d'un chat peut le consulter. Ne partagez donc
-              pas d'informations sensibles ou personnelles dans les chats.
-            </p>
-
-            <h3 className="mt-6 mb-3 text-lg font-semibold">
-              6. Votre contrôle
-            </h3>
-            <p className="mb-4">
-              Comme aucune donnée personnelle n'est collectée et que les chats
-              sont publics, vous avez le contrôle total :
+              Comme aucune donnée personnelle n'est collectée et que toutes les
+              conversations restent sur votre appareil, vous avez le contrôle
+              total :
             </p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Ne partagez pas d'informations sensibles</li>
               <li>
-                Les chats sont automatiquement supprimés après 30 jours
-                d'inactivité
+                Effacez vos données de navigateur pour supprimer les chats
               </li>
-              <li>
-                Créez simplement un nouveau chat pour de nouvelles conversations
-              </li>
+              <li>Les conversations restent sur votre appareil</li>
+              <li>Créez un nouveau chat à tout moment</li>
             </ul>
 
-            <h3 className="mt-6 mb-3 text-lg font-semibold">7. Sécurité</h3>
+            <h3 className="mt-6 mb-3 text-lg font-semibold">5. Sécurité</h3>
             <p className="mb-4">
               Les transmissions de données se font via des connexions cryptées
-              SSL/TLS. Cependant, gardez à l'esprit que tous les chats sont
-              publiquement accessibles via leur URL. Ne partagez donc pas
-              d'informations confidentielles.
+              SSL/TLS. Toutes les conversations restent stockées sur votre
+              appareil, et les messages sont traités temporairement sur des
+              serveurs suisses et européens avec des protections strictes de la
+              vie privée.
             </p>
 
-            <h3 className="mt-6 mb-3 text-lg font-semibold">8. Contact</h3>
+            <h3 className="mt-6 mb-3 text-lg font-semibold">6. Contact</h3>
             <p className="mb-4">
               Pour toute question concernant la confidentialité, contactez-nous
               à :<br />
@@ -122,11 +123,10 @@ export default function Component() {
               2. Description du service
             </h3>
             <p className="mb-4">
-              Alma Lex est un projet de démonstration de Joshua Gartmeier - une
+              Alma Lex est un projet de showcase de Joshua Gartmeier - une
               plateforme alimentée par l'IA qui fournit des informations
-              juridiques basées sur le droit suisse. Ce service est une démo, ne
-              remplace pas les conseils juridiques professionnels et n'établit
-              pas de relation client-avocat.
+              juridiques basées sur le droit suisse. Ce service est un showcase
+              et ne remplace pas les conseils professionnels.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -136,8 +136,8 @@ export default function Component() {
             <ul className="mb-4 list-disc pl-6">
               <li>Utiliser le service uniquement à des fins légales</li>
               <li>
-                Ne pas partager d'informations sensibles ou personnelles (les
-                chats sont publics)
+                Ne pas partager d'informations sensibles ou personnelles dans
+                les chats
               </li>
               <li>
                 Ne pas utiliser de systèmes automatisés ou de logiciels pour
@@ -168,25 +168,23 @@ export default function Component() {
               <li>La disponibilité ininterrompue ou sans erreur</li>
             </ul>
             <p className="mb-4">
-              Pour des décisions juridiques importantes, consultez toujours un
-              avocat qualifié.
+              Pour des questions importantes, consultez un professionnel.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
               6. Limitation de responsabilité
             </h3>
             <p className="mb-4">
-              Comme il s'agit d'un projet de démonstration, Joshua Gartmeier
-              n'assume aucune responsabilité pour les dommages directs,
-              indirects, accessoires ou consécutifs. L'utilisation se fait à vos
-              propres risques.
+              Comme il s'agit d'un projet de showcase, Joshua Gartmeier n'assume
+              aucune responsabilité pour les dommages. L'utilisation se fait à
+              vos propres risques.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
               7. Utilisation de la démo
             </h3>
             <p className="mb-4">
-              Cette démo peut être modifiée ou interrompue à tout moment sans
+              Ce showcase peut être modifié ou interrompu à tout moment sans
               préavis. Il n'y a aucune garantie de disponibilité permanente.
             </p>
 
@@ -194,9 +192,8 @@ export default function Component() {
               8. Modifications
             </h3>
             <p className="mb-4">
-              Comme il s'agit d'un projet de démonstration, les fonctionnalités
-              et les conditions peuvent être modifiées à tout moment sans
-              préavis.
+              Comme il s'agit d'un projet de showcase, les fonctionnalités et
+              les conditions peuvent être modifiées à tout moment sans préavis.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">

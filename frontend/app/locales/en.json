@@ -25,7 +25,8 @@
       "business": "What is the difference between an AG and a GmbH?",
       "insurance": "Is health insurance mandatory?",
       "employment": "What notice periods apply to employment contracts?"
-    }
+    },
+    "disclaimer": "All conversations remain stored on your device."
   },
   "navigation": {
     "faq": "FAQ",

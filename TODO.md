@@ -4,6 +4,7 @@
 - [ ] improve rag
 - [ ] replace centry
 - [ ] multi-model
+- [x] add storage disclaimer
 - [x] fix citations in assistant message
 - [x] fix source urls
 - [x] test frontend changes

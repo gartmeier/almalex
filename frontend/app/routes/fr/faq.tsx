@@ -12,12 +12,17 @@ export default function Component() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-8 text-3xl font-bold">Questions fréquemment posées</h1>
+      <p className="mb-8 text-sm text-gray-500">
+        Dernière mise à jour : mars 2026
+      </p>
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="what-is-alma-lex">
-          <AccordionTrigger>Qu'est-ce qu'Alma Lex ?</AccordionTrigger>
+          <AccordionTrigger aria-label="Qu'est-ce qu'Alma Lex ?">
+            Qu'est-ce qu'Alma Lex ?
+          </AccordionTrigger>
           <AccordionContent>
-            Alma Lex est un projet de démonstration de Joshua Gartmeier - une
+            Alma Lex est un projet de showcase de Joshua Gartmeier - une
             assistance juridique suisse alimentée par l'IA qui montre comment
             l'IA peut aider avec des questions juridiques sur le droit suisse.
           </AccordionContent>
@@ -60,13 +65,14 @@ export default function Component() {
         </AccordionItem>
 
         <AccordionItem value="data-privacy">
-          <AccordionTrigger>Mes chats sont-ils privés ?</AccordionTrigger>
+          <AccordionTrigger aria-label="Mes chats sont-ils privés ?">
+            Mes chats sont-ils privés ?
+          </AccordionTrigger>
           <AccordionContent>
-            Non, les chats sont publics. Toute personne ayant l'URL peut voir le
-            chat. Ne partagez donc pas d'informations sensibles. Les chats sont
-            automatiquement supprimés 30 jours après le dernier message. En tant
-            que projet de démonstration, aucune donnée personnelle n'est
-            collectée.
+            Oui, tes chats sont privés et stockés localement sur ton appareil.
+            Les messages sont traités temporairement sur des serveurs suisses et
+            européens avec des protections strictes de la vie privée. Aucune
+            donnée n'est conservée ou utilisée pour l'entraînement.
           </AccordionContent>
         </AccordionItem>
 
@@ -90,24 +96,26 @@ export default function Component() {
         </AccordionItem>
 
         <AccordionItem value="sources">
-          <AccordionTrigger>
+          <AccordionTrigger aria-label="D'où proviennent les informations juridiques ?">
             D'où proviennent les informations juridiques ?
           </AccordionTrigger>
           <AccordionContent>
-            Alma Lex recherche dans les sources juridiques officielles suisses,
-            y compris le Recueil systématique (RS), les décisions du Tribunal
-            fédéral et les législations cantonales.
+            Alma Lex recherche dans les codes juridiques suisses officiels, y
+            compris les décisions du Tribunal fédéral et les législations
+            cantonales.
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="limitations">
-          <AccordionTrigger>
+          <AccordionTrigger aria-label="Quelles sont les limites d'Alma Lex ?">
             Quelles sont les limites d'Alma Lex ?
           </AccordionTrigger>
           <AccordionContent>
-            Il s'agit d'une démo technique et ne remplace pas les conseils
-            juridiques professionnels. Pour de vrais cas juridiques, vous
-            devriez toujours consulter un avocat qualifié.
+            Il s'agit d'un projet de showcase et ne remplace pas les conseils
+            juridiques professionnels. Alma Lex fournit des orientations
+            générales mais ne peut pas tenir compte des nuances spécifiques à
+            chaque cas. Pour des questions urgentes ou complexes, consultez un
+            professionnel du droit.
           </AccordionContent>
         </AccordionItem>
 
@@ -116,9 +124,9 @@ export default function Component() {
             Puis-je consulter les conversations précédentes ?
           </AccordionTrigger>
           <AccordionContent>
-            Oui, les chats sont accessibles via leur URL. Notez que toute
-            personne ayant le lien peut voir le chat. Les chats sont
-            automatiquement supprimés 30 jours après le dernier message.
+            Oui, vous pouvez consulter les conversations précédentes. Les chats
+            sont stockés localement sur votre appareil et ne sont accessibles
+            que depuis cet appareil. Aucun chat n'est stocké sur le serveur.
           </AccordionContent>
         </AccordionItem>
       </Accordion>

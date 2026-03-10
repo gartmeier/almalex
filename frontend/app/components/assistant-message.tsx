@@ -1,28 +1,14 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Badge } from "~/components/ui/badge";
-import type { Message, ThinkingBlock } from "~/types/messages";
+import type { Message, ThinkingBlockData } from "~/types/messages";
 
-function ThinkingBlockView({
-  block,
-  isStreaming,
-}: {
-  block: ThinkingBlock;
-  isStreaming: boolean;
-}) {
+function ThinkingBlock({ block }: { block: ThinkingBlockData }) {
   let [isExpanded, setIsExpanded] = useState(false);
   let { t } = useTranslation();
-
-  if (isStreaming) {
-    return (
-      <p className="text-muted-foreground mb-2.5 animate-pulse text-sm italic">
-        {t("chat.thinking")}
-      </p>
-    );
-  }
 
   return (
     <div className="mb-5">
@@ -38,7 +24,7 @@ function ThinkingBlockView({
       </button>
 
       {isExpanded && (
-        <div className="prose prose-neutral dark:prose-invert prose-sm text-muted-foreground mt-2 max-w-none italic">
+        <div className="prose prose-neutral dark:prose-invert prose-sm text-muted-foreground mt-2 max-w-none">
           <Markdown remarkPlugins={[remarkGfm]}>{block.text}</Markdown>
         </div>
       )}
@@ -46,11 +32,35 @@ function ThinkingBlockView({
   );
 }
 
-export function AssistantMessageBlock({ message }: { message: Message }) {
-  let isStreaming = message.status === "streaming";
+function Status({ message }: { message: Message }) {
+  let { t } = useTranslation();
 
+  if (message.status === "searching") {
+    return (
+      <div className="flex items-center gap-2">
+        <Search size={14} className="text-muted-foreground animate-pulse" />
+        <span className="text-muted-foreground animate-pulse text-sm">
+          {t("chat.searching")}
+        </span>
+      </div>
+    );
+  }
+
+  if (message.status === "thinking") {
+    return (
+      <div className="text-muted-foreground flex animate-pulse items-center gap-2 text-sm">
+        {t("chat.thinking")}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export function AssistantMessageBlock({ message }: { message: Message }) {
   return (
     <div className="py-5">
+      <Status message={message} />
       {message.content.map((block, index) => {
         if (block.type === "text") {
           return (
@@ -90,33 +100,35 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
               >
                 {block.text}
               </Markdown>
+              {message.status === "generating" && (
+                <span className="animate-pulse text-sm">▋</span>
+              )}
             </div>
           );
         }
 
-        if (block.type === "thinking") {
-          return (
-            <ThinkingBlockView
-              key={index}
-              block={block}
-              isStreaming={isStreaming && message.content.length === 1}
-            />
-          );
+        if (
+          block.type === "thinking" &&
+          (message.status === "generating" || message.status === "done")
+        ) {
+          return <ThinkingBlock key={index} block={block} />;
         }
 
         return null;
       })}
-      {!isStreaming && message.sources && message.sources.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
-          {message.sources.map((s) => (
-            <Badge key={s.id} variant="secondary" asChild>
-              <a href={s.url} target="_blank" rel="noopener noreferrer">
-                {s.citation}
-              </a>
-            </Badge>
-          ))}
-        </div>
-      )}
+      {message.status === "done" &&
+        message.sources &&
+        message.sources.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {message.sources.map((s) => (
+              <Badge key={s.id} variant="secondary" asChild>
+                <a href={s.url} target="_blank" rel="noopener noreferrer">
+                  {s.citation}
+                </a>
+              </Badge>
+            ))}
+          </div>
+        )}
     </div>
   );
 }

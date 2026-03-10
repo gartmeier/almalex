@@ -1,7 +1,9 @@
+import { Shield } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { MessageInput } from "~/components/message-input";
+import { Alert, AlertTitle } from "~/components/ui/alert";
 import { nanoid } from "~/lib/nanoid";
 
 export default function Component() {
@@ -59,6 +61,15 @@ export default function Component() {
             isLoading={isLoading}
             onSubmit={handleSubmit}
           />
+        </div>
+      </div>
+
+      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 fixed top-[82px] right-0 left-0 z-40 px-4 py-2 backdrop-blur">
+        <div className="mx-auto max-w-3xl">
+          <Alert className="mx-auto mb-0 w-max border-purple-200 bg-purple-50 text-purple-900 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-100">
+            <Shield className="size-4 text-purple-400!" />
+            <AlertTitle>{t("chat.disclaimer")}</AlertTitle>
+          </Alert>
         </div>
       </div>
     </>

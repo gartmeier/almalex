@@ -12,23 +12,30 @@ export default function Component() {
           <h2 className="mb-6 text-2xl font-semibold">Datenschutzerklärung</h2>
           <div className="prose prose-neutral dark:prose-invert max-w-none">
             <p className="text-muted-foreground mb-4 text-sm">
-              Letzte Aktualisierung: Januar 2025
+              Letzte Aktualisierung: März 2026
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">1. Einleitung</h3>
             <p className="mb-4">
-              Alma Lex ist ein Demo-Projekt von Joshua Gartmeier. Diese
-              Datenschutzerklärung informiert Sie über den Umgang mit Daten in
-              dieser technischen Demo. Beachten Sie, dass alle Chats öffentlich
-              zugänglich sind.
+              Alma Lex ist ein Showcase-Projekt von Joshua Gartmeier. Diese
+              Datenschutzerklärung informiert dich über den Umgang mit Daten in
+              diesem Showcase. Nachrichten werden nur auf deinem Gerät
+              gespeichert.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
               2. Datenerhebung
             </h3>
-            <p className="mb-4">Diese Demo speichert:</p>
+            <p className="mb-4">Dieser Showcase speichert:</p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Chat-Verläufe (öffentlich zugänglich über URL)</li>
+              <li>Alle Unterhaltungen bleiben auf deinem Gerät gespeichert</li>
+              <li>
+                Nachrichten werden temporär auf Schweizer/EU-Servern verarbeitet
+              </li>
+              <li>
+                Es werden keine Benutzerinformationen gespeichert oder für
+                Trainingszwecke verwendet
+              </li>
               <li>Keine persönlichen Daten oder Benutzerkonten</li>
               <li>Minimale technische Daten für den Betrieb</li>
             </ul>
@@ -38,7 +45,8 @@ export default function Component() {
             </h3>
             <p className="mb-4">Die minimalen Daten werden verwendet für:</p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Bereitstellung der Demo-Funktionalität</li>
+              <li>Bereitstellung der Showcase-Funktionalität</li>
+              <li>Generierung von KI-Antworten</li>
               <li>Technische Fehleranalyse</li>
             </ul>
 
@@ -46,47 +54,34 @@ export default function Component() {
               4. Datenspeicherung
             </h3>
             <p className="mb-4">
-              Chats sind öffentlich über ihre URL zugänglich und können von
-              jedem eingesehen werden, der den Link kennt. Chats werden
-              automatisch 30 Tage nach der letzten Aktivität gelöscht. Es werden
-              keine persönlichen Daten erhoben oder gespeichert.
+              Alle Unterhaltungen bleiben auf deinem Gerät gespeichert.
+              Nachrichten werden temporär auf Schweizer/EU-Servern mit strengen
+              Datenschutzbestimmungen verarbeitet. Es werden keine Daten
+              gespeichert oder für Trainingszwecke verwendet.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
-              5. Öffentlichkeit der Chats
+              5. Ihre Kontrolle
             </h3>
             <p className="mb-4">
-              Beachten Sie, dass alle Chats öffentlich sind. Jeder, der die URL
-              eines Chats kennt, kann diesen einsehen. Teilen Sie daher keine
-              sensiblen oder persönlichen Informationen in den Chats.
-            </p>
-
-            <h3 className="mt-6 mb-3 text-lg font-semibold">
-              6. Ihre Kontrolle
-            </h3>
-            <p className="mb-4">
-              Da keine persönlichen Daten erhoben werden und Chats öffentlich
-              sind, haben Sie volle Kontrolle:
+              Da keine persönlichen Daten erhoben werden und alle Unterhaltungen
+              auf Ihrem Gerät verbleiben, haben Sie volle Kontrolle:
             </p>
             <ul className="mb-4 list-disc pl-6">
-              <li>Teilen Sie keine sensiblen Informationen</li>
-              <li>
-                Chats werden automatisch nach 30 Tagen Inaktivität gelöscht
-              </li>
-              <li>
-                Erstellen Sie einfach einen neuen Chat für neue Konversationen
-              </li>
+              <li>Löschen Sie Ihre Browser-Daten, um Chats zu entfernen</li>
+              <li>Unterhaltungen bleiben auf Ihrem Gerät</li>
+              <li>Erstellen Sie jederzeit einen neuen Chat</li>
             </ul>
 
-            <h3 className="mt-6 mb-3 text-lg font-semibold">7. Sicherheit</h3>
+            <h3 className="mt-6 mb-3 text-lg font-semibold">5. Sicherheit</h3>
             <p className="mb-4">
               Datenübertragungen erfolgen über SSL/TLS-verschlüsselte
-              Verbindungen. Bedenken Sie jedoch, dass alle Chats öffentlich über
-              ihre URL zugänglich sind. Teilen Sie daher keine vertraulichen
-              Informationen.
+              Verbindungen. Alle Unterhaltungen bleiben auf deinem Gerät, und
+              Nachrichten werden temporär auf Schweizer/EU-Servern mit strengen
+              Datenschutzbestimmungen verarbeitet.
             </p>
 
-            <h3 className="mt-6 mb-3 text-lg font-semibold">8. Kontakt</h3>
+            <h3 className="mt-6 mb-3 text-lg font-semibold">6. Kontakt</h3>
             <p className="mb-4">
               Bei Fragen zum Datenschutz kontaktieren Sie uns unter:
               <br />
@@ -117,11 +112,10 @@ export default function Component() {
               2. Servicebeschreibung
             </h3>
             <p className="mb-4">
-              Alma Lex ist ein Demo-Projekt von Joshua Gartmeier - eine
+              Alma Lex ist ein Showcase-Projekt von Joshua Gartmeier - eine
               KI-gestützte Plattform, die rechtliche Informationen basierend auf
-              Schweizer Recht bereitstellt. Dieser Service ist eine Demo,
-              ersetzt keine professionelle Rechtsberatung und begründet kein
-              Mandatsverhältnis.
+              Schweizer Recht bereitstellt. Dieser Service ist ein Showcase und
+              ersetzt keine professionelle Beratung.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -131,8 +125,8 @@ export default function Component() {
             <ul className="mb-4 list-disc pl-6">
               <li>Den Service nur für rechtmässige Zwecke zu nutzen</li>
               <li>
-                Keine sensiblen oder persönlichen Informationen zu teilen (Chats
-                sind öffentlich)
+                Keine sensiblen oder persönlichen Informationen in Chats zu
+                teilen
               </li>
               <li>
                 Keine automatisierten Systeme oder Software für den Zugriff zu
@@ -167,30 +161,29 @@ export default function Component() {
               <li>Ununterbrochene oder fehlerfreie Verfügbarkeit</li>
             </ul>
             <p className="mb-4">
-              Für wichtige rechtliche Entscheidungen konsultieren Sie immer
-              einen qualifizierten Anwalt.
+              Für wichtige Angelegenheiten konsultiere eine Fachperson.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">
               6. Haftungsbeschränkung
             </h3>
             <p className="mb-4">
-              Da dies ein Demo-Projekt ist, übernimmt Joshua Gartmeier keinerlei
-              Haftung für direkte, indirekte, zufällige oder Folgeschäden. Die
-              Nutzung erfolgt auf eigenes Risiko.
+              Da dies ein Showcase-Projekt ist, übernimmt Joshua Gartmeier
+              keinerlei Haftung für Schäden. Die Nutzung erfolgt auf eigenes
+              Risiko.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">7. Demo-Nutzung</h3>
             <p className="mb-4">
-              Diese Demo kann jederzeit und ohne Vorankündigung geändert oder
-              eingestellt werden. Es besteht kein Anspruch auf dauerhafte
+              Dieser Showcase kann jederzeit und ohne Vorankündigung geändert
+              oder eingestellt werden. Es besteht kein Anspruch auf dauerhafte
               Verfügbarkeit.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">8. Änderungen</h3>
             <p className="mb-4">
-              Da dies ein Demo-Projekt ist, können Funktionen und Bedingungen
-              jederzeit ohne Ankündigung geändert werden.
+              Da dies ein Showcase-Projekt ist, können Funktionen und
+              Bedingungen jederzeit ohne Ankündigung geändert werden.
             </p>
 
             <h3 className="mt-6 mb-3 text-lg font-semibold">

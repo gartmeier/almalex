@@ -12,13 +12,18 @@ export default function Component() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-8 text-3xl font-bold">Häufig gestellte Fragen</h1>
+      <p className="mb-8 text-sm text-gray-500">
+        Letzte Aktualisierung: März 2026
+      </p>
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="what-is-alma-lex">
-          <AccordionTrigger>Was ist Alma Lex?</AccordionTrigger>
+          <AccordionTrigger aria-label="Was ist Alma Lex?">
+            Was ist Alma Lex?
+          </AccordionTrigger>
           <AccordionContent>
-            Alma Lex ist ein Demo-Projekt von Joshua Gartmeier - eine
-            KI-gestützte Schweizer Rechtsassistenz, die zeigt, wie AI bei
+            Alma Lex ist ein Showcase-Projekt von Joshua Gartmeier - eine
+            KI-gestützte Schweizer Rechtsassistenz, die zeigt, wie KI bei
             juristischen Fragen zum Schweizer Recht helfen kann.
           </AccordionContent>
         </AccordionItem>
@@ -54,12 +59,14 @@ export default function Component() {
         </AccordionItem>
 
         <AccordionItem value="data-privacy">
-          <AccordionTrigger>Sind meine Chats privat?</AccordionTrigger>
+          <AccordionTrigger aria-label="Sind meine Chats privat?">
+            Sind meine Chats privat?
+          </AccordionTrigger>
           <AccordionContent>
-            Nein, Chats sind öffentlich. Jeder, der die URL kennt, kann den Chat
-            einsehen. Teilen Sie daher keine sensiblen Informationen. Chats
-            werden automatisch 30 Tage nach der letzten Nachricht gelöscht. Als
-            Demo-Projekt werden keine persönlichen Daten erhoben.
+            Ja, deine Chats sind privat und werden lokal auf deinem Gerät
+            gespeichert. Nachrichten werden temporär auf Servern in der Schweiz
+            und der EU mit strengen Datenschutzbestimmungen verarbeitet. Es
+            werden keine Daten gespeichert oder für Trainingszwecke verwendet.
           </AccordionContent>
         </AccordionItem>
 
@@ -83,33 +90,35 @@ export default function Component() {
         </AccordionItem>
 
         <AccordionItem value="sources">
-          <AccordionTrigger>
+          <AccordionTrigger aria-label="Woher stammen die rechtlichen Informationen?">
             Woher stammen die rechtlichen Informationen?
           </AccordionTrigger>
           <AccordionContent>
-            Alma Lex durchsucht offizielle Schweizer Rechtsquellen,
-            einschliesslich der Systematischen Rechtssammlung (SR),
-            Bundesgerichtsentscheide und kantonale Gesetzgebungen.
+            Alma Lex durchsucht offizielle Schweizer Gesetzessammlungen,
+            einschliesslich Bundesgerichtsentscheide und kantonale
+            Gesetzgebungen.
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="limitations">
-          <AccordionTrigger>
+          <AccordionTrigger aria-label="Was sind die Grenzen von Alma Lex?">
             Was sind die Grenzen von Alma Lex?
           </AccordionTrigger>
           <AccordionContent>
-            Dies ist eine technische Demo und ersetzt keine professionelle
-            Rechtsberatung. Für echte rechtliche Fälle sollten Sie immer einen
-            qualifizierten Anwalt konsultieren.
+            Dies ist ein Showcase-Projekt und ersetzt keine professionelle
+            Rechtsberatung. Alma Lex bietet allgemeine Orientierung, kann jedoch
+            keine fallbezogenen Nuancen berücksichtigen. Bei dringenden oder
+            komplexen Angelegenheiten wenden Sie sich an eine juristische
+            Fachperson.
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="chat-history">
           <AccordionTrigger>Kann ich frühere Chats einsehen?</AccordionTrigger>
           <AccordionContent>
-            Ja, Chats sind über ihre URL zugänglich. Beachten Sie, dass jeder
-            mit dem Link den Chat einsehen kann. Chats werden automatisch 30
-            Tage nach der letzten Nachricht gelöscht.
+            Ja, Sie können frühere Chats einsehen. Chats werden lokal auf Ihrem
+            Gerät gespeichert und sind nur von diesem Gerät aus zugänglich.
+            Keine Chats werden auf dem Server gespeichert.
           </AccordionContent>
         </AccordionItem>
       </Accordion>
