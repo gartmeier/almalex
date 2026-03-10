@@ -4,10 +4,10 @@ let STORAGE_KEY = "almalex:model";
 
 export let models = [
   { id: "openai/gpt-oss-120b", name: "GPT-OSS 120B" },
-  { id: "Qwen/Qwen3-VL-235B-A22B-Instruct", name: "Qwen3 VL 235B" },
-  { id: "Llama-3.3-70B-it", name: "Llama 3.3" },
-  { id: "Apertus-70B-Instruct-2509", name: "Apertus 70B" },
-  { id: "Mistral-Small-3.2-24B-Instruct-2506", name: "Mistral Small 3.2" },
+  { id: "qwen3", name: "Qwen3" },
+  { id: "llama3", name: "Llama 3.3" },
+  { id: "swiss-ai/Apertus-70B-Instruct-2509", name: "Apertus 70B" },
+  { id: "mistral3", name: "Mistral Small 3.2" },
 ];
 
 export function getStoredModel(): string {

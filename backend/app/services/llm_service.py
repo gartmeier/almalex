@@ -14,7 +14,12 @@ class LLMService:
         self.client = client
 
     def generate(
-        self, *, messages: list[Message], context: str, lang: Language
+        self,
+        *,
+        messages: list[Message],
+        context: str,
+        model: str,
+        lang: Language,
     ) -> Iterator[Event]:
         openai_messages: list[dict] = [
             {
@@ -25,7 +30,7 @@ class LLMService:
         ]
 
         stream = self.client.chat.completions.create(
-            model=settings.openai_chat_model,
+            model=model,
             messages=openai_messages,  # type: ingore
             stream=True,
             extra_body={"reasoning_effort": settings.openai_reasoning_effort},

@@ -39,7 +39,11 @@ async def create_message(
                 embedding_service=EmbeddingService(openai_client),
                 llm_service=LLMService(openai_client),
             )
-            for event in svc.process_message(messages=request.messages, lang=lang):
+            for event in svc.process_message(
+                messages=request.messages,
+                model=request.model,
+                lang=lang,
+            ):
                 yield format_sse(event)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

@@ -30,6 +30,15 @@ class Settings(BaseSettings):
     # Anthropic
     anthropic_api_key: str
 
+    # Allowed chat models
+    allowed_models: list[str] = [
+        "openai/gpt-oss-120b",
+        "qwen3",
+        "llama3",
+        "swiss-ai/Apertus-70B-Instruct-2509",
+        "mistral3",
+    ]
+
     # Search settings
     search_article_top_k: int = 12
     search_decision_top_k: int = 8

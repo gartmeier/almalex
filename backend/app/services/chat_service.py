@@ -25,16 +25,16 @@ class ChatService:
         self.llm_service = llm_service
 
     def process_message(
-        self, *, messages: list[Message], lang: Language
+        self, *, messages: list[Message], model: str, lang: Language
     ) -> Iterator[Event]:
         try:
-            yield from self._process_message(messages=messages, lang=lang)
+            yield from self._process_message(messages=messages, model=model, lang=lang)
         except Exception as e:
             logger.exception("Error processing message")
             yield Error(type="error", message=str(e))
 
     def _process_message(
-        self, *, messages: list[Message], lang: Language
+        self, *, messages: list[Message], model: str, lang: Language
     ) -> Iterator[Event]:
         yield Status(type="status", status="searching")
 
@@ -58,7 +58,9 @@ class ChatService:
 
         context = self._build_context(articles + decisions)
 
-        yield from self._generate(messages=messages, context=context, lang=lang)
+        yield from self._generate(
+            messages=messages, context=context, model=model, lang=lang
+        )
 
         yield Status(type="status", status="done")
 
@@ -66,13 +68,13 @@ class ChatService:
         return "\n---\n".join(f"ID: {c.id}\n\n{c.text}" for c in chunks)
 
     def _generate(
-        self, *, messages: list[Message], context: str, lang: Language
+        self, *, messages: list[Message], context: str, model: str, lang: Language
     ) -> Iterator[Event]:
         thinking_started = False
         generating_started = False
 
         for event in self.llm_service.generate(
-            messages=messages, context=context, lang=lang
+            messages=messages, context=context, model=model, lang=lang
         ):
             match event.type:
                 case "thinking_delta":
