@@ -20,4 +20,7 @@ tmux send-keys "make backend-dev" C-m
 tmux new-window -t "=$session" -n "frontend" -c "$selected"
 tmux send-keys "make frontend-dev" C-m
 
+tmux new-window -t "=$session" -n "psql" -c "$selected"
+tmux send-keys "sudo -u postgres psql" C-m
+
 tmux select-window -t "=$session:1"
