@@ -1,9 +1,11 @@
 # Next
 
-- [ ] create and deploy new version
 - [ ] improve rag
 - [ ] replace centry
-- [ ] multi-model
+- [ ] implement stop button
+- [ ] create website
+- [ ] create and deploy new version
+- [x] multi-model
 - [x] add storage disclaimer
 - [x] fix citations in assistant message
 - [x] fix source urls
