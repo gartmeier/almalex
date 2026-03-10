@@ -14,6 +14,7 @@
       "fetchFailed": "Failed to fetch chat {{chatId}}",
       "rateLimited": "Too many requests. Please wait a moment and try again."
     },
+    "searching": "Searching...",
     "thinking": "Thinking...",
     "thinkingDone": "Thought process",
     "homeTitle": "What can I help with?",

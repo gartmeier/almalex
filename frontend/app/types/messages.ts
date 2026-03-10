@@ -3,12 +3,12 @@ export type TextBlock = {
   text: string;
 };
 
-export type ThinkingBlock = {
+export type ThinkingBlockData = {
   type: "thinking";
   text: string;
 };
 
-export type Block = TextBlock | ThinkingBlock;
+export type Block = TextBlock | ThinkingBlockData;
 
 export type Source = {
   id: number;
@@ -21,5 +21,5 @@ export type Message = {
   role: "user" | "assistant";
   content: Block[];
   sources?: Source[];
-  status?: "streaming" | "done";
+  status?: "searching" | "thinking" | "generating" | "done";
 };

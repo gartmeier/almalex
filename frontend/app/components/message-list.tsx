@@ -37,9 +37,7 @@ export function MessageList({ messages }: { messages: Message[] }) {
         if (message.role === "user") {
           return <UserMessageBlock key={message.id} message={message} />;
         } else {
-          return (
-            <AssistantMessageBlock key={message.id} message={message} />
-          );
+          return <AssistantMessageBlock key={message.id} message={message} />;
         }
       })}
       <div ref={endRef} />

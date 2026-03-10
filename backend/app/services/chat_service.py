@@ -6,7 +6,7 @@ from app.core.types import Language
 from app.db.models import Chunk
 from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.chat import Message
-from app.schemas.events import Error, Event, Source, Sources
+from app.schemas.events import Error, Event, Source, Sources, Status
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
 
@@ -36,6 +36,8 @@ class ChatService:
     def _process_message(
         self, *, messages: list[Message], lang: Language
     ) -> Iterator[Event]:
+        yield Status(type="status", status="searching")
+
         query = messages[-1].content
         query_embedding = self.embedding_service.embed_text(query)
 
@@ -58,15 +60,31 @@ class ChatService:
 
         yield from self._generate(messages=messages, context=context, lang=lang)
 
+        yield Status(type="status", status="done")
+
     def _build_context(self, chunks: list[Chunk]) -> str:
         return "\n---\n".join(f"ID: {c.id}\n\n{c.text}" for c in chunks)
 
     def _generate(
         self, *, messages: list[Message], context: str, lang: Language
     ) -> Iterator[Event]:
-        yield from self.llm_service.generate(
+        thinking_started = False
+        generating_started = False
+
+        for event in self.llm_service.generate(
             messages=messages, context=context, lang=lang
-        )
+        ):
+            match event.type:
+                case "thinking_delta":
+                    if not thinking_started:
+                        yield Status(type="status", status="thinking")
+                        thinking_started = True
+                    yield event
+                case "text_delta":
+                    if not generating_started:
+                        yield Status(type="status", status="generating")
+                        generating_started = True
+                    yield event
 
     def _build_sources_event(
         self, article_chunks: list[Chunk], decision_chunks: list[Chunk]

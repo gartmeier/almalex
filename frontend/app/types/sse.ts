@@ -12,7 +12,13 @@ export type ThinkingDeltaEvent = {
 
 export type SourcesEvent = { type: "sources"; sources: Source[] };
 
+export type StatusEvent = {
+  type: "status";
+  status: "searching" | "thinking" | "generating" | "done";
+};
+
 export type ServerSentEvent =
   | TextDeltaEvent
   | ThinkingDeltaEvent
-  | SourcesEvent;
+  | SourcesEvent
+  | StatusEvent;

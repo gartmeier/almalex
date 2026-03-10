@@ -9,12 +9,11 @@ import { useChatStorage } from "~/contexts/chat-storage";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
 import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
-import type { TextDeltaEvent, ThinkingDeltaEvent } from "~/types";
 import type {
   Block,
   Message,
   TextBlock,
-  ThinkingBlock,
+  ThinkingBlockData,
 } from "~/types/messages";
 import type { Route } from "./+types/chat";
 
@@ -132,7 +131,7 @@ export default function Component({ params }: Route.ComponentProps) {
       id: nanoid(),
       role: "assistant",
       content: [],
-      status: "streaming",
+      status: "searching",
     };
     let currentBlock: Block | null = null;
     let pendingFlush = false;
@@ -141,7 +140,10 @@ export default function Component({ params }: Route.ComponentProps) {
       if (!pendingFlush) {
         pendingFlush = true;
         requestAnimationFrame(() => {
-          setMessages([...preceding, { ...assistantMessage, content: [...assistantMessage.content] }]);
+          setMessages([
+            ...preceding,
+            { ...assistantMessage, content: [...assistantMessage.content] },
+          ]);
           pendingFlush = false;
         });
       }
@@ -170,13 +172,17 @@ export default function Component({ params }: Route.ComponentProps) {
               currentBlock = { type: "thinking", text: event.delta };
               assistantMessage.content.push(currentBlock);
             } else {
-              (currentBlock as ThinkingBlock).text += event.delta;
+              (currentBlock as ThinkingBlockData).text += event.delta;
             }
             flush();
             break;
           }
           case "sources":
             assistantMessage.sources = event.sources;
+            flush();
+            break;
+          case "status":
+            assistantMessage.status = event.status;
             flush();
             break;
         }
@@ -188,7 +194,9 @@ export default function Component({ params }: Route.ComponentProps) {
     let finalMessage: Message = {
       ...assistantMessage,
       content: assistantMessage.content.map((b) => ({ ...b })),
-      sources: assistantMessage.sources ? [...assistantMessage.sources] : undefined,
+      sources: assistantMessage.sources
+        ? [...assistantMessage.sources]
+        : undefined,
       status: "done",
     };
     let finalMessages = [...preceding, finalMessage];

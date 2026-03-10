@@ -24,9 +24,14 @@ class Source(BaseModel):
     url: str
 
 
+class Status(BaseModel):
+    type: Literal["status"]
+    status: Literal["searching", "thinking", "generating", "done"]
+
+
 class Sources(BaseModel):
     type: Literal["sources"]
     sources: list[Source]
 
 
-Event = TextDelta | ThinkingDelta | Error | Sources
+Event = TextDelta | ThinkingDelta | Status | Error | Sources
