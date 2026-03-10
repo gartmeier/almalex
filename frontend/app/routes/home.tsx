@@ -4,12 +4,19 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { MessageInput } from "~/components/message-input";
 import { Alert, AlertTitle } from "~/components/ui/alert";
+import { getStoredModel, storeModel } from "~/lib/models";
 import { nanoid } from "~/lib/nanoid";
 
 export default function Component() {
   let navigate = useNavigate();
   let { t } = useTranslation();
   let [input, setInput] = useState("");
+  let [model, setModel] = useState(getStoredModel);
+
+  function handleModelChange(value: string) {
+    setModel(value);
+    storeModel(value);
+  }
   let [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(message: string) {
@@ -60,6 +67,8 @@ export default function Component() {
             onChange={setInput}
             isLoading={isLoading}
             onSubmit={handleSubmit}
+            model={model}
+            onModelChange={handleModelChange}
           />
         </div>
       </div>

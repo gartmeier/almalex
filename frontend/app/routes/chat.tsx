@@ -7,6 +7,7 @@ import { MessageList } from "~/components/message-list";
 import { ScrollToBottomButton } from "~/components/scroll-to-bottom-button";
 import { useChatStorage } from "~/contexts/chat-storage";
 import { ScrollToBottomProvider } from "~/contexts/scroll-to-bottom";
+import { getStoredModel, storeModel } from "~/lib/models";
 import { nanoid } from "~/lib/nanoid";
 import { createSSEParser } from "~/lib/sse";
 import type {
@@ -25,6 +26,12 @@ export default function Component({ params }: Route.ComponentProps) {
   let { loadChat, saveChat } = useChatStorage();
 
   let [input, setInput] = useState("");
+  let [model, setModel] = useState(getStoredModel);
+
+  function handleModelChange(value: string) {
+    setModel(value);
+    storeModel(value);
+  }
   let [messages, setMessages] = useState<Message[]>([]);
   let [isLoading, setIsLoading] = useState(false);
 
@@ -91,6 +98,7 @@ export default function Component({ params }: Route.ComponentProps) {
               .map((b) => b.text)
               .join(""),
           })),
+          model,
         }),
       });
 
@@ -206,7 +214,7 @@ export default function Component({ params }: Route.ComponentProps) {
 
   return (
     <ScrollToBottomProvider>
-      <div className="mx-auto max-w-3xl px-4 pb-[82px]">
+      <div className="mx-auto max-w-3xl px-4 pb-[148px]">
         <MessageList messages={messages} />
       </div>
       <div className="fixed right-0 bottom-0 left-0 z-10">
@@ -220,6 +228,8 @@ export default function Component({ params }: Route.ComponentProps) {
               onChange={setInput}
               isLoading={isLoading}
               onSubmit={sendMessage}
+              model={model}
+              onModelChange={handleModelChange}
             />
           </div>
         </div>

@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import * as Sentry from "@sentry/react";
 import React from "react";
 import type { Route } from "./+types/root";
@@ -84,7 +85,9 @@ export default function App() {
   client.setConfig({ baseUrl: "/" });
   return (
     <ChatStorageProvider>
-      <Outlet />
+      <TooltipProvider>
+        <Outlet />
+      </TooltipProvider>
     </ChatStorageProvider>
   );
 }
