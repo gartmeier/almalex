@@ -42,11 +42,11 @@ export default function Component() {
     <>
       <div className="fixed inset-0 flex flex-col px-4 pt-[80px] pb-[80px] sm:items-center sm:justify-center sm:pt-[64px]">
         <div className="mx-auto w-full max-w-3xl">
-          <h1 className="mb-6 text-2xl font-normal sm:mb-12 sm:text-center sm:text-4xl">
+          <h1 className="mb-6 hidden text-2xl font-normal sm:mb-12 sm:block sm:text-center sm:text-4xl">
             {t("chat.homeTitle")}
           </h1>
 
-          <div className="flex flex-col">
+          <div className="hidden flex-col sm:flex">
             {exampleMessages.map((example, index) => (
               <button
                 key={index}
@@ -73,7 +73,7 @@ export default function Component() {
         </div>
       </div>
 
-      <Alert className="mx-auto mt-4 w-max">
+      <Alert className="mx-auto mt-4 hidden w-max sm:flex">
         <Shield className="size-4 text-purple-500!" />
         <AlertTitle>{t("chat.disclaimer")}</AlertTitle>
       </Alert>
