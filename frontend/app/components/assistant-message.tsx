@@ -2,6 +2,8 @@ import { ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 import { Badge } from "~/components/ui/badge";
 import type { Message, ThinkingBlockData } from "~/types/messages";
@@ -25,7 +27,12 @@ function ThinkingBlock({ block }: { block: ThinkingBlockData }) {
 
       {isExpanded && (
         <div className="prose prose-neutral dark:prose-invert prose-sm text-muted-foreground mt-2 max-w-none">
-          <Markdown remarkPlugins={[remarkGfm]}>{block.text}</Markdown>
+          <Markdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw, rehypeSanitize]}
+          >
+            {block.text}
+          </Markdown>
         </div>
       )}
     </div>
@@ -70,6 +77,7 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
             >
               <Markdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize]}
                 components={{
                   a: ({ href, children, ...props }) => {
                     if (href?.match(/^#\d+$/)) {
