@@ -1,10 +1,10 @@
 # Next
 
 - [ ] improve rag
-- [x] replace sentry
 - [ ] re-enable SSR
 - [ ] create website
 - [ ] create and deploy new version
+- [x] replace sentry
 - [x] handle error messages
 - [x] multi-model
 - [x] add storage disclaimer
