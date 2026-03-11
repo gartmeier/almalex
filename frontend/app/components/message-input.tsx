@@ -69,7 +69,7 @@ export function MessageInput({
     <form onSubmit={handleSubmit}>
       <div
         className={cn(
-          "bg-muted border-input relative flex flex-col rounded-2xl border px-3 py-2 transition-all",
+          "border-input bg-input/30 relative flex flex-col rounded-2xl border px-3 py-2 transition-all",
           "shadow-sm hover:shadow-md",
           isFocused && "ring-ring ring-offset-background ring-2 ring-offset-2",
           isLoading && "opacity-70",
@@ -91,7 +91,7 @@ export function MessageInput({
         />
         <div className="flex items-center justify-between pt-1">
           <Select value={model} onValueChange={onModelChange}>
-            <SelectTrigger className="h-8 w-auto gap-1 border-none bg-transparent px-2 text-xs shadow-none">
+            <SelectTrigger className="h-8 w-auto gap-1 border-none bg-transparent px-2 text-xs shadow-none dark:bg-transparent dark:hover:bg-transparent">
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper" side="top" align="start">
