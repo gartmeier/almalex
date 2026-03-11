@@ -5,9 +5,9 @@ tmux send-keys "nvim TODO.md" C-m
 tmux new-window -t "=$session" -n "zsh" -c "$selected"
 tmux send-keys "source backend/.venv/bin/activate" C-m
 
-tmux new-window -t "=$session" -n "opencode" -c "$selected"
+tmux new-window -t "=$session" -n "claude" -c "$selected"
 tmux send-keys "source backend/.venv/bin/activate" C-m
-tmux send-keys "opencode --continue" C-m
+tmux send-keys "claude --continue" C-m
 
 tmux new-window -t "=$session" -n "lazygit" -c "$selected"
 tmux send-keys "source backend/.venv/bin/activate" C-m
@@ -21,6 +21,6 @@ tmux new-window -t "=$session" -n "frontend" -c "$selected"
 tmux send-keys "make frontend-dev" C-m
 
 tmux new-window -t "=$session" -n "psql" -c "$selected"
-tmux send-keys "sudo -u postgres psql" C-m
+tmux send-keys "sudo -u postgres psql almalex_db" C-m
 
 tmux select-window -t "=$session:1"
