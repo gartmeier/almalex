@@ -21,9 +21,6 @@ pnpm install
 echo "🔨 Building frontend application..."
 pnpm build
 
-echo "🧹 Cleaning up source maps..."
-find build -name "*.map" -delete
-
 # Backend deployment
 echo ""
 echo "⚙️  Backend deployment"

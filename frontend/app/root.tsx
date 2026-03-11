@@ -16,15 +16,9 @@ import { ChatStorageProvider } from "./contexts/chat-storage";
 import { client } from "./lib/api/client.gen";
 import "./lib/i18n";
 
-if (!import.meta.env.DEV) {
+if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
-    dsn: "https://59642c617b7a23eba28dcec56846eaf9@o4507063971020800.ingest.us.sentry.io/4509672193785856",
-    integrations: [
-      Sentry.feedbackIntegration({
-        autoInject: false,
-        colorScheme: "system",
-      }),
-    ],
+    dsn: import.meta.env.VITE_SENTRY_DSN,
   });
 }
 

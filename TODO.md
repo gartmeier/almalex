@@ -1,10 +1,11 @@
 # Next
 
 - [ ] improve rag
-- [ ] replace centry
-- [ ] implement stop button
+- [x] replace sentry
+- [ ] re-enable SSR
 - [ ] create website
 - [ ] create and deploy new version
+- [x] handle error messages
 - [x] multi-model
 - [x] add storage disclaimer
 - [x] fix citations in assistant message
