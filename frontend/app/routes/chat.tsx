@@ -225,11 +225,11 @@ export default function Component({ params }: Route.ComponentProps) {
           <div className="mx-auto max-w-3xl">
             <MessageInput
               value={input}
-              onChange={setInput}
-              isLoading={isLoading}
-              onSubmit={sendMessage}
               model={model}
+              onChange={setInput}
+              onSubmit={sendMessage}
               onModelChange={handleModelChange}
+              isLoading={isLoading}
             />
           </div>
         </div>

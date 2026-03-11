@@ -1,28 +1,15 @@
+import { ArrowUp, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  PromptInput,
-  PromptInputBody,
-  PromptInputFooter,
-  PromptInputSelect,
-  PromptInputSelectContent,
-  PromptInputSelectItem,
-  PromptInputSelectTrigger,
-  PromptInputSelectValue,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputTools,
-  type PromptInputMessage,
-} from "~/components/ai-elements/prompt-input";
-import { models } from "~/lib/models";
+import TextareaAutosize from "react-textarea-autosize";
+import { cn } from "~/lib/utils";
+import { Button } from "./ui/button";
 
 type MessageInputProps = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (message: string) => void;
   isLoading?: boolean;
-  disabled?: boolean;
-  model?: string;
-  onModelChange?: (model: string) => void;
 };
 
 export function MessageInput({
@@ -30,57 +17,84 @@ export function MessageInput({
   onChange,
   onSubmit,
   isLoading = false,
-  disabled = false,
-  model,
-  onModelChange,
 }: MessageInputProps) {
   let { t } = useTranslation();
+  let [isFocused, setIsFocused] = useState(false);
+  let textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleSubmit(message: PromptInputMessage) {
-    let cleaned = message.text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .join("\n");
+  let isInputEmpty = value.trim() === "";
+  let isDisabled = isLoading || isInputEmpty;
 
-    if (cleaned) {
-      onSubmit(cleaned);
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    onChange(e.target.value);
+  }
+
+  function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!isDisabled) {
+      // Preserve intentional line breaks but clean up extra whitespace
+      let cleanedMessage = value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .join("\n");
+
+      if (cleanedMessage) {
+        onSubmit(cleanedMessage);
+        textareaRef.current?.focus();
+      }
     }
   }
 
   return (
-    <PromptInput onSubmit={handleSubmit}>
-      <PromptInputBody>
-        <PromptInputTextarea
-          autoFocus
+    <form onSubmit={handleSubmit}>
+      <div
+        className={cn(
+          "bg-muted border-input relative flex flex-col rounded-2xl border px-3 py-2 transition-all",
+          "shadow-sm hover:shadow-md",
+          isFocused && "ring-ring ring-offset-background ring-2 ring-offset-2",
+          isLoading && "opacity-70",
+        )}
+      >
+        <TextareaAutosize
+          ref={textareaRef}
+          className="placeholder:text-muted-foreground/70 selection:bg-primary selection:text-primary-foreground w-full resize-none bg-transparent py-1 text-base leading-6 focus:outline-none"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
           placeholder={t("chat.placeholder")}
-          disabled={disabled}
+          autoFocus
+          disabled={isLoading}
+          onKeyDown={handleKeyDown}
+          onChange={handleChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          maxRows={8}
+          minRows={2}
         />
-      </PromptInputBody>
-      <PromptInputFooter>
-        <PromptInputTools>
-          {model !== undefined && onModelChange && (
-            <PromptInputSelect value={model} onValueChange={onModelChange}>
-              <PromptInputSelectTrigger size="sm">
-                <PromptInputSelectValue />
-              </PromptInputSelectTrigger>
-              <PromptInputSelectContent>
-                {models.map((m) => (
-                  <PromptInputSelectItem key={m.id} value={m.id}>
-                    {m.name}
-                  </PromptInputSelectItem>
-                ))}
-              </PromptInputSelectContent>
-            </PromptInputSelect>
-          )}
-        </PromptInputTools>
-        <PromptInputSubmit
-          disabled={disabled || value.trim() === ""}
-          status={isLoading ? "streaming" : undefined}
-        />
-      </PromptInputFooter>
-    </PromptInput>
+        <div className="flex justify-end pt-1">
+          <Button
+            size="icon"
+            type="submit"
+            disabled={isDisabled}
+            className={cn(
+              "h-8 w-8 shrink-0 transition-all",
+              !isInputEmpty && "hover:scale-105",
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 }

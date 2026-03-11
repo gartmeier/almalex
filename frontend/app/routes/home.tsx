@@ -64,11 +64,11 @@ export default function Component() {
         <div className="mx-auto max-w-3xl">
           <MessageInput
             value={input}
-            onChange={setInput}
-            isLoading={isLoading}
-            onSubmit={handleSubmit}
             model={model}
+            onChange={setInput}
+            onSubmit={handleSubmit}
             onModelChange={handleModelChange}
+            isLoading={isLoading}
           />
         </div>
       </div>
