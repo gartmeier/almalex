@@ -2,20 +2,32 @@ import { ArrowUp, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextareaAutosize from "react-textarea-autosize";
+import { models } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 type MessageInputProps = {
   value: string;
+  model: string;
   onChange: (value: string) => void;
   onSubmit: (message: string) => void;
+  onModelChange: (model: string) => void;
   isLoading?: boolean;
 };
 
 export function MessageInput({
   value,
+  model,
   onChange,
   onSubmit,
+  onModelChange,
   isLoading = false,
 }: MessageInputProps) {
   let { t } = useTranslation();
@@ -77,7 +89,19 @@ export function MessageInput({
           maxRows={8}
           minRows={2}
         />
-        <div className="flex justify-end pt-1">
+        <div className="flex items-center justify-between pt-1">
+          <Select value={model} onValueChange={onModelChange}>
+            <SelectTrigger className="h-8 w-auto gap-1 border-none bg-transparent px-2 text-xs shadow-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper" side="top" align="start">
+              {models.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             size="icon"
             type="submit"
