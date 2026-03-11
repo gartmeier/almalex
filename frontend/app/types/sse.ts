@@ -17,8 +17,14 @@ export type StatusEvent = {
   status: "searching" | "thinking" | "generating" | "done";
 };
 
+export type ErrorEvent = {
+  type: "error";
+  message: string;
+};
+
 export type ServerSentEvent =
   | TextDeltaEvent
   | ThinkingDeltaEvent
   | SourcesEvent
-  | StatusEvent;
+  | StatusEvent
+  | ErrorEvent;

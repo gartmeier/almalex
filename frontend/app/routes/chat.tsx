@@ -110,6 +110,7 @@ export default function Component({ params }: Route.ComponentProps) {
       }
 
       if (!res.ok) {
+        toast.error("Failed to send message");
         throw new Error("Failed to send message");
       }
 
@@ -119,10 +120,9 @@ export default function Component({ params }: Route.ComponentProps) {
         messages: finalMessages,
         createdAt: new Date().toISOString(),
       });
-    } catch (error) {
+    } catch {
       setMessages(prevMessages);
       setInput(text);
-      toast.error("Failed to send message");
     } finally {
       setIsLoading(false);
     }
@@ -193,6 +193,9 @@ export default function Component({ params }: Route.ComponentProps) {
             assistantMessage.status = event.status;
             flush();
             break;
+          case "error":
+            toast.error(event.message);
+            throw new Error(event.message);
         }
       }
 
