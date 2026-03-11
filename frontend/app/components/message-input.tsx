@@ -91,7 +91,7 @@ export function MessageInput({
         />
         <div className="flex items-center justify-between pt-1">
           <Select value={model} onValueChange={onModelChange}>
-            <SelectTrigger className="h-8 w-auto gap-1 border-none bg-transparent px-2 text-xs shadow-none dark:bg-transparent dark:hover:bg-transparent">
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper" side="top" align="start">
