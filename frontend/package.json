@@ -11,7 +11,6 @@
     "generate-client": "openapi-ts -c @hey-api/client-fetch -i http://localhost:8000/openapi.json -o app/lib/api"
   },
   "dependencies": {
-    "@hey-api/client-fetch": "^0.10.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-dialog": "^1.1.15",

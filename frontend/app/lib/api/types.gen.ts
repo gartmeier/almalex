@@ -2,6 +2,7 @@
 
 export type ChatRequest = {
   messages: Array<Message>;
+  model: string;
 };
 
 export type HttpValidationError = {
