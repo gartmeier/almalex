@@ -18,6 +18,9 @@ import type {
 } from "~/types/messages";
 import type { Route } from "./+types/chat";
 
+// disable SSR
+export function clientLoader() {}
+
 export default function Component({ params }: Route.ComponentProps) {
   let { chatId } = params;
   let location = useLocation();

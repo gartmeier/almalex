@@ -7,6 +7,9 @@ import { Alert, AlertTitle } from "~/components/ui/alert";
 import { getStoredModel, storeModel } from "~/lib/models";
 import { nanoid } from "~/lib/nanoid";
 
+// disable SSR
+export function clientLoader() {}
+
 export default function Component() {
   let navigate = useNavigate();
   let { t } = useTranslation();
