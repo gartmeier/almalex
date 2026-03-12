@@ -16,7 +16,7 @@ import type {
   TextBlock,
   ThinkingBlockData,
 } from "~/types/messages";
-import type { Route } from "./+types/chat";
+import type { Route } from "./+types/_chat.chat.$chatId";
 
 // disable SSR
 export function clientLoader() {}
