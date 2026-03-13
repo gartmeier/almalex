@@ -1,8 +1,8 @@
-# Alma Lex — Landing Page Briefing
+# Alma Lex: Landing Page Briefing
 
 ## 1. Projekt-Übersicht
 
-**Alma Lex** ist eine kostenlose, quelloffene Schweizer Rechts-KI. Sie hilft normalen Menschen, rechtliche Fragen zum Schweizer Bundesrecht nachzuschlagen — verständlich, datenschutzfreundlich und ohne Anwalt ersetzen zu wollen.
+**Alma Lex** ist eine kostenlose, quelloffene Schweizer Rechts-KI. Sie hilft normalen Menschen, rechtliche Fragen zum Schweizer Bundesrecht nachzuschlagen. Verständlich, datenschutzfreundlich und ohne Anwalt ersetzen zu wollen.
 
 Die Anwendung lädt Schweizer Bundesrecht von fedlex.admin.ch sowie Bundesgerichtsentscheide von bger.ch in eine Postgres-Datenbank und nutzt diese als Grundlage für ein RAG-System (Retrieval-Augmented Generation).
 
@@ -10,7 +10,7 @@ Die Anwendung lädt Schweizer Bundesrecht von fedlex.admin.ch sowie Bundesgerich
 
 ## 2. Zielgruppe
 
-Privatpersonen in der Schweiz, die rechtliche Fragen haben und sich einen ersten Überblick verschaffen möchten — ohne juristische Vorkenntnisse. Alma Lex ersetzt keine Rechtsberatung und keinen Anwalt.
+Privatpersonen in der Schweiz, die rechtliche Fragen haben und sich einen ersten Überblick verschaffen möchten. Keine juristischen Vorkenntnisse nötig. Alma Lex ersetzt keine Rechtsberatung und keinen Anwalt.
 
 ---
 
@@ -50,20 +50,20 @@ Privatpersonen in der Schweiz, die rechtliche Fragen haben und sich einen ersten
 | Border | Hellgrau | `#E2E5E9` | Trennlinien, Card-Rahmen |
 
 ### Designprinzip
-Die Palette verbindet **Seriosität** (Blautöne = Vertrauen, Recht) mit **Zugänglichkeit** (warme Untertöne, Salbeigrün = Natur, Schweiz). Kein kaltes Corporate-Blau — alle Farben haben einen leicht warmen Unterton, der die Seite einladend wirken lässt.
+Die Palette verbindet **Seriosität** (Blautöne = Vertrauen, Recht) mit **Zugänglichkeit** (warme Untertöne, Salbeigrün = Natur, Schweiz). Kein kaltes Corporate-Blau. Alle Farben haben einen leicht warmen Unterton, der die Seite einladend wirken lässt.
 
 ---
 
 ## 5. Logo-Brief
 
 ### Konzept & Name
-**«Alma Lex»** — «Alma» (lat. nährend, fördernd) + «Lex» (lat. Gesetz). Das Logo soll diese Dualität einfangen: Recht zugänglich und nährend machen.
+**«Alma Lex»**: «Alma» (lat. nährend, fördernd) + «Lex» (lat. Gesetz). Das Logo soll diese Dualität einfangen: Recht zugänglich und nährend machen.
 
 ### Anforderungen
 
 - **Wortmarke + Icon** (Kombination): Soll sowohl zusammen als auch getrennt funktionieren (Icon allein als Favicon/App-Icon)
-- **Stil:** Modern, freundlich, clean — kein klassisches Anwaltskanzlei-Logo (keine Waage, kein Paragraphenzeichen, kein Wappen)
-- **Schrift:** Serifenlos oder humanistisch — gut lesbar, warm, modern. Empfehlung: geometrisch-humanistisch (à la Inter, Nunito, oder ähnlich)
+- **Stil:** Modern, freundlich, clean. Kein klassisches Anwaltskanzlei-Logo (keine Waage, kein Paragraphenzeichen, kein Wappen)
+- **Schrift:** Serifenlos oder humanistisch. Gut lesbar, warm, modern. Empfehlung: geometrisch-humanistisch (à la Inter, Nunito, oder ähnlich)
 - **Icon-Ideen:**
   - Abstrahiertes Buch / aufgeschlagene Seite (Wissen, Zugang)
   - Sprechblase + Paragraphen-Element (Dialog + Recht)
@@ -73,13 +73,6 @@ Die Palette verbindet **Seriosität** (Blautöne = Vertrauen, Recht) mit **Zugä
 - **Varianten benötigt:** Farbig, einfarbig (dunkel/hell), Favicon (16×16 bis 512×512)
 - **Dont's:** Keine Schweizerkreuze, keine klassischen Justiz-Symbole (Waage, Hammer), nichts zu verspielt oder kindlich
 
-### Empfohlenes Tool
-
-**Looka** (looka.com) — KI-gestützter Logo-Generator, guter Ausgangspunkt für Wortmarke + Icon-Kombinationen. Erstellung kostenlos, Export kostenpflichtig. Alternativ:
-- **Brandmark.io** — ähnlich, etwas minimalistischer
-- **Figma** — falls manuell designt werden soll
-- **Recraft.ai** — KI-Bildgenerierung mit Logo-Modus, gut für Icon-Exploration
-
 ---
 
 ## 6. Visueller Stil & Branding
@@ -87,7 +80,7 @@ Die Palette verbindet **Seriosität** (Blautöne = Vertrauen, Recht) mit **Zugä
 ### Stil
 - **Freundlich, zugänglich, hell und einladend**
 - Die Seite soll Vertrauen schaffen und die Hemmschwelle senken, rechtliche Fragen zu stellen
-- Keine kühle Anwaltskanzlei-Ästhetik — eher: hilfreicher Begleiter
+- Keine kühle Anwaltskanzlei-Ästhetik. Eher: hilfreicher Begleiter
 
 ### Typografie-Empfehlung
 - Headlines: **Inter** oder **Nunito** (bold/semibold)
@@ -96,56 +89,77 @@ Die Palette verbindet **Seriosität** (Blautöne = Vertrauen, Recht) mit **Zugä
 
 ---
 
-## 7. Seitenstruktur (vorgeschlagene Sections)
+## 7. Seitenstruktur
+
+### Navigation (sticky)
+- Logo (Wortmarke + Icon) links
+- Section-Links: So funktioniert's, Datenquellen, Datenschutz, FAQ
+- CTA-Button rechts: «Ausprobieren» → `/chat`
 
 ### Hero Section
-- Headline: Kernbotschaft — z.B. *«Schweizer Recht, verständlich erklärt.»*
-- Subline: Kurze Beschreibung (kostenlos, open source, datenschutzfreundlich)
-- **Primärer CTA-Button:** Direkt zur Chat-App → `almalex.ch/chat`
-- Sekundärer CTA: GitHub-Repo → `github.com/gartmeier/almalex`
+- **Headline:** *«Schweizer Recht, mit KI verständlich erklärt.»*
+- **Subline:** Rechtsfrage stellen, quellenbasierte Antwort in Sekunden. Kostenlos, ohne Anmeldung, ideal fürs Studium und den Alltag.
+- **Primärer CTA-Button:** «Jetzt Frage stellen» → `/chat`
+- **Chat-Preview:** Eingebettete Beispiel-Konversation (Mietrecht-Frage mit Quellenangabe)
+- **Trust Badges:** 100% Open Source, Schweizer KI-Infrastruktur, Keine Anmeldung
 
 ### So funktioniert's (How it works)
 Kurze, visuelle Erklärung in 3 Schritten:
 1. Frage stellen (in natürlicher Sprache)
-2. Alma Lex durchsucht Bundesrecht und Bundesgerichtsentscheide
-3. Verständliche Antwort mit Quellenangaben
+2. Quellen durchsuchen (Bundesrecht und tausende Bundesgerichtsentscheide)
+3. Antwort erhalten (verständlich, quellenbasiert)
 
 ### Datenquellen
-- **Bundesrecht:** fedlex.admin.ch (offizielle Schweizer Gesetzessammlung)
-- **Bundesgerichtsentscheide:** bger.ch (offizielle Rechtsprechungsdatenbank)
-- Daten werden in einer Postgres-Datenbank indexiert und über RAG abgefragt
+- **Bundesrecht:** fedlex.admin.ch (Systematische Rechtssammlung: OR, ZGB, StGB und alle weiteren Bundesgesetze)
+- **Bundesgerichtsentscheide:** bger.ch (Leitentscheide und Urteile, durchsuchbar nach Rechtsgebiet, Thema und Gesetzesartikel)
 
 ### Datenschutz & Sicherheit
-Dieses Thema ist zentral und verdient prominente Platzierung:
-- **Keine Speicherung von Chatverläufen** auf dem Server
-- Daten im Transit befinden sich auf einem dedizierten Hetzner-Server in Finnland
-- KI-Inferenz über **Infomaniak** (Schweizer Anbieter) — keine US-Cloud-Dienste
-- **Daten werden nicht für KI-Training verwendet** und nicht gespeichert
-- Bewusste Entscheidung für EU-/CH-Infrastruktur
+Dieses Thema ist zentral und verdient prominente Platzierung. Headline: «Deine Daten gehören dir.» Fünf Feature-Cards:
+- **Keine Speicherung:** Chatverläufe bleiben lokal im Browser
+- **KI aus Genf:** Inferenz über Infomaniak (Schweizer Anbieter, Rechenzentrum Genf)
+- **Server in Europa:** Eigener Server in Finnland, keine US-Cloud
+- **Kein KI-Training:** Eingaben werden nie für Training verwendet
+- **Kein Login nötig:** Kein Account, keine E-Mail, keine persönlichen Daten
+
+### FAQ
+Accordion mit häufig gestellten Fragen:
+- Was ist Alma Lex?
+- Wie beginne ich einen Chat?
+- Welche Fragen kann ich stellen?
+- Woher stammen die Informationen?
+- Wie genau sind die Antworten?
+- Sind meine Daten sicher?
+- Was kostet die Nutzung?
+- Ist Alma Lex Open Source?
+- Was sind die Grenzen?
 
 ### Technologie / Open Source
-- Vollständig **open source** und **kostenlos** — kein Login erforderlich
-- GitHub-Link: `github.com/gartmeier/almalex`
-- Modelle werden laufend optimiert anhand des LEXam-Benchmarks (4'886 juristische Prüfungsfragen)
-
-### Wichtiger Hinweis (Disclaimer)
-- Alma Lex ersetzt keinen Anwalt und keine professionelle Rechtsberatung
-- Es dient als Orientierungshilfe, nicht als verbindliche Rechtsauskunft
-- Bei konkreten Rechtsfällen immer eine Fachperson beiziehen
+Dunkler Hintergrund (Tiefblau). Headline: «Vollständig quelloffen.» Sechs Tech-Cards:
+- RAG-Pipeline, Chat-Modelle, Embedding & Reranking, GitHub, Tech-Stack, LEXam-Benchmark
+- CTA: «Auf GitHub ansehen» → `github.com/gartmeier/almalex`
 
 ### Footer
-- Link zur App (`almalex.ch/chat`)
-- Link zum GitHub-Repo
-- Disclaimer-Hinweis
-- Optional: Kontaktmöglichkeit / E-Mail
+- **CTA-Block:** «Bereit für deine nächste Rechtsfrage?» mit «Jetzt loslegen»-Button
+- **Links:** GitHub, FAQ, Datenschutz, Impressum
+- **Disclaimer:** «Alma Lex bietet keine Rechtsberatung. Bei konkreten Fällen eine Fachperson beiziehen.»
+- **Copyright:** © 2026 Alma Lex
 
 ---
 
-## 8. Technischer Stack (Referenz)
+## 8. SEO & Meta
+
+- **Title:** «Alma Lex – Schweizer Rechts-KI | OR, ZGB & BGE verständlich erklärt»
+- **Meta Description:** Schweizer Rechts-KI mit Fokus auf OR, ZGB, StGB und Bundesgerichtsentscheide
+- **Open Graph:** Title, Description, type=website, locale=de_CH
+- **JSON-LD:** WebApplication-Schema mit applicationCategory=LegalApplication, price=0 CHF
+
+---
+
+## 9. Technischer Stack (Referenz)
 
 ### Frontend
 - React Router v7 + TypeScript + Vite
-- Tailwind CSS v4 + Radix UI / DaisyUI
+- Tailwind CSS v4 + Radix UI
 - i18n: Deutsch, Französisch, Englisch
 
 ### Backend
@@ -169,16 +183,19 @@ Dieses Thema ist zentral und verdient prominente Platzierung:
 
 ---
 
-## 9. Tone of Voice
+## 10. Tone of Voice
 
 - **Verständlich:** Kein Juristendeutsch, keine Fachsprache auf der Landing Page
 - **Vertrauenswürdig:** Transparenz bei Datenschutz und Technologie
-- **Einladend:** Niederschwellig, ermutigend — «Frag einfach»
+- **Einladend:** Niederschwellig, ermutigend. «Frag einfach»
 - **Ehrlich:** Klare Kommunikation der Grenzen (kein Anwaltsersatz)
+
+### Schreibregeln
+- **Keine Em-Dashes (–).** Stattdessen Punkte, Kommas oder Satzumstellungen verwenden.
 
 ---
 
-## 10. Zusammenfassung der Key Messages
+## 11. Zusammenfassung der Key Messages
 
 | Botschaft | Priorität |
 |---|---|
@@ -191,7 +208,7 @@ Dieses Thema ist zentral und verdient prominente Platzierung:
 
 ---
 
-## 11. Referenz-URLs
+## 12. Referenz-URLs
 
 - **App:** almalex.ch/chat
 - **GitHub:** github.com/gartmeier/almalex
