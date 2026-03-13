@@ -33,7 +33,13 @@
     "privacy": "Protection des données",
     "terms": "Conditions d'utilisation",
     "reportIssue": "Signaler un problème",
-    "help": "Aide"
+    "help": "Aide",
+    "theme": "Thème",
+    "language": "Langue"
+  },
+  "support": {
+    "subject": "Retour sur Alma Lex",
+    "body": "Bonjour,\n\nJe souhaite signaler le point suivant :\n\n"
   },
   "languages": {
     "de": "Deutsch",

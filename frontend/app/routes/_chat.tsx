@@ -1,4 +1,4 @@
-import { SquarePen } from "lucide-react";
+import { CircleHelp, SquarePen } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useParams } from "react-router";
@@ -23,7 +23,7 @@ export default function Layout() {
     <>
       <header className="bg-card/[0.93] border-border sticky top-0 z-50 flex items-center justify-between border-b px-6 py-3 backdrop-blur-md backdrop-saturate-150 md:px-10">
         <Link
-          to={prefix}
+          to={`${prefix}/chat`}
           className="flex items-center gap-2 transition-all hover:opacity-90"
         >
           <img
@@ -35,16 +35,16 @@ export default function Layout() {
             {t("app.title")}
           </span>
         </Link>
-        <nav className="flex items-center gap-3" role="navigation">
+        <nav className="flex items-center gap-2" role="navigation">
           <Button
             asChild
             size="sm"
             variant="outline"
             className="hidden sm:inline-flex"
           >
-            <Link to={`${prefix}/chat`} aria-label={t("chat.new")}>
-              <SquarePen className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span>{t("chat.new")}</span>
+            <Link to={`${prefix}/chat`}>
+              <SquarePen className="mr-2 h-4 w-4" />
+              {t("chat.new")}
             </Link>
           </Button>
           <Button asChild size="icon" variant="outline" className="sm:hidden">
@@ -52,8 +52,17 @@ export default function Layout() {
               <SquarePen className="h-4 w-4" />
             </Link>
           </Button>
-          <ThemeToggle />
           <LanguageSelector />
+          <ThemeToggle />
+          <Button asChild variant="ghost" size="icon">
+            <a
+              href={`mailto:hello@almalex.ch?subject=${encodeURIComponent(t("support.subject"))}&body=${encodeURIComponent(t("support.body"))}`}
+              title={t("navigation.reportIssue")}
+              aria-label={t("navigation.reportIssue")}
+            >
+              <CircleHelp className="h-4 w-4" />
+            </a>
+          </Button>
         </nav>
       </header>
       <main>

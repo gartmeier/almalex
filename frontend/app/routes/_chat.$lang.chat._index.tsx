@@ -58,7 +58,7 @@ export default function Component() {
               <button
                 key={index}
                 onClick={() => handleExampleClick(example)}
-                className="text-foreground/70 hover:text-foreground border-border/60 sm:border-border/60 sm:shadow-card-sm sm:hover:shadow-feature border-b py-4 text-left text-sm transition-all duration-200 last:border-b-0 hover:translate-y-[-1px] sm:rounded-xl sm:border sm:px-4 sm:py-3 sm:text-base"
+                className="hover:bg-accent/50 border-border text-foreground/70 hover:text-foreground border-b py-4 text-left text-sm transition-all duration-200 last:border-b-0 sm:border-0 sm:px-4 sm:py-3 sm:text-base sm:hover:rounded-xl"
               >
                 {example}
               </button>

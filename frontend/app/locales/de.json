@@ -33,7 +33,13 @@
     "privacy": "Datenschutz",
     "terms": "Nutzungsbedingungen",
     "reportIssue": "Problem melden",
-    "help": "Hilfe"
+    "help": "Hilfe",
+    "theme": "Design",
+    "language": "Sprache"
+  },
+  "support": {
+    "subject": "Feedback zu Alma Lex",
+    "body": "Hallo,\n\nich habe folgendes Anliegen:\n\n"
   },
   "languages": {
     "de": "Deutsch",

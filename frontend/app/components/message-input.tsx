@@ -69,9 +69,8 @@ export function MessageInput({
     <form onSubmit={handleSubmit}>
       <div
         className={cn(
-          "border-border bg-input/30 relative flex flex-col rounded-2xl border px-3 py-2 transition-all duration-200",
-          "shadow-card hover:shadow-feature",
-          isFocused && "border-primary/50 shadow-feature-hover",
+          "border-input dark:bg-input/30 relative flex flex-col rounded-2xl border bg-transparent px-3 py-2 shadow-xs transition-[color,box-shadow]",
+          isFocused && "border-ring ring-ring/50 ring-[3px]",
           isLoading && "opacity-70",
         )}
       >

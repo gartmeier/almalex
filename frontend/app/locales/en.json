@@ -33,7 +33,13 @@
     "privacy": "Privacy",
     "terms": "Terms of Use",
     "reportIssue": "Report Issue",
-    "help": "Help"
+    "help": "Help",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "support": {
+    "subject": "Feedback on Alma Lex",
+    "body": "Hi,\n\nI'd like to report the following:\n\n"
   },
   "languages": {
     "de": "Deutsch",
