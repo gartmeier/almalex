@@ -5,9 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Linting and Formatting
-- `ruff check` - Run linting checks
-- `ruff format` - Format code
-- `ruff check --fix` - Auto-fix linting issues
+
+Use `make check` and `make format` from the repo root.
 
 ### Database Management
 - `alembic upgrade head` - Apply database migrations

@@ -4,10 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- **Development server**: `pnpm dev` - Starts React Router dev server with HMR at http://localhost:5173
+Use `make check` and `make format` from the repo root for linting/typechecking/formatting.
+
 - **Build**: `pnpm build` - Creates production build
-- **Type checking**: `pnpm typecheck` - Runs React Router type generation and TypeScript compiler
-- **Formatting**: `pnpm format` - Formats code with Prettier
 - **API client generation**: `pnpm generate-client` - Generates API client from OpenAPI spec at http://localhost:8000/openapi.json
 
 ## Architecture Overview
@@ -66,7 +65,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. Frontend dev server runs on http://localhost:5173
 3. API calls are proxied from frontend to backend
 4. Use `pnpm generate-client` when backend OpenAPI spec changes
-5. Always run `pnpm typecheck` before committing changes
+5. Always run `make check` from the repo root before committing changes
 
 ### Routing Gotchas
 
