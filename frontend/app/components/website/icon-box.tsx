@@ -18,7 +18,7 @@ export function IconBox({
   return (
     <div
       className={cn(
-        "flex items-center justify-center shrink-0 transition-transform duration-200",
+        "flex shrink-0 items-center justify-center transition-transform duration-200",
         sizes[size],
         className,
       )}

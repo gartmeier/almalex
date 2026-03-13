@@ -23,7 +23,7 @@ export function FooterDivider({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "w-full max-w-[1200px] h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent",
+        "h-px w-full max-w-[1200px] bg-gradient-to-r from-transparent via-white/[0.1] to-transparent",
         className,
       )}
     />
@@ -40,7 +40,7 @@ export function FooterLinks({
   return (
     <div
       className={cn(
-        "flex flex-col md:flex-row items-center justify-between w-full max-w-[1200px] gap-4",
+        "flex w-full max-w-[1200px] flex-col items-center justify-between gap-4 md:flex-row",
         className,
       )}
     >

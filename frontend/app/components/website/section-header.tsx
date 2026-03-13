@@ -20,7 +20,7 @@ export function SectionHeader({
       {badge}
       <h2
         className={cn(
-          "text-3xl md:text-[40px] font-extrabold text-center leading-[1.15] tracking-[-0.02em]",
+          "text-center text-3xl leading-[1.15] font-extrabold tracking-[-0.02em] md:text-[40px]",
           titleClassName,
         )}
       >
@@ -29,7 +29,7 @@ export function SectionHeader({
       {subtitle && (
         <p
           className={cn(
-            "text-base text-center leading-relaxed max-w-[600px]",
+            "max-w-[600px] text-center text-base leading-relaxed",
             subtitleClassName,
           )}
         >

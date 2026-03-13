@@ -42,7 +42,10 @@ export function useMouseParallax(
           let speed = 0.4 + d * 0.25;
           let amp = 35 + d * 25;
           let driftX = Math.sin(elapsed * speed + phase + inf.x * d) * amp;
-          let driftY = Math.cos(elapsed * speed * 0.7 + phase * 0.6 + inf.y * d) * amp * 0.7;
+          let driftY =
+            Math.cos(elapsed * speed * 0.7 + phase * 0.6 + inf.y * d) *
+            amp *
+            0.7;
           let dx = driftX + inf.x * maxOffset * d;
           let dy = driftY + inf.y * maxOffset * d;
           el.style.transform = `translate(${dx}px, ${dy}px)`;

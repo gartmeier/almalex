@@ -16,15 +16,17 @@ export function FeatureCard({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-[20px] border border-border/60 bg-card p-7 shadow-feature transition-all duration-300 hover:-translate-y-0.5 hover:shadow-feature-hover",
+        "border-border/60 bg-card shadow-feature hover:shadow-feature-hover flex flex-col gap-4 rounded-[20px] border p-7 transition-all duration-300 hover:-translate-y-0.5",
         className,
       )}
     >
       {icon}
-      <h3 className="text-lg font-semibold tracking-[-0.01em] text-secondary-foreground">
+      <h3 className="text-secondary-foreground text-lg font-semibold tracking-[-0.01em]">
         {title}
       </h3>
-      <p className="text-sm leading-[1.65] text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-sm leading-[1.65]">
+        {description}
+      </p>
       {children}
     </div>
   );
