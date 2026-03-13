@@ -22,6 +22,10 @@ export let meta: MetaFunction = () => [
   { property: "og:locale:alternate", content: "en_US" },
   { property: "og:site_name", content: "Alma Lex" },
   { property: "og:url", content: "https://almalex.ch/fr" },
+  { property: "og:image", content: "https://almalex.ch/og-image-fr.png" },
+  { property: "og:image:width", content: "1200" },
+  { property: "og:image:height", content: "630" },
+  { property: "og:image:alt", content: "Alma Lex - IA juridique suisse : Comprendre le droit suisse en quelques secondes." },
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: "Alma Lex - IA juridique suisse pour le CO, CC & les arrêts du Tribunal fédéral" },
   {
@@ -29,6 +33,7 @@ export let meta: MetaFunction = () => [
     content:
       "Questions juridiques, réponses claires : interrogez l'IA juridique suisse sur le CO, CC ou les arrêts du Tribunal fédéral. Sourcé, gratuit et sans inscription.",
   },
+  { name: "twitter:image", content: "https://almalex.ch/og-image-fr.png" },
   { tagName: "link", rel: "canonical", href: "https://almalex.ch/fr" },
   { tagName: "link", rel: "alternate", hrefLang: "de-CH", href: "https://almalex.ch/de" },
   { tagName: "link", rel: "alternate", hrefLang: "fr-CH", href: "https://almalex.ch/fr" },

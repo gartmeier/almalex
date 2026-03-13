@@ -22,6 +22,10 @@ export let meta: MetaFunction = () => [
   { property: "og:locale:alternate", content: "fr_CH" },
   { property: "og:site_name", content: "Alma Lex" },
   { property: "og:url", content: "https://almalex.ch/en" },
+  { property: "og:image", content: "https://almalex.ch/og-image-en.png" },
+  { property: "og:image:width", content: "1200" },
+  { property: "og:image:height", content: "630" },
+  { property: "og:image:alt", content: "Alma Lex - Swiss Legal AI: Understand Swiss law in seconds." },
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: "Alma Lex - Swiss Legal AI for OR, ZGB & Federal Court Decisions" },
   {
@@ -29,6 +33,7 @@ export let meta: MetaFunction = () => [
     content:
       "Swiss law questions answered: Ask the Swiss legal AI about OR, ZGB or Federal Court rulings. Source-backed, free, and no login required.",
   },
+  { name: "twitter:image", content: "https://almalex.ch/og-image-en.png" },
   { tagName: "link", rel: "canonical", href: "https://almalex.ch/en" },
   { tagName: "link", rel: "alternate", hrefLang: "de-CH", href: "https://almalex.ch/de" },
   { tagName: "link", rel: "alternate", hrefLang: "fr-CH", href: "https://almalex.ch/fr" },

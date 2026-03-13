@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation } from "react-router";
 import { LanguageSelector } from "~/components/layout/language-selector";
+import { SheetClose } from "~/components/ui/sheet";
 import { FooterDivider, FooterLinks, SiteFooter } from "~/components/website/site-footer";
 import { NavLink, SiteNav } from "~/components/website/site-nav";
 
@@ -98,6 +99,32 @@ export default function LandingLayout() {
             {s.cta}
             <ArrowRight className="w-4 h-4" />
           </a>
+        }
+        mobileContent={
+          <nav className="flex flex-col gap-0">
+            {s.nav.map((link) => (
+              <SheetClose asChild key={link.href}>
+                <a
+                  href={`${prefix}${link.href}`}
+                  className="border-b border-border py-3 text-lg font-medium text-secondary-foreground"
+                >
+                  {link.label}
+                </a>
+              </SheetClose>
+            ))}
+            <div className="mt-4">
+              <LanguageSelector />
+            </div>
+            <SheetClose asChild>
+              <a
+                href="/chat"
+                className="mt-4 flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/85 transition-colors"
+              >
+                {s.cta}
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </SheetClose>
+          </nav>
         }
       />
 

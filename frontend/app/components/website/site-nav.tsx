@@ -1,3 +1,5 @@
+import { Menu } from "lucide-react";
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { cn } from "~/lib/utils";
 
 export function SiteNav({
@@ -5,12 +7,14 @@ export function SiteNav({
   links,
   actions,
   cta,
+  mobileContent,
   className,
 }: {
   logo: React.ReactNode;
   links?: React.ReactNode;
   actions?: React.ReactNode;
   cta?: React.ReactNode;
+  mobileContent?: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -25,8 +29,22 @@ export function SiteNav({
         <div className="hidden md:flex items-center gap-8">{links}</div>
       )}
       <div className="flex items-center gap-3">
-        {actions}
-        {cta}
+        <div className="hidden md:flex items-center gap-3">
+          {actions}
+          {cta}
+        </div>
+        {mobileContent && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="md:hidden p-2" aria-label="Open menu">
+                <Menu className="size-6" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="p-6 pt-12">
+              {mobileContent}
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
     </nav>
   );
