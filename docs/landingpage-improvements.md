@@ -1,10 +1,11 @@
 # Landing Page Improvements (Backlog)
 
-## P2: Prerendering for Landing Pages
-
-SSR is enabled. Consider enabling `prerender` for static marketing pages for faster TTFB.
-
 ## Done (2026-03-13)
+
+### Prerendering for Landing Pages
+
+- Enabled static prerendering for all 6 marketing pages (`/de`, `/en`, `/fr`, `/de/policies`, `/en/policies`, `/fr/policies`)
+- Uses async `prerender()` in `react-router.config.ts` to generate static HTML at build time for faster TTFB
 
 ### Design Consistency
 

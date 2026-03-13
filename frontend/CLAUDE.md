@@ -13,7 +13,7 @@ Use `make check` and `make format` from the repo root for linting/typechecking/f
 
 ### React Router v7 Configuration
 
-- **Client-side only**: `ssr: false` in react-router.config.ts - no server-side rendering
+- **SSR + prerender**: `ssr: true` with static prerendering for marketing pages in react-router.config.ts
 - **Layout routing pattern**: Uses `layout()` wrapper in app/routes.ts with nested routes
 - **Route structure**: All user-facing routes are nested under `routes/layout.tsx` layout component
 - **File-based routing**: Routes defined explicitly in app/routes.ts, not convention-based
@@ -57,7 +57,7 @@ Use `make check` and `make format` from the repo root for linting/typechecking/f
 - **Build output**: Client-side bundle in `build/client/` with minimal static server in `build/server/index.js`
 - **Container ready**: Includes Docker configuration
 - **Static assets**: Handled by Vite with sourcemap generation enabled
-- **Start command**: `pnpm start` serves the static client application (no SSR)
+- **Start command**: `pnpm start` serves the application with SSR and prerendered static pages
 
 ### Development Workflow
 
