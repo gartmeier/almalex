@@ -7,9 +7,12 @@ export default {
       "/de",
       "/en",
       "/fr",
-      "/de/policies",
-      "/en/policies",
-      "/fr/policies",
+      "/de/datenschutz",
+      "/de/impressum",
+      "/en/privacy",
+      "/en/imprint",
+      "/fr/protection-des-donnees",
+      "/fr/mentions-legales",
     ];
   },
 } satisfies Config;

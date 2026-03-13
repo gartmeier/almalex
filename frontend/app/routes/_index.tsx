@@ -7,7 +7,9 @@ export default function RootIndex() {
   let navigate = useNavigate();
 
   useEffect(() => {
-    let lang = ["de", "fr", "en"].includes(i18n.language) ? i18n.language : "de";
+    let lang = ["de", "fr", "en"].includes(i18n.language)
+      ? i18n.language
+      : "de";
     navigate(`/${lang}`, { replace: true });
   }, [i18n.language, navigate]);
 
