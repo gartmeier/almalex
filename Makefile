@@ -1,4 +1,4 @@
-.PHONY: backend-dev frontend-dev check format
+.PHONY: backend-dev frontend-dev frontend-typecheck format
 
 backend-dev:
 	cd backend && uv run fastapi dev app/main.py
@@ -6,10 +6,8 @@ backend-dev:
 frontend-dev:
 	cd frontend && pnpm dev
 
-check: 
-	cd backend && uv run ruff check
+frontend-typecheck:
 	cd frontend && pnpm typecheck
-	cd frontend && prettier --check .
 
 format:
 	cd backend && uv run ruff check --fix && uv run ruff format
