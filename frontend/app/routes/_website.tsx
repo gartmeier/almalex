@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation } from "react-router";
 import { LanguageSelector } from "~/components/layout/language-selector";
+import { ThemeToggle } from "~/components/layout/theme-toggle";
 import { SheetClose } from "~/components/ui/sheet";
 import {
   FooterDivider,
@@ -114,7 +115,7 @@ export default function LandingLayout() {
             ))}
           </>
         }
-        actions={<LanguageSelector />}
+        actions={<><ThemeToggle /><LanguageSelector /></>}
         cta={
           <a
             href="/chat"
@@ -136,7 +137,8 @@ export default function LandingLayout() {
                 </a>
               </SheetClose>
             ))}
-            <div className="mt-4">
+            <div className="mt-4 flex items-center gap-2">
+              <ThemeToggle />
               <LanguageSelector />
             </div>
             <SheetClose asChild>
