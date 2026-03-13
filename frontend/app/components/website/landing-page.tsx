@@ -291,21 +291,23 @@ function HowItWorksSection({ content }: { content: LandingPageContent["howItWork
         title={content.title}
         titleClassName="text-secondary-foreground"
       />
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-8 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr_auto_1fr] items-stretch justify-items-center gap-y-8 gap-x-4 w-full max-w-[1200px]">
         {content.steps.map((step, i) => (
           <Fragment key={stepMeta[i].num}>
             {i > 0 && (
-              <ChevronRight className="hidden lg:block w-6 h-6 text-muted-foreground/40 shrink-0" />
+              <ChevronRight className="hidden lg:flex w-6 h-6 text-muted-foreground/40 shrink-0 self-center mt-[56px]" />
             )}
-            <div className="flex flex-col items-center gap-5 rounded-[20px] bg-card p-8 shadow-card-sm w-full max-w-[340px]">
-              <div className={`flex items-center justify-center w-9 h-9 rounded-2xl bg-gradient-to-b ${stepMeta[i].numGradient}`}>
+            <div className="flex flex-col items-center w-full max-w-[360px] min-w-0">
+              <div className={`flex items-center justify-center w-9 h-9 shrink-0 rounded-2xl bg-gradient-to-b ${stepMeta[i].numGradient} mb-5`}>
                 <span className="text-base font-bold text-white">{stepMeta[i].num}</span>
               </div>
-              <IconBox size="lg" className={`w-14 h-14 rounded-2xl ${stepMeta[i].iconBg}`}>
-                {stepMeta[i].icon}
-              </IconBox>
-              <h3 className="text-lg font-bold text-secondary-foreground text-center">{step.title}</h3>
-              <p className="text-base text-muted-foreground text-center leading-relaxed">{step.desc}</p>
+              <div className="flex flex-col items-center gap-5 rounded-[20px] bg-card p-8 shadow-card-sm w-full flex-1">
+                <IconBox size="lg" className={`w-14 h-14 rounded-2xl ${stepMeta[i].iconBg}`}>
+                  {stepMeta[i].icon}
+                </IconBox>
+                <h3 className="text-lg font-bold text-secondary-foreground text-center">{step.title}</h3>
+                <p className="text-base text-muted-foreground text-center leading-relaxed break-words">{step.desc}</p>
+              </div>
             </div>
           </Fragment>
         ))}
