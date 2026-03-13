@@ -30,7 +30,8 @@
   },
   "navigation": {
     "faq": "FAQ",
-    "policies": "Terms & Policies",
+    "privacy": "Privacy",
+    "terms": "Terms of Use",
     "reportIssue": "Report Issue",
     "help": "Help"
   },

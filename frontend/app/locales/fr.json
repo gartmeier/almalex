@@ -30,7 +30,8 @@
   },
   "navigation": {
     "faq": "FAQ",
-    "policies": "Conditions et politiques",
+    "privacy": "Protection des données",
+    "terms": "Conditions d'utilisation",
     "reportIssue": "Signaler un problème",
     "help": "Aide"
   },

@@ -11,6 +11,18 @@ import {
 import "~/lib/i18n";
 import { Button } from "../ui/button";
 
+let privacyPaths: Record<string, string> = {
+  de: "datenschutz",
+  en: "privacy",
+  fr: "protection-des-donnees",
+};
+
+let termsPaths: Record<string, string> = {
+  de: "nutzungsbedingungen",
+  en: "terms",
+  fr: "conditions-utilisation",
+};
+
 export function HelpMenu() {
   let { t, i18n } = useTranslation();
   let language = i18n.language;
@@ -27,7 +39,14 @@ export function HelpMenu() {
           <Link to={`/${language}/faq`}>{t("navigation.faq")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to={`/${language}/policies`}>{t("navigation.policies")}</Link>
+          <Link to={`/${language}/${privacyPaths[language] ?? "datenschutz"}`}>
+            {t("navigation.privacy")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/${language}/${termsPaths[language] ?? "nutzungsbedingungen"}`}>
+            {t("navigation.terms")}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
