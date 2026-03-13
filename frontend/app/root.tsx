@@ -60,7 +60,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
         />
-        <link rel="icon" href="/logo-color.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <Meta />
         <Links />
       </head>

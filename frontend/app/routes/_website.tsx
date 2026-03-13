@@ -31,7 +31,12 @@ export default function LandingLayout() {
             <img
               src="/logo-color.webp"
               alt="Alma Lex"
-              className="h-[22px] w-[22px]"
+              className="h-[22px] w-[22px] dark:hidden"
+            />
+            <img
+              src="/logo-blue.svg"
+              alt="Alma Lex"
+              className="hidden h-[22px] w-[22px] dark:block"
             />
             <span className="text-secondary-foreground text-xl font-bold">
               Alma Lex
