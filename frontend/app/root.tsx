@@ -24,21 +24,26 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 export function meta() {
   return [
-    { title: "Alma Lex" },
-    { name: "description", content: "Welcome to Alma Lex!" },
+    { title: "Alma Lex – Obligationenrecht (OR) einfach erklärt" },
+    {
+      name: "description",
+      content:
+        "Fragen zum OR, ZGB oder Bundesgerichtsentscheiden? Alma Lex erklärt Schweizer Recht verständlich – mit Quellenangaben. Kostenlos und ohne Anmeldung.",
+    },
   ];
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="de" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
         />
-        <Meta />
+        <link rel="icon" href="/logo-color.svg" type="image/svg+xml" />
+<Meta />
         <Links />
       </head>
       <body>
