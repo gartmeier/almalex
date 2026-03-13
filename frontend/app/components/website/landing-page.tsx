@@ -158,12 +158,12 @@ function TrustBadge({ icon, bg, label }: { icon: ReactNode; bg: string; label: s
 
 function ChatPreview({ content }: { content: LandingPageContent["chatPreview"] }) {
   return (
-    <div className="w-full max-w-[680px] rounded-[20px] bg-card p-6 shadow-[0_8px_32px_#1E3A5F15] flex flex-col gap-4 mt-4">
+    <div className="w-full max-w-[680px] rounded-[20px] bg-card p-6 shadow-card-lg flex flex-col gap-4 mt-4">
       <div className="flex items-center gap-3">
-        <IconBox size="sm" className="w-9 h-9 rounded-[18px] bg-secondary">
+        <IconBox size="sm" className="w-9 h-9 rounded-2xl bg-secondary">
           <Bot className="w-5 h-5 text-primary" />
         </IconBox>
-        <span className="text-[15px] font-semibold text-foreground">Alma Lex</span>
+        <span className="text-base font-semibold text-foreground">Alma Lex</span>
         <div className="w-2 h-2 rounded-full bg-success" />
       </div>
       <div className="self-end rounded-[16px_16px_4px_16px] bg-primary px-[18px] py-3">
@@ -200,20 +200,20 @@ function SourceCard({
   urlColor: string;
 }) {
   return (
-    <div className="flex flex-col rounded-[20px] bg-card shadow-[0_6px_28px_#1E3A5F12] overflow-hidden w-full max-w-[520px]">
+    <div className="flex flex-col rounded-[20px] bg-card shadow-card overflow-hidden w-full max-w-[520px]">
       <div className={`h-[5px] bg-gradient-to-r ${accentGradient}`} />
       <div className="flex flex-col gap-5 p-7">
         <div className="flex items-center gap-4">
           <IconBox className={iconBg}>{icon}</IconBox>
           <div className="flex flex-col gap-1">
             <h3 className="text-xl font-bold text-secondary-foreground">{title}</h3>
-            <p className="text-[13px] font-medium text-muted-foreground">{subtitle}</p>
+            <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        <p className="text-[15px] text-muted-foreground leading-[1.6]">{desc}</p>
-        <div className="flex items-center gap-2 rounded-[10px] bg-muted px-4 py-2 w-fit">
+        <p className="text-base text-muted-foreground leading-[1.6]">{desc}</p>
+        <div className="flex items-center gap-2 rounded-xl bg-muted px-4 py-2 w-fit">
           <ExternalLink className={`w-3.5 h-3.5 ${urlColor}`} />
-          <span className={`text-[13px] font-medium ${urlColor}`}>{url}</span>
+          <span className={`text-sm font-medium ${urlColor}`}>{url}</span>
         </div>
       </div>
     </div>
@@ -237,7 +237,7 @@ function Hero({ content }: { content: LandingPageContent }) {
         <div className="flex flex-wrap items-center justify-center gap-4">
           <a
             href="/chat"
-            className="flex items-center gap-2.5 rounded-[14px] bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-[0_4px_16px_#3B82C440] hover:bg-primary/85 transition-colors"
+            className="flex items-center gap-2.5 rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-button-primary hover:bg-primary/85 transition-colors"
           >
             {content.hero.cta}
             <ArrowRight className="w-[18px] h-[18px]" />
@@ -297,15 +297,15 @@ function HowItWorksSection({ content }: { content: LandingPageContent["howItWork
             {i > 0 && (
               <ChevronRight className="hidden lg:block w-6 h-6 text-muted-foreground/40 shrink-0" />
             )}
-            <div className="flex flex-col items-center gap-5 rounded-[20px] bg-card p-8 shadow-[0_4px_24px_#1E3A5F10] w-full max-w-[340px]">
-              <div className={`flex items-center justify-center w-9 h-9 rounded-[18px] bg-gradient-to-b ${stepMeta[i].numGradient}`}>
-                <span className="text-[15px] font-bold text-white">{stepMeta[i].num}</span>
+            <div className="flex flex-col items-center gap-5 rounded-[20px] bg-card p-8 shadow-card-sm w-full max-w-[340px]">
+              <div className={`flex items-center justify-center w-9 h-9 rounded-2xl bg-gradient-to-b ${stepMeta[i].numGradient}`}>
+                <span className="text-base font-bold text-white">{stepMeta[i].num}</span>
               </div>
-              <IconBox size="lg" className={`w-14 h-14 rounded-[16px] ${stepMeta[i].iconBg}`}>
+              <IconBox size="lg" className={`w-14 h-14 rounded-2xl ${stepMeta[i].iconBg}`}>
                 {stepMeta[i].icon}
               </IconBox>
               <h3 className="text-lg font-bold text-secondary-foreground text-center">{step.title}</h3>
-              <p className="text-[15px] text-muted-foreground text-center leading-relaxed">{step.desc}</p>
+              <p className="text-base text-muted-foreground text-center leading-relaxed">{step.desc}</p>
             </div>
           </Fragment>
         ))}
@@ -382,7 +382,7 @@ function PrivacySection({ content }: { content: LandingPageContent["privacy"] })
           <SectionBadge
             icon={<ShieldCheck className="w-4 h-4" />}
             label={content.badgeLabel}
-            className="bg-card text-accent-foreground shadow-[0_2px_8px_#6B9E7A20]"
+            className="bg-card text-accent-foreground shadow-sm"
           />
         }
         title={content.title}
@@ -434,10 +434,10 @@ function FAQSection({ content }: { content: LandingPageContent["faq"] }) {
         <Accordion type="single" collapsible className="w-full">
           {content.items.map((item) => (
             <AccordionItem key={item.value} value={item.value} className="border-border">
-              <AccordionTrigger className="text-[15px] font-semibold text-secondary-foreground hover:no-underline hover:text-primary">
+              <AccordionTrigger className="text-base font-semibold text-secondary-foreground hover:no-underline hover:text-primary">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-[15px] text-muted-foreground leading-relaxed">
+              <AccordionContent className="text-base text-muted-foreground leading-relaxed">
                 {item.a}
               </AccordionContent>
             </AccordionItem>
@@ -479,13 +479,13 @@ function OpenSourceSection({ content }: { content: LandingPageContent["openSourc
         {content.cards.map((card, i) => (
           <div
             key={card.title}
-            className="flex flex-col gap-3.5 rounded-[16px] bg-white/[0.03] border border-white/[0.07] p-7"
+            className="flex flex-col gap-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.07] p-7"
           >
             <div className="flex items-center gap-3">
-              <IconBox size="md" className={`w-11 h-11 rounded-[12px] bg-gradient-to-b ${openSourceCardMeta[i].iconGradient}`}>
+              <IconBox size="md" className={`w-11 h-11 rounded-2xl bg-gradient-to-b ${openSourceCardMeta[i].iconGradient}`}>
                 {openSourceCardMeta[i].icon}
               </IconBox>
-              <h3 className="text-[17px] font-bold text-white">{card.title}</h3>
+              <h3 className="text-lg font-bold text-white">{card.title}</h3>
             </div>
             <p className="text-sm text-[#A8C8E8] leading-[1.6]">{card.desc}</p>
           </div>
@@ -496,7 +496,7 @@ function OpenSourceSection({ content }: { content: LandingPageContent["openSourc
         href="https://github.com/gartmeier/almalex"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2.5 rounded-[12px] bg-white px-7 py-3.5 text-[15px] font-semibold text-[#1E3A5F] shadow-[0_4px_16px_#00000020] hover:bg-[#F5F5F5] transition-colors"
+        className="flex items-center gap-1.5 rounded-2xl bg-white px-4 py-3 text-xs sm:px-7 sm:py-3.5 sm:gap-2.5 sm:text-base font-semibold text-[#1E3A5F] shadow-button hover:bg-[#F5F5F5] transition-colors"
       >
         <Github className="w-5 h-5" />
         {content.githubCta}

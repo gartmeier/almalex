@@ -4,14 +4,15 @@
 
 SSR is enabled. Consider enabling `prerender` for static marketing pages for faster TTFB.
 
-## P3: Design Consistency
-
-- [ ] Standardize body text sizes (`text-[15px]` vs `text-base`)
-- [ ] Standardize card border-radius to two tiers: `rounded-2xl` (16px) small, `rounded-[20px]` large
-- [ ] Extract repeated shadow values into Tailwind theme tokens
-- [ ] Test GitHub CTA button text wrapping on 320px screens
-
 ## Done (2026-03-13)
+
+### Design Consistency
+
+- Standardized body text: `text-[15px]` to `text-base`, `text-[17px]` to `text-lg`, `text-[13px]` to `text-sm`/`text-xs`
+- Standardized border-radius: two tiers `rounded-2xl` (16px) small, `rounded-[20px]` large
+- Extracted 7 shadow tokens into Tailwind theme (`shadow-card`, `shadow-card-lg`, `shadow-card-sm`, `shadow-button-primary`, `shadow-button`, `shadow-feature`, `shadow-feature-hover`)
+- Fixed GitHub CTA button wrapping at 320px: responsive padding/font-size (`text-xs px-4` mobile, `text-base px-7` desktop)
+- Updated `icon-box.tsx`, `feature-card.tsx`, `alert-banner.tsx`, `section-badge.tsx` for consistency
 
 ### Sitemap and Robots.txt
 

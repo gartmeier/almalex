@@ -14,16 +14,16 @@ export function AlertBanner({
   return (
     <div
       className={cn(
-        "flex items-start gap-5 rounded-[18px] border border-[#E2E8F0]/60 p-7 shadow-[0_1px_3px_#1E3A5F08]",
+        "flex items-start gap-5 rounded-[20px] border border-[#E2E8F0]/60 p-7 shadow-sm",
         className,
       )}
     >
       {icon}
       <div className="flex flex-col gap-1.5">
-        <h3 className="text-[17px] font-semibold tracking-[-0.01em]">
+        <h3 className="text-lg font-semibold tracking-[-0.01em]">
           {title}
         </h3>
-        <p className="text-[15px] leading-[1.65]">{description}</p>
+        <p className="text-base leading-[1.65]">{description}</p>
       </div>
     </div>
   );

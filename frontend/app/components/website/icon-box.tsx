@@ -10,9 +10,9 @@ export function IconBox({
   className?: string;
 }) {
   let sizes = {
-    sm: "w-8 h-8 rounded-[10px]",
-    md: "w-[52px] h-[52px] rounded-[14px]",
-    lg: "w-14 h-14 rounded-[16px]",
+    sm: "w-8 h-8 rounded-xl",
+    md: "w-[52px] h-[52px] rounded-2xl",
+    lg: "w-14 h-14 rounded-2xl",
   };
 
   return (

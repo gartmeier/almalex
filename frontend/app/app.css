@@ -10,6 +10,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1rem;
+  --shadow-card: 0 6px 28px #1E3A5F12;
+  --shadow-card-lg: 0 8px 32px #1E3A5F15;
+  --shadow-card-sm: 0 4px 24px #1E3A5F10;
+  --shadow-button-primary: 0 4px 16px #3B82C440;
+  --shadow-button: 0 4px 16px #00000020;
+  --shadow-feature: 0 1px 3px #1E3A5F08, 0 8px 24px -4px #1E3A5F0A;
+  --shadow-feature-hover: 0 1px 3px #1E3A5F08, 0 12px 32px -4px #1E3A5F14;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
