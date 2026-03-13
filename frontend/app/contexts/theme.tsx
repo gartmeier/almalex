@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   let setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    document.cookie = `theme=${next};path=/;max-age=31536000;SameSite=Lax`;
+    document.cookie = `theme=${next};path=/;max-age=31536000;SameSite=Strict`;
     applyTheme(resolve(next));
   }, []);
 

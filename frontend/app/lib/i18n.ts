@@ -30,6 +30,7 @@ i18n
       order: ["cookie", "navigator"],
       caches: ["cookie"],
       lookupCookie: "lang",
+      cookieOptions: { path: "/", maxAge: 31536000, sameSite: "strict" },
     },
 
     interpolation: {
