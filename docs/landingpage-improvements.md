@@ -1,33 +1,8 @@
 # Landing Page Improvements (Backlog)
 
-## P1: Mobile Navigation
+## P2: Prerendering for Landing Pages
 
-- [ ] Add hamburger menu or simplified nav for mobile (currently hidden entirely)
-
-## P1: OG Image
-
-Create an OG image (1200x630px) for social sharing previews (WhatsApp, Telegram, LinkedIn).
-Simple branded card: Alma Lex logo, tagline, chat interface visual.
-Add to meta tags once created:
-
-```tsx
-{ property: "og:image", content: "https://almalex.ch/og-image-de.png" },
-{ property: "og:image:width", content: "1200" },
-{ property: "og:image:height", content: "630" },
-{ property: "og:image:alt", content: "Alma Lex - Schweizer Rechts-KI" },
-{ name: "twitter:image", content: "https://almalex.ch/og-image-de.png" },
-```
-
-## P2: SSR/Prerendering for Landing Pages
-
-Currently `ssr: false` in react-router.config.ts. Google must execute JS to see content.
-Consider enabling `prerender` for static marketing pages while keeping chat routes client-only.
-Biggest single technical SEO improvement possible.
-
-## P3: Sitemap and Robots.txt
-
-Create `sitemap.xml` with all language variants and `robots.txt` pointing to it.
-Important for crawl efficiency, especially with CSR.
+SSR is enabled. Consider enabling `prerender` for static marketing pages for faster TTFB.
 
 ## P3: Design Consistency
 
@@ -37,6 +12,12 @@ Important for crawl efficiency, especially with CSR.
 - [ ] Test GitHub CTA button text wrapping on 320px screens
 
 ## Done (2026-03-13)
+
+### Sitemap and Robots.txt
+
+- Created `public/sitemap.xml` with all 6 pages (3 landing + 3 policy) and xhtml:link hreflang alternates
+- Created `public/robots.txt` allowing all crawlers, disallowing `/api/` and `/chat`, pointing to sitemap
+- Updated backlog: marked P1 items (mobile nav, OG image) and P2 SSR as done, updated P2 to prerender-only
 
 ### Chunk 2: Extract shared landing page component
 

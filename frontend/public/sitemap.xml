@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
+  <!-- Landing pages -->
+  <url>
+    <loc>https://almalex.ch/de</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/en</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/fr</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de" />
+  </url>
+
+  <!-- Policy pages -->
+  <url>
+    <loc>https://almalex.ch/de/policies</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/en/policies</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/fr/policies</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+  </url>
+</urlset>
