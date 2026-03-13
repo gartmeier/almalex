@@ -2,11 +2,11 @@ import type { MetaFunction } from "react-router";
 import { useLanguageRedirect } from "~/hooks/use-language-redirect";
 
 export let meta: MetaFunction = () => [
-  { title: "Mentions légales & Conditions d'utilisation | Alma Lex" },
+  { title: "Conditions d'utilisation | Alma Lex" },
   {
     name: "description",
     content:
-      "Mentions légales et conditions d'utilisation d'Alma Lex, un projet vitrine de Joshua Gartmeier. Droit suisse, for juridique Zurich.",
+      "Conditions d'utilisation d'Alma Lex, une IA juridique suisse gratuite et open source de Joshua Gartmeier. Droit suisse, for juridique Zurich.",
   },
   { name: "robots", content: "index, follow" },
 ];
@@ -16,7 +16,7 @@ export default function Component() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">Mentions légales</h1>
+      <h1 className="mb-8 text-3xl font-bold">Conditions d'utilisation</h1>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">
         <section className="mb-10">
@@ -34,7 +34,9 @@ export default function Component() {
             </a>
           </p>
           <p className="mb-4">
-            Alma Lex est un projet vitrine et non une offre commerciale.
+            Alma Lex est une IA juridique suisse gratuite et open source. Le
+            code source est librement accessible. Il ne s'agit pas d'une offre
+            commerciale.
           </p>
         </section>
 
@@ -44,7 +46,7 @@ export default function Component() {
           </h2>
 
           <p className="text-muted-foreground mb-4 text-sm">
-            En vigueur depuis : janvier 2025
+            En vigueur depuis : mars 2026
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -60,10 +62,11 @@ export default function Component() {
             2. Description du service
           </h3>
           <p className="mb-4">
-            Alma Lex est un projet vitrine de Joshua Gartmeier. Il s'agit d'une
-            plateforme assistée par IA qui fournit des informations juridiques
-            basées sur le droit suisse. Ce service sert de démonstration
-            technologique et ne remplace pas un conseil juridique professionnel.
+            Alma Lex est une IA juridique gratuite et open source, exploitée par
+            Joshua Gartmeier. Elle fournit des informations juridiques basées
+            sur le droit suisse. Les modèles d'IA fonctionnent chez Infomaniak à
+            Genève (Suisse), l'application sur un serveur dédié en Finlande
+            (UE). Alma Lex ne remplace pas un conseil juridique professionnel.
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -73,39 +76,43 @@ export default function Component() {
           <ul className="mb-4 list-disc pl-6">
             <li>N'utiliser le service qu'à des fins licites</li>
             <li>
-              Ne pas partager d'informations sensibles ou personnelles dans les
-              conversations
-            </li>
-            <li>
               Ne pas utiliser de systèmes automatisés ou de logiciels pour
               accéder au service
             </li>
             <li>Respecter les droits d'autrui</li>
             <li>Ne pas tenter de pirater ou de perturber le service</li>
           </ul>
+          <p className="mb-4">
+            Vous pouvez partager des informations personnelles dans les
+            conversations si vous le souhaitez. Veuillez noter que les messages
+            sont envoyés à nos serveurs pour traitement. Après la réponse, ils
+            sont supprimés.
+          </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
             4. Propriété intellectuelle
           </h3>
           <p className="mb-4">
             Tous les contenus, marques et technologies d'Alma Lex sont protégés
-            par le droit d'auteur. Vous bénéficiez d'une licence limitée, non
-            transférable, pour un usage personnel du service.
+            par le droit d'auteur. Le code source est librement accessible. Vous
+            bénéficiez d'une licence limitée, non transférable, pour un usage
+            personnel du service.
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
-            5. Utilisation en mode démonstration
+            5. Service gratuit
           </h3>
           <p className="mb-4">
-            Ce projet vitrine peut être modifié ou interrompu à tout moment et
-            sans préavis. Aucun droit à une disponibilité permanente ne peut
-            être revendiqué.
+            Alma Lex est un service gratuit. Aucun droit à une disponibilité
+            permanente ne peut être revendiqué. Le service peut être modifié ou
+            interrompu à tout moment et sans préavis.
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">6. Modifications</h3>
           <p className="mb-4">
-            S'agissant d'un projet vitrine, les fonctionnalités et les
-            conditions peuvent être modifiées à tout moment sans préavis.
+            Les fonctionnalités et les conditions peuvent être modifiées à tout
+            moment sans préavis. La version actuelle des conditions d'utilisation
+            est toujours disponible sur cette page.
           </p>
         </section>
 
@@ -134,9 +141,9 @@ export default function Component() {
             Limitation de responsabilité
           </h3>
           <p className="mb-4">
-            S'agissant d'un projet vitrine, Joshua Gartmeier décline toute
-            responsabilité pour les dommages résultant de l'utilisation d'Alma
-            Lex. L'utilisation se fait entièrement à vos propres risques.
+            Joshua Gartmeier décline toute responsabilité pour les dommages
+            résultant de l'utilisation d'Alma Lex. L'utilisation se fait
+            entièrement à vos propres risques.
           </p>
         </section>
 
@@ -162,9 +169,9 @@ export default function Component() {
           </p>
 
           <p className="mt-8 text-sm">
-            Informations sur la protection des données dans notre{" "}
+            Informations sur la protection des données sur notre{" "}
             <a href="/fr/protection-des-donnees" className="underline">
-              politique de confidentialité
+              page de confidentialité
             </a>
             .
           </p>

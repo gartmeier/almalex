@@ -8,11 +8,11 @@ export default {
       "/en",
       "/fr",
       "/de/datenschutz",
-      "/de/impressum",
+      "/de/nutzungsbedingungen",
       "/en/privacy",
-      "/en/imprint",
+      "/en/terms",
       "/fr/protection-des-donnees",
-      "/fr/mentions-legales",
+      "/fr/conditions-utilisation",
     ];
   },
 } satisfies Config;

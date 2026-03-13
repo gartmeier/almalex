@@ -2,11 +2,11 @@ import type { MetaFunction } from "react-router";
 import { useLanguageRedirect } from "~/hooks/use-language-redirect";
 
 export let meta: MetaFunction = () => [
-  { title: "Legal Notice & Terms of Service | Alma Lex" },
+  { title: "Terms of Use | Alma Lex" },
   {
     name: "description",
     content:
-      "Legal notice and terms of service for Alma Lex, a showcase project by Joshua Gartmeier. Swiss law, jurisdiction Zurich.",
+      "Terms of use for Alma Lex, a free, open-source Swiss legal AI by Joshua Gartmeier. Swiss law, jurisdiction Zurich.",
   },
   { name: "robots", content: "index, follow" },
 ];
@@ -16,7 +16,7 @@ export default function Component() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">Legal Notice</h1>
+      <h1 className="mb-8 text-3xl font-bold">Terms of Use</h1>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">
         <section className="mb-10">
@@ -32,7 +32,8 @@ export default function Component() {
             </a>
           </p>
           <p className="mb-4">
-            Alma Lex is a showcase project and not a commercial offering.
+            Alma Lex is a free, open-source Swiss legal AI. The source code is
+            publicly available. It is not a commercial offering.
           </p>
         </section>
 
@@ -40,7 +41,7 @@ export default function Component() {
           <h2 className="mb-4 text-2xl font-semibold">Terms of Service</h2>
 
           <p className="text-muted-foreground mb-4 text-sm">
-            Effective: January 2025
+            Effective: March 2026
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -55,9 +56,10 @@ export default function Component() {
             2. Service Description
           </h3>
           <p className="mb-4">
-            Alma Lex is a showcase project by Joshua Gartmeier. It is an
-            AI-powered platform that provides legal information based on Swiss
-            law. This service serves as a technology demonstration and does not
+            Alma Lex is a free, open-source legal AI operated by Joshua
+            Gartmeier. It provides legal information based on Swiss law. AI
+            models run at Infomaniak in Geneva (Switzerland), and the application
+            runs on a dedicated server in Finland (EU). Alma Lex does not
             replace professional legal advice.
           </p>
 
@@ -67,31 +69,39 @@ export default function Component() {
           <p className="mb-4">You agree to:</p>
           <ul className="mb-4 list-disc pl-6">
             <li>Use the service only for lawful purposes</li>
-            <li>Not share sensitive or personal information in chats</li>
             <li>Not use automated systems or software to access the service</li>
             <li>Respect the rights of others</li>
             <li>Not attempt to hack or disrupt the service</li>
           </ul>
+          <p className="mb-4">
+            You may share personal information in chats if you choose to do so.
+            Please note that messages are sent to our servers for processing.
+            After generating the response, they are discarded.
+          </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
             4. Intellectual Property
           </h3>
           <p className="mb-4">
             All content, trademarks, and technologies of Alma Lex are protected
-            by copyright. You receive a limited, non-transferable license for
-            personal use of the service.
+            by copyright. The source code is openly available. You receive a
+            limited, non-transferable license for personal use of the service.
           </p>
 
-          <h3 className="mt-6 mb-3 text-lg font-semibold">5. Demo Usage</h3>
+          <h3 className="mt-6 mb-3 text-lg font-semibold">
+            5. Free Service
+          </h3>
           <p className="mb-4">
-            This showcase may be modified or discontinued at any time without
-            prior notice. There is no entitlement to permanent availability.
+            Alma Lex is a free service. There is no entitlement to permanent
+            availability. The service may be modified or discontinued at any
+            time without prior notice.
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">6. Changes</h3>
           <p className="mb-4">
-            As this is a showcase project, features and terms may be changed at
-            any time without notice.
+            Features and terms may be changed at any time without notice. The
+            current version of the terms of service is always available on this
+            page.
           </p>
         </section>
 
@@ -115,9 +125,8 @@ export default function Component() {
             Limitation of Liability
           </h3>
           <p className="mb-4">
-            As this is a showcase project, Joshua Gartmeier assumes no liability
-            for damages arising from the use of Alma Lex. Use is entirely at
-            your own risk.
+            Joshua Gartmeier assumes no liability for damages arising from the
+            use of Alma Lex. Use is entirely at your own risk.
           </p>
         </section>
 
@@ -145,7 +154,7 @@ export default function Component() {
           <p className="mt-8 text-sm">
             For data protection information, see our{" "}
             <a href="/en/privacy" className="underline">
-              privacy policy
+              privacy page
             </a>
             .
           </p>

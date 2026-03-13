@@ -6,7 +6,7 @@ export let meta: MetaFunction = () => [
   {
     name: "description",
     content:
-      "Privacy policy for Alma Lex: learn how this Swiss legal AI showcase handles your data. No personal data, no accounts, everything stays local.",
+      "Privacy policy for Alma Lex, a free, open-source Swiss legal AI. No accounts, no server storage, everything stays local.",
   },
   { name: "robots", content: "index, follow" },
 ];
@@ -25,10 +25,10 @@ export default function Component() {
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">1. Introduction</h2>
         <p className="mb-4">
-          Alma Lex is a showcase project by Joshua Gartmeier. This privacy
-          policy explains how this project handles data. In short: your
-          conversations stay on your device, and we do not collect any personal
-          data.
+          Alma Lex is a free, open-source Swiss legal AI operated by Joshua
+          Gartmeier. This privacy policy explains how Alma Lex handles your
+          data. In short: your conversations stay on your device. We do not
+          collect any personal data and no login is required.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">2. Data Collection</h2>
@@ -41,13 +41,13 @@ export default function Component() {
             storage)
           </li>
           <li>
-            Messages are temporarily processed on Swiss and EU servers to
-            generate AI responses
+            Messages are sent to Swiss and EU servers for processing and then
+            discarded
           </li>
           <li>
             No user accounts are created and no personal data is collected
           </li>
-          <li>Your inputs are not used for training purposes</li>
+          <li>Your inputs are not used for AI training</li>
           <li>
             Minimal technical data (e.g. server logs) is generated during
             operation
@@ -60,7 +60,7 @@ export default function Component() {
         <p className="mb-4">
           Alma Lex does not use any analytics or tracking cookies. No
           third-party tracking services are employed. Strictly necessary cookies
-          may be used for language preferences.
+          may be used for language preferences and theme selection.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">4. Purpose of Use</h2>
@@ -68,7 +68,7 @@ export default function Component() {
           The minimal data generated is used exclusively for:
         </p>
         <ul className="mb-4 list-disc pl-6">
-          <li>Providing the showcase functionality</li>
+          <li>Providing the Alma Lex functionality</li>
           <li>Generating AI responses to your queries</li>
           <li>Technical error analysis and operational reliability</li>
         </ul>
@@ -77,10 +77,11 @@ export default function Component() {
           5. Data Storage and Processing
         </h2>
         <p className="mb-4">
-          Your conversations do not permanently leave your browser. Messages are
-          temporarily transmitted to Swiss and EU servers for processing. After
-          generating the response, this data is not stored further. No AI models
-          are trained with your inputs.
+          Your conversations are not stored on our servers. Messages are
+          transmitted to Swiss servers (Infomaniak, datacenter in Geneva) and an
+          EU server (Finland) for processing. After generating the response,
+          this data is discarded. No AI models are trained with your inputs. No
+          US cloud services are used.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">6. Your Control</h2>
@@ -99,8 +100,9 @@ export default function Component() {
         <h2 className="mt-6 mb-3 text-lg font-semibold">7. Security</h2>
         <p className="mb-4">
           All data transfers between your browser and our servers use SSL/TLS
-          encrypted connections. Server-side processing takes place exclusively
-          on Swiss and EU servers that are subject to strict data protection
+          encrypted connections. AI models run at Infomaniak in Geneva
+          (Switzerland). The application itself runs on a dedicated server in
+          Finland (EU). Both locations are subject to strict data protection
           regulations.
         </p>
 
@@ -118,8 +120,8 @@ export default function Component() {
 
         <p className="mt-8 text-sm">
           For more legal information, see our{" "}
-          <a href="/en/imprint" className="underline">
-            legal notice
+          <a href="/en/terms" className="underline">
+            terms of use
           </a>
           .
         </p>

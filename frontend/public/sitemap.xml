@@ -35,35 +35,67 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de" />
   </url>
 
-  <!-- Policy pages -->
+  <!-- Privacy pages -->
   <url>
-    <loc>https://almalex.ch/de/policies</loc>
+    <loc>https://almalex.ch/de/datenschutz</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/datenschutz" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/protection-des-donnees" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/datenschutz" />
   </url>
   <url>
-    <loc>https://almalex.ch/en/policies</loc>
+    <loc>https://almalex.ch/en/privacy</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/datenschutz" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/protection-des-donnees" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/datenschutz" />
   </url>
   <url>
-    <loc>https://almalex.ch/fr/policies</loc>
+    <loc>https://almalex.ch/fr/protection-des-donnees</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/policies" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/policies" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/policies" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/policies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/datenschutz" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/protection-des-donnees" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/datenschutz" />
+  </url>
+
+  <!-- Terms pages -->
+  <url>
+    <loc>https://almalex.ch/de/nutzungsbedingungen</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/nutzungsbedingungen" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/conditions-utilisation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/nutzungsbedingungen" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/en/terms</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/nutzungsbedingungen" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/conditions-utilisation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/nutzungsbedingungen" />
+  </url>
+  <url>
+    <loc>https://almalex.ch/fr/conditions-utilisation</loc>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://almalex.ch/de/nutzungsbedingungen" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almalex.ch/en/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://almalex.ch/fr/conditions-utilisation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://almalex.ch/de/nutzungsbedingungen" />
   </url>
 </urlset>

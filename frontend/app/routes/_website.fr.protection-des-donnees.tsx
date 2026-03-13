@@ -6,7 +6,7 @@ export let meta: MetaFunction = () => [
   {
     name: "description",
     content:
-      "Politique de confidentialité d'Alma Lex : découvrez comment ce showcase d'IA juridique suisse traite vos données. Aucune donnée personnelle, aucun compte, tout reste local.",
+      "Politique de confidentialité d'Alma Lex, une IA juridique suisse gratuite et open source. Aucun compte, aucun stockage sur serveur, tout reste local.",
   },
   { name: "robots", content: "index, follow" },
 ];
@@ -25,10 +25,11 @@ export default function Component() {
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">1. Introduction</h2>
         <p className="mb-4">
-          Alma Lex est un projet vitrine de Joshua Gartmeier. La présente
-          politique de confidentialité vous informe sur la manière dont ce
-          projet traite les données. En résumé : vos conversations restent sur
-          votre appareil et nous ne collectons aucune donnée personnelle.
+          Alma Lex est une IA juridique suisse gratuite et open source, exploitée
+          par Joshua Gartmeier. La présente politique de confidentialité vous
+          informe sur la manière dont Alma Lex traite vos données. En résumé :
+          vos conversations restent sur votre appareil. Nous ne collectons aucune
+          donnée personnelle et aucune connexion n'est requise.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">
@@ -43,14 +44,16 @@ export default function Component() {
             votre appareil (dans le stockage du navigateur)
           </li>
           <li>
-            Les messages sont temporairement traités sur des serveurs suisses et
-            européens afin de générer les réponses IA
+            Les messages sont envoyés aux serveurs suisses et européens pour
+            traitement, puis supprimés
           </li>
           <li>
             Aucun compte utilisateur n'est créé et aucune donnée personnelle
             n'est collectée
           </li>
-          <li>Vos saisies ne sont pas utilisées à des fins d'entraînement</li>
+          <li>
+            Vos saisies ne sont pas utilisées pour l'entraînement de l'IA
+          </li>
           <li>
             Des données techniques minimales (p. ex. journaux serveur) sont
             générées lors du fonctionnement
@@ -63,7 +66,7 @@ export default function Component() {
         <p className="mb-4">
           Alma Lex n'utilise aucun cookie d'analyse ou de suivi. Aucun service
           de suivi tiers n'est employé. Des cookies strictement nécessaires
-          peuvent être utilisés pour la préférence de langue.
+          peuvent être utilisés pour la préférence de langue et le choix du thème.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">
@@ -73,7 +76,7 @@ export default function Component() {
           Les données minimales collectées sont exclusivement utilisées pour :
         </p>
         <ul className="mb-4 list-disc pl-6">
-          <li>La mise à disposition de la fonctionnalité vitrine</li>
+          <li>La mise à disposition des fonctionnalités d'Alma Lex</li>
           <li>La génération de réponses IA à vos requêtes</li>
           <li>L'analyse technique des erreurs et la sécurité opérationnelle</li>
         </ul>
@@ -82,11 +85,12 @@ export default function Component() {
           5. Stockage et traitement des données
         </h2>
         <p className="mb-4">
-          Vos conversations ne quittent pas votre navigateur de manière
-          permanente. Les messages sont temporairement transmis à des serveurs
-          suisses et européens pour traitement. Après la génération de la
-          réponse, ces données ne sont pas conservées. Aucun entraînement de
-          modèles IA n'est effectué avec vos saisies.
+          Vos conversations ne sont pas stockées sur nos serveurs. Les messages
+          sont transmis aux serveurs suisses (Infomaniak, centre de données à
+          Genève) et à un serveur européen (Finlande) pour traitement. Après la
+          génération de la réponse, ces données sont supprimées. Aucun
+          entraînement de modèles IA n'est effectué avec vos saisies. Aucun
+          service cloud américain n'est utilisé.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">6. Votre contrôle</h2>
@@ -109,10 +113,11 @@ export default function Component() {
         <h2 className="mt-6 mb-3 text-lg font-semibold">7. Sécurité</h2>
         <p className="mb-4">
           Tous les transferts de données entre votre navigateur et nos serveurs
-          s'effectuent via des connexions chiffrées SSL/TLS. Le traitement côté
-          serveur a lieu exclusivement sur des serveurs suisses et européens,
-          soumis à des réglementations strictes en matière de protection des
-          données.
+          s'effectuent via des connexions chiffrées SSL/TLS. Les modèles d'IA
+          fonctionnent chez Infomaniak à Genève (Suisse). L'application
+          elle-même fonctionne sur un serveur dédié en Finlande (UE). Les deux
+          emplacements sont soumis à des réglementations strictes en matière de
+          protection des données.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">8. Contact</h2>
@@ -130,8 +135,8 @@ export default function Component() {
 
         <p className="mt-8 text-sm">
           Pour plus d'informations juridiques, consultez les{" "}
-          <a href="/fr/mentions-legales" className="underline">
-            mentions légales
+          <a href="/fr/conditions-utilisation" className="underline">
+            conditions d'utilisation
           </a>
           .
         </p>

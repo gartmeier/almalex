@@ -27,8 +27,8 @@ let t = {
     footerCta: "Jetzt loslegen",
     privacy: "Datenschutz",
     privacyPath: "datenschutz",
-    imprint: "Impressum",
-    imprintPath: "impressum",
+    imprint: "Nutzungsbedingungen",
+    imprintPath: "nutzungsbedingungen",
     disclaimer:
       "Alma Lex bietet keine Rechtsberatung. Bei konkreten Fällen eine Fachperson beiziehen.",
   },
@@ -46,8 +46,8 @@ let t = {
     footerCta: "Get Started",
     privacy: "Privacy",
     privacyPath: "privacy",
-    imprint: "Imprint",
-    imprintPath: "imprint",
+    imprint: "Terms of Use",
+    imprintPath: "terms",
     disclaimer:
       "Alma Lex does not provide legal advice. For specific cases, consult a qualified professional.",
   },
@@ -65,8 +65,8 @@ let t = {
     footerCta: "Commencer",
     privacy: "Protection des données",
     privacyPath: "protection-des-donnees",
-    imprint: "Mentions légales",
-    imprintPath: "mentions-legales",
+    imprint: "Conditions d'utilisation",
+    imprintPath: "conditions-utilisation",
     disclaimer:
       "Alma Lex ne fournit pas de conseil juridique. Pour des cas concrets, consultez un ou une spécialiste.",
   },
