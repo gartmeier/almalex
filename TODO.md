@@ -1,8 +1,8 @@
 # Next
 
 - [ ] improve rag
-- [ ] re-enable SSR
-- [ ] create website
+- [x] re-enable SSR
+- [x] create website
 - [ ] create and deploy new version
 - [x] replace sentry
 - [x] handle error messages
