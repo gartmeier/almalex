@@ -1,10 +1,14 @@
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation } from "react-router";
 import { LanguageSelector } from "~/components/layout/language-selector";
 import { SheetClose } from "~/components/ui/sheet";
-import { FooterDivider, FooterLinks, SiteFooter } from "~/components/website/site-footer";
+import {
+  FooterDivider,
+  FooterLinks,
+  SiteFooter,
+} from "~/components/website/site-footer";
 import { NavLink, SiteNav } from "~/components/website/site-nav";
 
 let t = {
@@ -17,11 +21,15 @@ let t = {
     ],
     cta: "Ausprobieren",
     footerHeading: "Bereit für deine nächste Rechtsfrage?",
-    footerBody: "Egal ob Obligationenrecht, Mietrecht oder Strafrecht: frag die Rechts-KI einfach. Kostenlos und ohne Anmeldung.",
+    footerBody:
+      "Egal ob Obligationenrecht, Mietrecht oder Strafrecht: frag die Rechts-KI einfach. Kostenlos und ohne Anmeldung.",
     footerCta: "Jetzt loslegen",
     privacy: "Datenschutz",
+    privacyPath: "datenschutz",
     imprint: "Impressum",
-    disclaimer: "Alma Lex bietet keine Rechtsberatung. Bei konkreten Fällen eine Fachperson beiziehen.",
+    imprintPath: "impressum",
+    disclaimer:
+      "Alma Lex bietet keine Rechtsberatung. Bei konkreten Fällen eine Fachperson beiziehen.",
   },
   en: {
     nav: [
@@ -32,11 +40,15 @@ let t = {
     ],
     cta: "Try It Now",
     footerHeading: "Ready for your next legal question?",
-    footerBody: "Whether it's contract law, tenancy law, or criminal law: just ask the legal AI. Free and without registration.",
+    footerBody:
+      "Whether it's contract law, tenancy law, or criminal law: just ask the legal AI. Free and without registration.",
     footerCta: "Get Started",
     privacy: "Privacy",
+    privacyPath: "privacy",
     imprint: "Imprint",
-    disclaimer: "Alma Lex does not provide legal advice. For specific cases, consult a qualified professional.",
+    imprintPath: "imprint",
+    disclaimer:
+      "Alma Lex does not provide legal advice. For specific cases, consult a qualified professional.",
   },
   fr: {
     nav: [
@@ -47,11 +59,15 @@ let t = {
     ],
     cta: "Essayer",
     footerHeading: "Prêt pour votre prochaine question juridique ?",
-    footerBody: "Que ce soit le droit des obligations, le droit du bail ou le droit pénal : posez simplement la question à l'IA juridique. Gratuit et sans inscription.",
+    footerBody:
+      "Que ce soit le droit des obligations, le droit du bail ou le droit pénal : posez simplement la question à l'IA juridique. Gratuit et sans inscription.",
     footerCta: "Commencer",
     privacy: "Protection des données",
+    privacyPath: "protection-des-donnees",
     imprint: "Mentions légales",
-    disclaimer: "Alma Lex ne fournit pas de conseil juridique. Pour des cas concrets, consultez un ou une spécialiste.",
+    imprintPath: "mentions-legales",
+    disclaimer:
+      "Alma Lex ne fournit pas de conseil juridique. Pour des cas concrets, consultez un ou une spécialiste.",
   },
 } as const;
 
@@ -74,19 +90,27 @@ export default function LandingLayout() {
   }, [lang, i18n]);
 
   return (
-    <div className="min-h-screen font-['Inter_Variable',sans-serif] bg-background">
+    <div className="bg-background min-h-screen font-['Inter_Variable',sans-serif]">
       <SiteNav
-        className="bg-card/[0.93] border-b border-border"
+        className="bg-card/[0.93] border-border border-b"
         logo={
           <a href={prefix} className="flex items-center gap-2">
-            <img src="/logo-color.webp" alt="Alma Lex" className="w-[22px] h-[22px]" />
-            <span className="text-xl font-bold text-secondary-foreground">Alma Lex</span>
+            <img
+              src="/logo-color.webp"
+              alt="Alma Lex"
+              className="h-[22px] w-[22px]"
+            />
+            <span className="text-secondary-foreground text-xl font-bold">
+              Alma Lex
+            </span>
           </a>
         }
         links={
           <>
             {s.nav.map((link) => (
-              <NavLink key={link.href} href={`${prefix}${link.href}`}>{link.label}</NavLink>
+              <NavLink key={link.href} href={`${prefix}${link.href}`}>
+                {link.label}
+              </NavLink>
             ))}
           </>
         }
@@ -94,10 +118,10 @@ export default function LandingLayout() {
         cta={
           <a
             href="/chat"
-            className="flex items-center gap-2 rounded-[10px] bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 transition-colors"
+            className="bg-primary text-primary-foreground hover:bg-primary/85 flex items-center gap-2 rounded-[10px] px-6 py-2.5 text-sm font-semibold transition-colors"
           >
             {s.cta}
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="h-4 w-4" />
           </a>
         }
         mobileContent={
@@ -106,7 +130,7 @@ export default function LandingLayout() {
               <SheetClose asChild key={link.href}>
                 <a
                   href={`${prefix}${link.href}`}
-                  className="border-b border-border py-3 text-lg font-medium text-secondary-foreground"
+                  className="border-border text-secondary-foreground border-b py-3 text-lg font-medium"
                 >
                   {link.label}
                 </a>
@@ -118,10 +142,10 @@ export default function LandingLayout() {
             <SheetClose asChild>
               <a
                 href="/chat"
-                className="mt-4 flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/85 transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/85 mt-4 flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-base font-semibold transition-colors"
               >
                 {s.cta}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="h-4 w-4" />
               </a>
             </SheetClose>
           </nav>
@@ -131,19 +155,19 @@ export default function LandingLayout() {
       <Outlet />
 
       <SiteFooter className="bg-gradient-to-b from-[#1A324D] to-[#0F1F33]">
-        <div className="flex flex-col items-center gap-6 max-w-[700px]">
-          <h2 className="text-2xl md:text-[32px] font-extrabold text-white text-center tracking-tight">
+        <div className="flex max-w-[700px] flex-col items-center gap-6">
+          <h2 className="text-center text-2xl font-extrabold tracking-tight text-white md:text-[32px]">
             {s.footerHeading}
           </h2>
-          <p className="text-[17px] text-[#9ABBD8] text-center">
+          <p className="text-center text-[17px] text-[#9ABBD8]">
             {s.footerBody}
           </p>
           <a
             href="/chat"
-            className="flex items-center gap-2.5 rounded-[12px] bg-gradient-to-r from-[#3B82C4] to-[#2E6FA8] px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_#3B82C440] hover:from-[#2E6FA8] hover:to-[#245A8A] transition-colors"
+            className="flex items-center gap-2.5 rounded-[12px] bg-gradient-to-r from-[#3B82C4] to-[#2E6FA8] px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_#3B82C440] transition-colors hover:from-[#2E6FA8] hover:to-[#245A8A]"
           >
             {s.footerCta}
-            <ArrowRight className="w-[18px] h-[18px]" />
+            <ArrowRight className="h-[18px] w-[18px]" />
           </a>
         </div>
 
@@ -152,25 +176,43 @@ export default function LandingLayout() {
         <FooterLinks>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <img src="/logo-white.webp" alt="" className="w-5 h-5" />
+              <img src="/logo-white.webp" alt="" className="h-5 w-5" />
               <span className="text-[17px] font-bold text-white">Alma Lex</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-7">
-            <a href="https://github.com/gartmeier/almalex" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">GitHub</a>
-            <a href={`${prefix}#faq`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">FAQ</a>
-            <a href={`${prefix}/policies#privacy`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">{s.privacy}</a>
-            <a href={`${prefix}/policies#terms`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">{s.imprint}</a>
+            <a
+              href="https://github.com/gartmeier/almalex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[#8AABC8] transition-colors hover:text-white"
+            >
+              GitHub
+            </a>
+            <a
+              href={`${prefix}#faq`}
+              className="text-sm font-medium text-[#8AABC8] transition-colors hover:text-white"
+            >
+              FAQ
+            </a>
+            <a
+              href={`${prefix}/${s.privacyPath}`}
+              className="text-sm font-medium text-[#8AABC8] transition-colors hover:text-white"
+            >
+              {s.privacy}
+            </a>
+            <a
+              href={`${prefix}/${s.imprintPath}`}
+              className="text-sm font-medium text-[#8AABC8] transition-colors hover:text-white"
+            >
+              {s.imprint}
+            </a>
           </div>
         </FooterLinks>
 
         <div className="flex flex-col items-center gap-1.5">
-          <p className="text-xs text-[#7A9AB5] text-center">
-            © 2026 Alma Lex
-          </p>
-          <p className="text-xs text-[#7A9AB5] text-center">
-            {s.disclaimer}
-          </p>
+          <p className="text-center text-xs text-[#7A9AB5]">© 2026 Alma Lex</p>
+          <p className="text-center text-xs text-[#7A9AB5]">{s.disclaimer}</p>
         </div>
       </SiteFooter>
     </div>

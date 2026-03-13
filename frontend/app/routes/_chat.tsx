@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, Outlet } from "react-router";
 import { HelpMenu } from "~/components/layout/help-menu";
 import { LanguageSelector } from "~/components/layout/language-selector";
+import { ThemeToggle } from "~/components/layout/theme-toggle";
 import { Button } from "~/components/ui/button";
 import { Toaster } from "~/components/ui/sonner";
 
@@ -39,6 +40,7 @@ export default function Layout() {
                 <SquarePen className="h-4 w-4" />
               </Link>
             </Button>
+            <ThemeToggle />
             <LanguageSelector />
             <HelpMenu />
           </nav>

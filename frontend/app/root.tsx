@@ -13,6 +13,7 @@ import React from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { ChatStorageProvider } from "./contexts/chat-storage";
+import { ThemeProvider } from "./contexts/theme";
 import { client } from "./lib/api/client.gen";
 import "./lib/i18n";
 
@@ -43,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
         />
         <link rel="icon" href="/logo-color.svg" type="image/svg+xml" />
-<Meta />
+        <Meta />
         <Links />
       </head>
       <body>
@@ -51,23 +52,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
-              let darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-              function updateDarkMode() {
-                if (darkModeQuery.matches) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.style.colorScheme = 'dark';
-                } else {
-                  document.documentElement.classList.remove('dark');
-                  document.documentElement.style.colorScheme = 'light';
-                }
-              }
-
-              // Set initial dark mode
-              updateDarkMode();
-
-              // Listen for changes
-              darkModeQuery.addEventListener('change', updateDarkMode);
+              var c = document.cookie.match(/(?:^|; )theme=(light|dark|system)/);
+              var stored = c ? c[1] : 'system';
+              var dark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+              document.documentElement.classList.toggle('dark', dark);
+              document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
             })();
           `,
           }}
@@ -83,11 +72,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   client.setConfig({ baseUrl: "/" });
   return (
-    <ChatStorageProvider>
-      <TooltipProvider>
-        <Outlet />
-      </TooltipProvider>
-    </ChatStorageProvider>
+    <ThemeProvider>
+      <ChatStorageProvider>
+        <TooltipProvider>
+          <Outlet />
+        </TooltipProvider>
+      </ChatStorageProvider>
+    </ThemeProvider>
   );
 }
 
