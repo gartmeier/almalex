@@ -115,10 +115,15 @@ export default function LandingLayout() {
             ))}
           </>
         }
-        actions={<><ThemeToggle /><LanguageSelector /></>}
+        actions={
+          <>
+            <ThemeToggle />
+            <LanguageSelector />
+          </>
+        }
         cta={
           <a
-            href="/chat"
+            href={`${prefix}/chat`}
             className="bg-primary text-primary-foreground hover:bg-primary/85 flex items-center gap-2 rounded-[10px] px-6 py-2.5 text-sm font-semibold transition-colors"
           >
             {s.cta}
@@ -143,7 +148,7 @@ export default function LandingLayout() {
             </div>
             <SheetClose asChild>
               <a
-                href="/chat"
+                href={`${prefix}/chat`}
                 className="bg-primary text-primary-foreground hover:bg-primary/85 mt-4 flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-base font-semibold transition-colors"
               >
                 {s.cta}
@@ -165,7 +170,7 @@ export default function LandingLayout() {
             {s.footerBody}
           </p>
           <a
-            href="/chat"
+            href={`${prefix}/chat`}
             className="flex items-center gap-2.5 rounded-[12px] bg-gradient-to-r from-[#3B82C4] to-[#2E6FA8] px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_#3B82C440] transition-colors hover:from-[#2E6FA8] hover:to-[#245A8A]"
           >
             {s.footerCta}

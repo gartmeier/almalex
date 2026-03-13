@@ -25,11 +25,12 @@ export default function Component() {
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">1. Introduction</h2>
         <p className="mb-4">
-          Alma Lex est une IA juridique suisse gratuite et open source, exploitée
-          par Joshua Gartmeier. La présente politique de confidentialité vous
-          informe sur la manière dont Alma Lex traite vos données. En résumé :
-          vos conversations restent sur votre appareil. Nous ne collectons aucune
-          donnée personnelle et aucune connexion n'est requise.
+          Alma Lex est une IA juridique suisse gratuite et open source,
+          exploitée par Joshua Gartmeier. La présente politique de
+          confidentialité vous informe sur la manière dont Alma Lex traite vos
+          données. En résumé : vos conversations restent sur votre appareil.
+          Nous ne collectons aucune donnée personnelle et aucune connexion n'est
+          requise.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">
@@ -51,9 +52,7 @@ export default function Component() {
             Aucun compte utilisateur n'est créé et aucune donnée personnelle
             n'est collectée
           </li>
-          <li>
-            Vos saisies ne sont pas utilisées pour l'entraînement de l'IA
-          </li>
+          <li>Vos saisies ne sont pas utilisées pour l'entraînement de l'IA</li>
           <li>
             Des données techniques minimales (p. ex. journaux serveur) sont
             générées lors du fonctionnement
@@ -66,7 +65,8 @@ export default function Component() {
         <p className="mb-4">
           Alma Lex n'utilise aucun cookie d'analyse ou de suivi. Aucun service
           de suivi tiers n'est employé. Des cookies strictement nécessaires
-          peuvent être utilisés pour la préférence de langue et le choix du thème.
+          peuvent être utilisés pour la préférence de langue et le choix du
+          thème.
         </p>
 
         <h2 className="mt-6 mb-3 text-lg font-semibold">

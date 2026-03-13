@@ -16,13 +16,14 @@ import type {
   TextBlock,
   ThinkingBlockData,
 } from "~/types/messages";
-import type { Route } from "./+types/_chat.chat.$chatId";
+import type { Route } from "./+types/_chat.$lang.chat.$chatId";
 
 // disable SSR
 export function clientLoader() {}
 
 export default function Component({ params }: Route.ComponentProps) {
-  let { chatId } = params;
+  let { chatId, lang } = params;
+  let prefix = `/${lang ?? "de"}`;
   let location = useLocation();
   let navigate = useNavigate();
   let { t } = useTranslation();
@@ -65,14 +66,14 @@ export default function Component({ params }: Route.ComponentProps) {
       let chat = loadChat(chatId);
       if (!chat) {
         toast.error("Chat not found");
-        navigate("/");
+        navigate(prefix);
         return;
       }
       setMessages(chat.messages);
       shouldScrollRef.current = true;
     } catch (e) {
       toast.error("Failed to load chat");
-      navigate("/");
+      navigate(prefix);
     }
   }
 
@@ -227,7 +228,7 @@ export default function Component({ params }: Route.ComponentProps) {
         <div className="mb-2 flex justify-center">
           <ScrollToBottomButton />
         </div>
-        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t p-4 backdrop-blur">
+        <div className="bg-card/[0.93] border-t p-4 backdrop-blur-md backdrop-saturate-150">
           <div className="mx-auto max-w-3xl">
             <MessageInput
               value={input}

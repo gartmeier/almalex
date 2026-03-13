@@ -65,9 +65,7 @@ export default function Component() {
           verwendet werden.
         </p>
 
-        <h2 className="mt-6 mb-3 text-lg font-semibold">
-          4. Verwendungszweck
-        </h2>
+        <h2 className="mt-6 mb-3 text-lg font-semibold">4. Verwendungszweck</h2>
         <p className="mb-4">
           Die minimal anfallenden Daten werden ausschliesslich verwendet für:
         </p>

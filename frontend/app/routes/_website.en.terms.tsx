@@ -58,9 +58,9 @@ export default function Component() {
           <p className="mb-4">
             Alma Lex is a free, open-source legal AI operated by Joshua
             Gartmeier. It provides legal information based on Swiss law. AI
-            models run at Infomaniak in Geneva (Switzerland), and the application
-            runs on a dedicated server in Finland (EU). Alma Lex does not
-            replace professional legal advice.
+            models run at Infomaniak in Geneva (Switzerland), and the
+            application runs on a dedicated server in Finland (EU). Alma Lex
+            does not replace professional legal advice.
           </p>
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">
@@ -88,9 +88,7 @@ export default function Component() {
             limited, non-transferable license for personal use of the service.
           </p>
 
-          <h3 className="mt-6 mb-3 text-lg font-semibold">
-            5. Free Service
-          </h3>
+          <h3 className="mt-6 mb-3 text-lg font-semibold">5. Free Service</h3>
           <p className="mb-4">
             Alma Lex is a free service. There is no entitlement to permanent
             availability. The service may be modified or discontinued at any

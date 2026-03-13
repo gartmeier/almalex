@@ -108,9 +108,9 @@ export default function Component() {
 
           <h3 className="mt-6 mb-3 text-lg font-semibold">6. Änderungen</h3>
           <p className="mb-4">
-            Funktionen und Bedingungen können jederzeit ohne Ankündigung geändert
-            werden. Die aktuelle Version der Nutzungsbedingungen findest du
-            immer auf dieser Seite.
+            Funktionen und Bedingungen können jederzeit ohne Ankündigung
+            geändert werden. Die aktuelle Version der Nutzungsbedingungen
+            findest du immer auf dieser Seite.
           </p>
         </section>
 

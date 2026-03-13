@@ -38,8 +38,7 @@ export function LanguageSelector() {
       pathParts[0] = newLanguage;
       navigate("/" + pathParts.join("/"));
     } else {
-      // Path without language prefix (like /chat/*) - don't change
-      // Just change the i18n language
+      // Non-locale paths - just change the i18n language
     }
   }
 

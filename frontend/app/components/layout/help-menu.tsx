@@ -44,7 +44,9 @@ export function HelpMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to={`/${language}/${termsPaths[language] ?? "nutzungsbedingungen"}`}>
+          <Link
+            to={`/${language}/${termsPaths[language] ?? "nutzungsbedingungen"}`}
+          >
             {t("navigation.terms")}
           </Link>
         </DropdownMenuItem>

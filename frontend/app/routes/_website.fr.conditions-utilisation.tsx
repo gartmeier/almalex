@@ -111,8 +111,8 @@ export default function Component() {
           <h3 className="mt-6 mb-3 text-lg font-semibold">6. Modifications</h3>
           <p className="mb-4">
             Les fonctionnalités et les conditions peuvent être modifiées à tout
-            moment sans préavis. La version actuelle des conditions d'utilisation
-            est toujours disponible sur cette page.
+            moment sans préavis. La version actuelle des conditions
+            d'utilisation est toujours disponible sur cette page.
           </p>
         </section>
 
