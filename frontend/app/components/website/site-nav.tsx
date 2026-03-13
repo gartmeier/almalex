@@ -3,11 +3,13 @@ import { cn } from "~/lib/utils";
 export function SiteNav({
   logo,
   links,
+  actions,
   cta,
   className,
 }: {
   logo: React.ReactNode;
   links?: React.ReactNode;
+  actions?: React.ReactNode;
   cta?: React.ReactNode;
   className?: string;
 }) {
@@ -22,7 +24,10 @@ export function SiteNav({
       {links && (
         <div className="hidden md:flex items-center gap-8">{links}</div>
       )}
-      {cta}
+      <div className="flex items-center gap-3">
+        {actions}
+        {cta}
+      </div>
     </nav>
   );
 }
@@ -40,7 +45,7 @@ export function NavLink({
     <a
       href={href}
       className={cn(
-        "relative text-sm font-medium text-[#6B7280] transition-colors duration-200 hover:text-[#1E3A5F] after:absolute after:bottom-[-2px] after:left-0 after:h-[1.5px] after:w-0 after:bg-[#3B82C4] after:transition-all after:duration-200 hover:after:w-full",
+        "relative text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-secondary-foreground after:absolute after:bottom-[-2px] after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all after:duration-200 hover:after:w-full",
         className,
       )}
     >

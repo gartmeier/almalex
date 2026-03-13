@@ -1,31 +1,42 @@
 import { ArrowRight, Github } from "lucide-react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
+import { LanguageSelector } from "~/components/layout/language-selector";
 import { FooterDivider, FooterLinks, SiteFooter } from "~/components/website/site-footer";
 import { NavLink, SiteNav } from "~/components/website/site-nav";
 
+function useLangPrefix() {
+  let location = useLocation();
+  let parts = location.pathname.split("/").filter(Boolean);
+  let lang = ["de", "fr", "en"].includes(parts[0]) ? parts[0] : "de";
+  return `/${lang}`;
+}
+
 export default function LandingLayout() {
+  let prefix = useLangPrefix();
+
   return (
-    <div className="min-h-screen font-['Inter_Variable',sans-serif] bg-[#FAFAF8]">
+    <div className="min-h-screen font-['Inter_Variable',sans-serif] bg-background">
       <SiteNav
-        className="bg-white/[0.93] border-b border-[#E2E8F0]"
+        className="bg-card/[0.93] border-b border-border"
         logo={
-          <a href="/" className="flex items-center gap-2">
+          <a href={prefix} className="flex items-center gap-2">
             <img src="/logo-color.webp" alt="Alma Lex" className="w-[22px] h-[22px]" />
-            <span className="text-xl font-bold text-[#1E3A5F]">Alma Lex</span>
+            <span className="text-xl font-bold text-secondary-foreground">Alma Lex</span>
           </a>
         }
         links={
           <>
-            <NavLink href="/#so-funktionierts">So funktioniert's</NavLink>
-            <NavLink href="/#datenquellen">Datenquellen</NavLink>
-            <NavLink href="/#datenschutz">Datenschutz</NavLink>
-            <NavLink href="/#faq">FAQ</NavLink>
+            <NavLink href={`${prefix}#so-funktionierts`}>So funktioniert's</NavLink>
+            <NavLink href={`${prefix}#datenquellen`}>Datenquellen</NavLink>
+            <NavLink href={`${prefix}#datenschutz`}>Datenschutz</NavLink>
+            <NavLink href={`${prefix}#faq`}>FAQ</NavLink>
           </>
         }
+        actions={<LanguageSelector />}
         cta={
           <a
             href="/chat"
-            className="flex items-center gap-2 rounded-[10px] bg-[#3B82C4] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2E6FA8] transition-colors"
+            className="flex items-center gap-2 rounded-[10px] bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 transition-colors"
           >
             Ausprobieren
             <ArrowRight className="w-4 h-4" />
@@ -41,7 +52,7 @@ export default function LandingLayout() {
             Bereit für deine nächste Rechtsfrage?
           </h2>
           <p className="text-[17px] text-[#8AABC8] text-center">
-            Egal ob Obligationenrecht, Mietrecht oder Strafrecht – frag
+            Egal ob Obligationenrecht, Mietrecht oder Strafrecht: frag
             die Rechts-KI einfach. Kostenlos und ohne Anmeldung.
           </p>
           <a
@@ -64,9 +75,9 @@ export default function LandingLayout() {
           </div>
           <div className="flex items-center gap-7">
             <a href="https://github.com/gartmeier/almalex" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">GitHub</a>
-            <a href="/#faq" className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">FAQ</a>
-            <a href="/de/policies" className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">Datenschutz</a>
-            <a href="/de/policies" className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">Impressum</a>
+            <a href={`${prefix}#faq`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">FAQ</a>
+            <a href={`${prefix}/policies`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">Datenschutz</a>
+            <a href={`${prefix}/policies`} className="text-sm font-medium text-[#8AABC8] hover:text-white transition-colors">Impressum</a>
           </div>
         </FooterLinks>
 
