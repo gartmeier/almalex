@@ -36,8 +36,15 @@ function applyTheme(resolved: "light" | "dark") {
   document.documentElement.style.colorScheme = resolved;
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  let [theme, setThemeState] = useState<Theme>(getStoredTheme);
+interface ThemeProviderProps {
+  ssrTheme?: Theme;
+  children: React.ReactNode;
+}
+
+export function ThemeProvider({ ssrTheme = "system", children }: ThemeProviderProps) {
+  let [theme, setThemeState] = useState<Theme>(
+    typeof document === "undefined" ? ssrTheme : getStoredTheme,
+  );
   let resolved = resolve(theme);
 
   let setTheme = useCallback((next: Theme) => {

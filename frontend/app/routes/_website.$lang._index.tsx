@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
+import type { MetaFunction } from "react-router";
 import {
   Accordion,
   AccordionContent,
@@ -38,70 +40,97 @@ import { IconBox } from "~/components/website/icon-box";
 import { PageSection } from "~/components/website/page-section";
 import { SectionBadge } from "~/components/website/section-badge";
 import { SectionHeader } from "~/components/website/section-header";
+import de from "~/locales/de.json";
+import en from "~/locales/en.json";
+import fr from "~/locales/fr.json";
 
-export type StepContent = { title: string; desc: string };
-export type SourceContent = { title: string; subtitle: string; desc: string };
-export type CardContent = { title: string; desc: string };
-export type FaqItem = { value: string; q: string; a: string };
+type Lang = "de" | "en" | "fr";
+type StepContent = { title: string; desc: string };
+type SourceContent = { title: string; subtitle: string; desc: string };
+type CardContent = { title: string; desc: string };
+type FaqItem = { value: string; q: string; a: string };
 
-export type LandingPageContent = {
-  jsonLd: { description: string; featureList: string[] };
-  hero: {
-    title: ReactNode;
-    subtitle: string;
-    cta: string;
-    trustBadges: [string, string, string];
-  };
-  chatPreview: {
-    userMessage: string;
-    botResponse: string;
-    sourceLabel: string;
-  };
-  howItWorks: {
-    sectionId: string;
-    badgeLabel: string;
-    title: string;
-    steps: [StepContent, StepContent, StepContent];
-  };
-  dataSources: {
-    sectionId: string;
-    badgeLabel: string;
-    title: string;
-    subtitle: string;
-    federal: SourceContent;
-    court: SourceContent;
-  };
-  privacy: {
-    sectionId: string;
-    badgeLabel: string;
-    title: string;
-    subtitle: string;
-    cards: [CardContent, CardContent, CardContent];
-    cards2: [CardContent, CardContent];
-  };
-  faq: { title: string; items: FaqItem[] };
-  openSource: {
-    title: string;
-    subtitle: string;
-    cards: [
-      CardContent,
-      CardContent,
-      CardContent,
-      CardContent,
-      CardContent,
-      CardContent,
-    ];
-    githubCta: string;
-  };
+let locales = { de, en, fr } as const;
+
+let ogLocales: Record<Lang, string> = {
+  de: "de_CH",
+  en: "en_US",
+  fr: "fr_CH",
 };
 
-export function LandingPage({ content }: { content: LandingPageContent }) {
+export let meta: MetaFunction = ({ params }) => {
+  let lang = (params.lang as Lang) ?? "de";
+  let t = locales[lang] ?? locales.de;
+  let m = t.landing.meta;
+
+  return [
+    { title: m.title },
+    { name: "description", content: m.description },
+    { name: "robots", content: "index, follow" },
+    { property: "og:title", content: m.ogTitle },
+    { property: "og:description", content: m.ogDescription },
+    { property: "og:type", content: "website" },
+    { property: "og:locale", content: ogLocales[lang] },
+    ...Object.entries(ogLocales)
+      .filter(([k]) => k !== lang)
+      .map(([, v]) => ({ property: "og:locale:alternate", content: v })),
+    { property: "og:site_name", content: "Alma Lex" },
+    { property: "og:url", content: `https://almalex.ch/${lang}` },
+    {
+      property: "og:image",
+      content: `https://almalex.ch/og-image-${lang}.png`,
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: m.ogImageAlt },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: m.ogTitle },
+    { name: "twitter:description", content: m.ogDescription },
+    {
+      name: "twitter:image",
+      content: `https://almalex.ch/og-image-${lang}.png`,
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: `https://almalex.ch/${lang}`,
+    },
+    {
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: "de-CH",
+      href: "https://almalex.ch/de",
+    },
+    {
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: "fr-CH",
+      href: "https://almalex.ch/fr",
+    },
+    {
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: "en",
+      href: "https://almalex.ch/en",
+    },
+    {
+      tagName: "link",
+      rel: "alternate",
+      hrefLang: "x-default",
+      href: "https://almalex.ch/de",
+    },
+  ];
+};
+
+export default function LandingRoute() {
+  let { t } = useTranslation();
+
   let jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Alma Lex",
     url: "https://almalex.ch",
-    description: content.jsonLd.description,
+    description: t("landing.jsonLd.description"),
     applicationCategory: "LegalApplication",
     operatingSystem: "Web",
     offers: {
@@ -117,7 +146,9 @@ export function LandingPage({ content }: { content: LandingPageContent }) {
       { "@type": "Language", name: "English" },
     ],
     isAccessibleForFree: true,
-    featureList: content.jsonLd.featureList,
+    featureList: t("landing.jsonLd.featureList", {
+      returnObjects: true,
+    }) as unknown as string[],
     author: {
       "@type": "Organization",
       name: "Alma Lex",
@@ -125,10 +156,14 @@ export function LandingPage({ content }: { content: LandingPageContent }) {
     },
   };
 
+  let faqItems = t("landing.faq.items", {
+    returnObjects: true,
+  }) as unknown as FaqItem[];
+
   let faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: content.faq.items.map((item) => ({
+    mainEntity: faqItems.map((item) => ({
       "@type": "Question",
       name: item.q,
       acceptedAnswer: {
@@ -148,12 +183,12 @@ export function LandingPage({ content }: { content: LandingPageContent }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <Hero content={content} />
-      <HowItWorksSection content={content.howItWorks} />
-      <DataSourcesSection content={content.dataSources} />
-      <PrivacySection content={content.privacy} />
-      <FAQSection content={content.faq} />
-      <OpenSourceSection content={content.openSource} />
+      <Hero />
+      <HowItWorksSection />
+      <DataSourcesSection />
+      <PrivacySection />
+      <FAQSection items={faqItems} />
+      <OpenSourceSection />
     </>
   );
 }
@@ -177,11 +212,8 @@ function TrustBadge({
   );
 }
 
-function ChatPreview({
-  content,
-}: {
-  content: LandingPageContent["chatPreview"];
-}) {
+function ChatPreview() {
+  let { t } = useTranslation();
   return (
     <div className="bg-card shadow-card-lg mt-4 flex w-full max-w-[680px] flex-col gap-4 rounded-[20px] p-6">
       <div className="flex items-center gap-3">
@@ -194,16 +226,18 @@ function ChatPreview({
         <div className="bg-success h-2 w-2 rounded-full" />
       </div>
       <div className="bg-primary self-end rounded-[16px_16px_4px_16px] px-[18px] py-3">
-        <p className="text-primary-foreground text-sm">{content.userMessage}</p>
+        <p className="text-primary-foreground text-sm">
+          {t("landing.chatPreview.userMessage")}
+        </p>
       </div>
       <div className="bg-muted flex max-w-[480px] flex-col gap-2 self-start rounded-[16px_16px_16px_4px] px-[18px] py-3.5">
         <p className="text-foreground text-sm leading-relaxed">
-          {content.botResponse}
+          {t("landing.chatPreview.botResponse")}
         </p>
         <div className="flex items-center gap-1.5">
           <FileText className="text-primary h-3 w-3" />
           <span className="text-primary text-xs font-medium">
-            {content.sourceLabel}
+            {t("landing.chatPreview.sourceLabel")}
           </span>
         </div>
       </div>
@@ -255,18 +289,23 @@ function SourceCard({
   );
 }
 
-function Hero({ content }: { content: LandingPageContent }) {
-  let [badge1, badge2, badge3] = content.hero.trustBadges;
+function Hero() {
+  let { t } = useTranslation();
+  let badges = t("landing.hero.trustBadges", {
+    returnObjects: true,
+  }) as unknown as string[];
   return (
     <section className="from-secondary via-accent to-background relative overflow-hidden bg-gradient-to-br">
       <HeroCircles />
 
       <div className="relative flex flex-col items-center gap-6 px-8 py-20 md:px-16 md:pt-20 md:pb-16 lg:px-[120px]">
         <h1 className="text-secondary-foreground max-w-[800px] text-center text-4xl leading-[1.15] font-extrabold md:text-[56px]">
-          {content.hero.title}
+          {t("landing.hero.title1")}
+          <br />
+          {t("landing.hero.title2")}
         </h1>
         <p className="text-muted-foreground max-w-[700px] text-center text-lg leading-relaxed md:text-xl">
-          {content.hero.subtitle}
+          {t("landing.hero.subtitle")}
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -274,28 +313,28 @@ function Hero({ content }: { content: LandingPageContent }) {
             href="/chat"
             className="bg-primary text-primary-foreground shadow-button-primary hover:bg-primary/85 flex items-center gap-2.5 rounded-2xl px-8 py-4 text-base font-semibold transition-colors"
           >
-            {content.hero.cta}
+            {t("landing.hero.cta")}
             <ArrowRight className="h-[18px] w-[18px]" />
           </a>
         </div>
 
-        <ChatPreview content={content.chatPreview} />
+        <ChatPreview />
 
         <div className="mt-2 flex flex-wrap items-center justify-center gap-8">
           <TrustBadge
             icon={<Check className="text-success h-3.5 w-3.5" />}
             bg="bg-success/10"
-            label={badge1}
+            label={badges[0]}
           />
           <TrustBadge
             icon={<Shield className="text-primary h-3.5 w-3.5" />}
             bg="bg-secondary"
-            label={badge2}
+            label={badges[1]}
           />
           <TrustBadge
             icon={<UserX className="text-accent-foreground h-3.5 w-3.5" />}
             bg="bg-accent"
-            label={badge3}
+            label={badges[2]}
           />
         </div>
       </div>
@@ -324,26 +363,29 @@ let stepMeta = [
   },
 ];
 
-function HowItWorksSection({
-  content,
-}: {
-  content: LandingPageContent["howItWorks"];
-}) {
+function HowItWorksSection() {
+  let { t } = useTranslation();
+  let steps = t("landing.howItWorks.steps", {
+    returnObjects: true,
+  }) as unknown as StepContent[];
   return (
-    <PageSection id={content.sectionId} className="bg-background">
+    <PageSection
+      id={t("landing.howItWorks.sectionId")}
+      className="bg-background"
+    >
       <SectionHeader
         badge={
           <SectionBadge
             icon={<Sparkles className="h-3.5 w-3.5" />}
-            label={content.badgeLabel}
+            label={t("landing.howItWorks.badgeLabel")}
             className="bg-secondary text-primary"
           />
         }
-        title={content.title}
+        title={t("landing.howItWorks.title")}
         titleClassName="text-secondary-foreground"
       />
       <div className="grid w-full max-w-[1200px] grid-cols-1 items-stretch justify-items-center gap-x-4 gap-y-8 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
-        {content.steps.map((step, i) => (
+        {steps.map((step, i) => (
           <Fragment key={stepMeta[i].num}>
             {i > 0 && (
               <ChevronRight className="text-muted-foreground/40 mt-[56px] hidden h-6 w-6 shrink-0 self-center lg:flex" />
@@ -378,27 +420,30 @@ function HowItWorksSection({
   );
 }
 
-function DataSourcesSection({
-  content,
-}: {
-  content: LandingPageContent["dataSources"];
-}) {
+function DataSourcesSection() {
+  let { t } = useTranslation();
+  let federal = t("landing.dataSources.federal", {
+    returnObjects: true,
+  }) as unknown as SourceContent;
+  let court = t("landing.dataSources.court", {
+    returnObjects: true,
+  }) as unknown as SourceContent;
   return (
     <PageSection
-      id={content.sectionId}
+      id={t("landing.dataSources.sectionId")}
       className="from-secondary via-secondary/40 to-background bg-gradient-to-b"
     >
       <SectionHeader
         badge={
           <SectionBadge
             icon={<Database className="h-3.5 w-3.5" />}
-            label={content.badgeLabel}
+            label={t("landing.dataSources.badgeLabel")}
             className="bg-secondary text-primary"
           />
         }
-        title={content.title}
+        title={t("landing.dataSources.title")}
         titleClassName="text-secondary-foreground"
-        subtitle={content.subtitle}
+        subtitle={t("landing.dataSources.subtitle")}
         subtitleClassName="text-muted-foreground"
       />
 
@@ -407,9 +452,9 @@ function DataSourcesSection({
           accentGradient="from-[#3B82C4] to-[#6B9E7A]"
           icon={<BookOpen className="text-primary h-[26px] w-[26px]" />}
           iconBg="bg-secondary"
-          title={content.federal.title}
-          subtitle={content.federal.subtitle}
-          desc={content.federal.desc}
+          title={federal.title}
+          subtitle={federal.subtitle}
+          desc={federal.desc}
           url="fedlex.admin.ch"
           urlColor="text-primary"
         />
@@ -417,9 +462,9 @@ function DataSourcesSection({
           accentGradient="from-[#F5A623] to-[#D4911C]"
           icon={<Landmark className="text-warning h-[26px] w-[26px]" />}
           iconBg="bg-[#FEF3C7]"
-          title={content.court.title}
-          subtitle={content.court.subtitle}
-          desc={content.court.desc}
+          title={court.title}
+          subtitle={court.subtitle}
+          desc={court.desc}
           url="bger.ch"
           urlColor="text-warning"
         />
@@ -465,33 +510,36 @@ let privacyCard2Meta = [
   },
 ];
 
-function PrivacySection({
-  content,
-}: {
-  content: LandingPageContent["privacy"];
-}) {
+function PrivacySection() {
+  let { t } = useTranslation();
+  let cards = t("landing.privacy.cards", {
+    returnObjects: true,
+  }) as unknown as CardContent[];
+  let cards2 = t("landing.privacy.cards2", {
+    returnObjects: true,
+  }) as unknown as CardContent[];
   return (
     <PageSection
-      id={content.sectionId}
+      id={t("landing.privacy.sectionId")}
       className="from-accent to-background bg-gradient-to-b"
     >
       <SectionHeader
         badge={
           <SectionBadge
             icon={<ShieldCheck className="h-4 w-4" />}
-            label={content.badgeLabel}
+            label={t("landing.privacy.badgeLabel")}
             className="bg-card text-accent-foreground shadow-sm"
           />
         }
-        title={content.title}
+        title={t("landing.privacy.title")}
         titleClassName="text-secondary-foreground font-extrabold tracking-tight"
-        subtitle={content.subtitle}
+        subtitle={t("landing.privacy.subtitle")}
         subtitleClassName="text-muted-foreground text-lg max-w-[560px]"
         className="max-w-[700px]"
       />
 
       <div className="grid w-full max-w-[1200px] grid-cols-1 gap-5 md:grid-cols-3">
-        {content.cards.map((c, i) => (
+        {cards.map((c, i) => (
           <FeatureCard
             key={c.title}
             icon={
@@ -507,7 +555,7 @@ function PrivacySection({
         ))}
       </div>
       <div className="grid w-full max-w-[800px] grid-cols-1 gap-5 md:grid-cols-2">
-        {content.cards2.map((c, i) => (
+        {cards2.map((c, i) => (
           <FeatureCard
             key={c.title}
             icon={
@@ -526,7 +574,8 @@ function PrivacySection({
   );
 }
 
-function FAQSection({ content }: { content: LandingPageContent["faq"] }) {
+function FAQSection({ items }: { items: FaqItem[] }) {
+  let { t } = useTranslation();
   return (
     <PageSection id="faq" className="bg-background">
       <SectionHeader
@@ -537,12 +586,12 @@ function FAQSection({ content }: { content: LandingPageContent["faq"] }) {
             className="bg-secondary text-primary"
           />
         }
-        title={content.title}
+        title={t("landing.faq.title")}
         titleClassName="text-secondary-foreground"
       />
       <div className="w-full max-w-[760px]">
         <Accordion type="single" collapsible className="w-full">
-          {content.items.map((item) => (
+          {items.map((item) => (
             <AccordionItem
               key={item.value}
               value={item.value}
@@ -589,11 +638,11 @@ let openSourceCardMeta = [
   },
 ];
 
-function OpenSourceSection({
-  content,
-}: {
-  content: LandingPageContent["openSource"];
-}) {
+function OpenSourceSection() {
+  let { t } = useTranslation();
+  let cards = t("landing.openSource.cards", {
+    returnObjects: true,
+  }) as unknown as CardContent[];
   return (
     <PageSection
       id="open-source"
@@ -607,15 +656,15 @@ function OpenSourceSection({
             className="border border-white/[0.13] bg-white/[0.07] text-[#7CB5E3]"
           />
         }
-        title={content.title}
+        title={t("landing.openSource.title")}
         titleClassName="text-white font-extrabold tracking-tight"
-        subtitle={content.subtitle}
+        subtitle={t("landing.openSource.subtitle")}
         subtitleClassName="text-[#94B8D9] text-lg max-w-[560px]"
         className="max-w-[700px]"
       />
 
       <div className="grid w-full max-w-[1200px] grid-cols-1 gap-5 md:grid-cols-2">
-        {content.cards.map((card, i) => (
+        {cards.map((card, i) => (
           <div
             key={card.title}
             className="flex flex-col gap-3.5 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-7"
@@ -641,7 +690,7 @@ function OpenSourceSection({
         className="shadow-button flex items-center gap-1.5 rounded-2xl bg-white px-4 py-3 text-xs font-semibold text-[#1E3A5F] transition-colors hover:bg-[#F5F5F5] sm:gap-2.5 sm:px-7 sm:py-3.5 sm:text-base"
       >
         <Github className="h-5 w-5" />
-        {content.githubCta}
+        {t("landing.openSource.githubCta")}
         <ArrowRight className="h-[18px] w-[18px]" />
       </a>
     </PageSection>

@@ -1,4 +1,5 @@
 import { Monitor, Moon, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -11,11 +12,12 @@ import { useTheme } from "~/contexts/theme";
 
 export function ThemeToggle() {
   let { theme, resolved, setTheme } = useTheme();
+  let { t } = useTranslation();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label={t("navigation.theme")}>
           {resolved === "dark" ? <Moon /> : <Sun />}
         </Button>
       </DropdownMenuTrigger>
@@ -26,15 +28,15 @@ export function ThemeToggle() {
         >
           <DropdownMenuRadioItem value="light">
             <Sun className="mr-2 h-4 w-4" />
-            Light
+            {t("navigation.themeLight")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
             <Moon className="mr-2 h-4 w-4" />
-            Dark
+            {t("navigation.themeDark")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
             <Monitor className="mr-2 h-4 w-4" />
-            System
+            {t("navigation.themeSystem")}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

@@ -1,5 +1,4 @@
 import { CircleHelp, SquarePen } from "lucide-react";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useParams } from "react-router";
 import { LanguageSelector } from "~/components/layout/language-selector";
@@ -8,16 +7,9 @@ import { Button } from "~/components/ui/button";
 import { Toaster } from "~/components/ui/sonner";
 
 export default function Layout() {
-  let { t, i18n } = useTranslation();
+  let { t } = useTranslation();
   let { lang } = useParams();
   let prefix = `/${lang ?? "de"}`;
-
-  useEffect(() => {
-    if (lang && ["de", "fr", "en"].includes(lang)) {
-      i18n.changeLanguage(lang);
-      document.documentElement.lang = lang;
-    }
-  }, [lang, i18n]);
 
   return (
     <>

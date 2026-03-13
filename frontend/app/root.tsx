@@ -1,15 +1,18 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import * as Sentry from "@sentry/react";
-import React from "react";
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { ChatStorageProvider } from "./contexts/chat-storage";
@@ -34,9 +37,23 @@ export function meta() {
   ];
 }
 
+export function loader({ request }: Route.LoaderArgs) {
+  let cookie = request.headers.get("Cookie") ?? "";
+  let match = cookie.match(/(?:^|; )theme=(light|dark|system)/);
+  let ssrTheme = (match?.[1] as "light" | "dark" | "system") ?? "system";
+  return data({ ssrTheme });
+}
+
+function useLang() {
+  let { pathname } = useLocation();
+  let seg = pathname.split("/").filter(Boolean)[0];
+  return ["de", "fr", "en"].includes(seg!) ? seg! : "de";
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  let lang = useLang();
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -69,10 +86,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
   client.setConfig({ baseUrl: "/" });
+  let { i18n } = useTranslation();
+  let lang = useLang();
+
+  // Sync in render (not useEffect) to avoid SSR hydration mismatch.
+  // Safe: resources are bundled so changeLanguage is effectively synchronous.
+  if (i18n.language !== lang) {
+    i18n.changeLanguage(lang);
+  }
+
   return (
-    <ThemeProvider>
+    <ThemeProvider ssrTheme={loaderData?.ssrTheme}>
       <ChatStorageProvider>
         <TooltipProvider>
           <Outlet />
