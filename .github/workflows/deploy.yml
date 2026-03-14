@@ -18,4 +18,11 @@ jobs:
         tags: tag:ci
 
     - name: 🚀 Deploy to server
-      run: ssh -o StrictHostKeyChecking=no joshua@logres "cd /var/www/almalex.ch && ./deploy.sh"
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: logres
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /var/www/almalex.ch
+          ./deploy.sh
