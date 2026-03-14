@@ -2,7 +2,7 @@ from fastapi import APIRouter, Cookie, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.core.clients import openai_client
+from app.core.clients import cohere_client, openai_client
 from app.core.deps import get_session, session_context
 from app.core.types import Language
 from app.repositories.chunk_repository import ChunkRepository
@@ -12,6 +12,7 @@ from app.services.chat_service import ChatService
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
 from app.services.query_expansion_service import QueryExpansionService
+from app.services.reranker_service import RerankerService
 
 router = APIRouter(tags=["chat"])
 
@@ -22,6 +23,7 @@ def get_chat_service(db: Session = Depends(get_session)) -> ChatService:
         embedding_service=EmbeddingService(openai_client),
         llm_service=LLMService(openai_client),
         query_expansion_service=QueryExpansionService(openai_client),
+        reranker=RerankerService(cohere_client),
     )
 
 
@@ -41,6 +43,7 @@ async def create_message(
                 embedding_service=EmbeddingService(openai_client),
                 llm_service=LLMService(openai_client),
                 query_expansion_service=QueryExpansionService(openai_client),
+                reranker=RerankerService(cohere_client),
             )
             for event in svc.process_message(
                 messages=request.messages,

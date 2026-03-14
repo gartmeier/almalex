@@ -1,3 +1,4 @@
+import cohere
 from anthropic import Anthropic
 from openai import OpenAI
 
@@ -15,4 +16,9 @@ bulk_embedding_client = OpenAI(
 
 anthropic_client = Anthropic(
     api_key=settings.anthropic_api_key,
+)
+
+cohere_client = cohere.ClientV2(
+    api_key=settings.cohere_api_key,
+    base_url=settings.cohere_base_url,
 )

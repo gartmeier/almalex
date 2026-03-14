@@ -11,6 +11,7 @@ from app.schemas.events import Error, Event, Source, Sources, Status
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
 from app.services.query_expansion_service import QueryExpansionService
+from app.services.reranker_service import RerankerService
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +23,13 @@ class ChatService:
         embedding_service: EmbeddingService,
         llm_service: LLMService,
         query_expansion_service: QueryExpansionService,
+        reranker: RerankerService,
     ):
         self.chunk_repo = chunk_repo
         self.embedding_service = embedding_service
         self.llm_service = llm_service
         self.query_expansion_service = query_expansion_service
+        self.reranker = reranker
 
     def process_message(
         self, *, messages: list[Message], model: str, lang: Language
@@ -56,13 +59,20 @@ class ChatService:
             query_embedding,
             expanded.article_queries,
             source_type="article",
-            top_k=settings.search_article_top_k,
+            top_k=settings.rerank_article_candidates,
         )
         decisions = self.chunk_repo.search_chunks(
             query_embedding,
             expanded.decision_queries,
             source_type="decision",
-            top_k=settings.search_decision_top_k,
+            top_k=settings.rerank_decision_candidates,
+        )
+
+        articles = self.reranker.rerank(
+            query, articles, top_n=settings.search_article_top_k
+        )
+        decisions = self.reranker.rerank(
+            query, decisions, top_n=settings.search_decision_top_k
         )
 
         yield self._build_sources_event(articles, decisions)

@@ -2,6 +2,7 @@ import json
 import logging
 import time
 
+import sentry_sdk
 from openai import OpenAI
 
 from app.core.config import settings
@@ -35,6 +36,7 @@ class QueryExpansionService:
             return self._expand(query, lang)
         except Exception:
             logger.exception("Query expansion failed, using original query")
+            sentry_sdk.capture_exception()
             return ExpandedQueries(article_queries=[query], decision_queries=[query])
 
     def _expand(self, query: str, lang: Language) -> ExpandedQueries:

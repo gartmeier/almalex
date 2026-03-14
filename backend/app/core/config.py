@@ -43,9 +43,16 @@ class Settings(BaseSettings):
     # Query expansion
     query_expansion_model: str | None = None
 
+    # Cohere reranker
+    cohere_api_key: str
+    cohere_base_url: str
+    cohere_rerank_model: str = "BAAI/bge-reranker-v2-m3"
+
     # Search settings
     search_article_top_k: int = 12
     search_decision_top_k: int = 8
+    rerank_article_candidates: int = 24
+    rerank_decision_candidates: int = 16
 
 
 settings = Settings()  # type: ignore
