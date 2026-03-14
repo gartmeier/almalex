@@ -1,15 +1,10 @@
-import Markdown from "react-markdown";
-import type { MessageDetail } from "~/lib/api";
+import type { Message } from "~/types/messages";
 
-type UserMessageProps = {
-  message: MessageDetail;
-};
-
-export function UserMessage({ message }: UserMessageProps) {
+export function UserMessageBlock({ message }: { message: Message }) {
   return (
     <div className="flex justify-end py-5">
-      <div className="bg-secondary prose prose-neutral dark:prose-invert inline-block max-w-[70%] rounded-3xl px-5 py-2.5">
-        <Markdown>{message.content}</Markdown>
+      <div className="bg-secondary rounded-3xl px-5 py-2.5 whitespace-pre-wrap">
+        {message.content[0].text}
       </div>
     </div>
   );

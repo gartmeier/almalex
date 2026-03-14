@@ -4,17 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- **Development server**: `pnpm dev` - Starts React Router dev server with HMR at http://localhost:5173
+Use `make frontend-typecheck` and `make format` from the repo root for typechecking/formatting.
+
 - **Build**: `pnpm build` - Creates production build
-- **Type checking**: `pnpm typecheck` - Runs React Router type generation and TypeScript compiler
-- **Formatting**: `pnpm format` - Formats code with Prettier
 - **API client generation**: `pnpm generate-client` - Generates API client from OpenAPI spec at http://localhost:8000/openapi.json
 
 ## Architecture Overview
 
 ### React Router v7 Configuration
 
-- **Client-side only**: `ssr: false` in react-router.config.ts - no server-side rendering
+- **SSR + prerender**: `ssr: true` with static prerendering for marketing pages in react-router.config.ts
 - **Layout routing pattern**: Uses `layout()` wrapper in app/routes.ts with nested routes
 - **Route structure**: All user-facing routes are nested under `routes/layout.tsx` layout component
 - **File-based routing**: Routes defined explicitly in app/routes.ts, not convention-based
@@ -58,7 +57,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build output**: Client-side bundle in `build/client/` with minimal static server in `build/server/index.js`
 - **Container ready**: Includes Docker configuration
 - **Static assets**: Handled by Vite with sourcemap generation enabled
-- **Start command**: `pnpm start` serves the static client application (no SSR)
+- **Start command**: `pnpm start` serves the application with SSR and prerendered static pages
 
 ### Development Workflow
 
@@ -66,7 +65,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. Frontend dev server runs on http://localhost:5173
 3. API calls are proxied from frontend to backend
 4. Use `pnpm generate-client` when backend OpenAPI spec changes
-5. Always run `pnpm typecheck` before committing changes
+5. Always run `make frontend-typecheck` from the repo root before committing changes
 
 ### Routing Gotchas
 

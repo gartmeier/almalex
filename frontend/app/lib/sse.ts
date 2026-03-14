@@ -1,33 +1,36 @@
-export type ServerSentEvent = {
-  name: string;
-  data: string;
-};
+import * as Sentry from "@sentry/react";
+import type { ServerSentEvent } from "~/types";
 
-export function parseServerSentEvents(rawEvents: string) {
-  let parsedEvents: ServerSentEvent[] = [];
+export function createSSEParser() {
+  let buffer = "";
+  let decoder = new TextDecoder();
 
-  for (let rawEvent of rawEvents.split("\n\n")) {
-    if (rawEvent) {
-      let lines = rawEvent.split("\n");
+  return function parse(
+    chunk: Uint8Array,
+    done: boolean = false,
+  ): ServerSentEvent[] {
+    buffer += decoder.decode(chunk, { stream: !done });
 
-      let name: string | null = null;
-      let data: string | null = null;
+    let events: ServerSentEvent[] = [];
+    let parts = buffer.split("\n\n");
 
-      for (let line of lines) {
-        if (line.startsWith("event: ")) {
-          name = line.slice(7);
-        } else if (line.startsWith("data: ")) {
-          data = line.slice(6);
-        }
-      }
+    // Keep the last part in buffer (may be incomplete)
+    buffer = parts.pop() || "";
 
-      if (!name || !data) {
-        console.error("Invalid server-sent event", rawEvent);
+    for (let part of parts) {
+      if (!part.startsWith("data: ")) {
         continue;
       }
 
-      parsedEvents.push({ name, data });
+      let json = part.slice(6);
+      try {
+        events.push(JSON.parse(json));
+      } catch (e) {
+        console.error("Invalid server-sent event", json);
+        Sentry.captureException(e);
+      }
     }
-  }
-  return parsedEvents;
+
+    return events;
+  };
 }

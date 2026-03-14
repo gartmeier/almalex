@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useScrollToBottom } from "~/contexts/scroll-to-bottom";
-import type { MessageDetail } from "~/lib/api";
-import { AssistantMessage } from "./assistant-message";
-import { UserMessage } from "./user-message";
+import type { Message } from "~/types/messages";
+import { AssistantMessageBlock } from "./assistant-message";
+import { UserMessageBlock } from "./user-message";
 
-export function MessageList({ messages }: { messages: MessageDetail[] }) {
+export function MessageList({ messages }: { messages: Message[] }) {
   let { endRef, onViewportEnter, onViewportLeave } = useScrollToBottom();
   let observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -35,9 +35,9 @@ export function MessageList({ messages }: { messages: MessageDetail[] }) {
     <>
       {messages.map((message) => {
         if (message.role === "user") {
-          return <UserMessage key={message.id} message={message} />;
+          return <UserMessageBlock key={message.id} message={message} />;
         } else {
-          return <AssistantMessage key={message.id} message={message} />;
+          return <AssistantMessageBlock key={message.id} message={message} />;
         }
       })}
       <div ref={endRef} />

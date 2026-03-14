@@ -1,0 +1,137 @@
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from typing import Iterator
+
+from app.core.config import settings
+from app.core.types import Language
+from app.db.models import Chunk
+from app.repositories.chunk_repository import ChunkRepository
+from app.schemas.chat import Message
+from app.schemas.events import Error, Event, Source, Sources, Status
+from app.services.embedding_service import EmbeddingService
+from app.services.llm_service import LLMService
+from app.services.query_expansion_service import QueryExpansionService
+from app.services.reranker_service import RerankerService
+
+logger = logging.getLogger(__name__)
+
+
+class ChatService:
+    def __init__(
+        self,
+        chunk_repo: ChunkRepository,
+        embedding_service: EmbeddingService,
+        llm_service: LLMService,
+        query_expansion_service: QueryExpansionService,
+        reranker: RerankerService,
+    ):
+        self.chunk_repo = chunk_repo
+        self.embedding_service = embedding_service
+        self.llm_service = llm_service
+        self.query_expansion_service = query_expansion_service
+        self.reranker = reranker
+
+    def process_message(
+        self, *, messages: list[Message], model: str, lang: Language
+    ) -> Iterator[Event]:
+        try:
+            yield from self._process_message(messages=messages, model=model, lang=lang)
+        except Exception as e:
+            logger.exception("Error processing message")
+            yield Error(type="error", message=str(e))
+
+    def _process_message(
+        self, *, messages: list[Message], model: str, lang: Language
+    ) -> Iterator[Event]:
+        yield Status(type="status", status="searching")
+
+        query = messages[-1].content
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            embedding_future = pool.submit(self.embedding_service.embed_text, query)
+            expansion_future = pool.submit(
+                self.query_expansion_service.expand, query, lang
+            )
+            query_embedding = embedding_future.result()
+            expanded = expansion_future.result()
+
+        articles = self.chunk_repo.search_chunks(
+            query_embedding,
+            expanded.article_queries,
+            source_type="article",
+            top_k=settings.rerank_article_candidates,
+        )
+        decisions = self.chunk_repo.search_chunks(
+            query_embedding,
+            expanded.decision_queries,
+            source_type="decision",
+            top_k=settings.rerank_decision_candidates,
+        )
+
+        articles = self.reranker.rerank(
+            query, articles, top_n=settings.search_article_top_k
+        )
+        decisions = self.reranker.rerank(
+            query, decisions, top_n=settings.search_decision_top_k
+        )
+
+        yield self._build_sources_event(articles, decisions)
+
+        context = self._build_context(articles + decisions)
+
+        yield from self._generate(
+            messages=messages, context=context, model=model, lang=lang
+        )
+
+        yield Status(type="status", status="done")
+
+    def _build_context(self, chunks: list[Chunk]) -> str:
+        return "\n---\n".join(f"ID: {c.id}\n\n{c.text}" for c in chunks)
+
+    def _generate(
+        self, *, messages: list[Message], context: str, model: str, lang: Language
+    ) -> Iterator[Event]:
+        thinking_started = False
+        generating_started = False
+
+        for event in self.llm_service.generate(
+            messages=messages, context=context, model=model, lang=lang
+        ):
+            match event.type:
+                case "thinking_delta":
+                    if not thinking_started:
+                        yield Status(type="status", status="thinking")
+                        thinking_started = True
+                    yield event
+                case "text_delta":
+                    if not generating_started:
+                        yield Status(type="status", status="generating")
+                        generating_started = True
+                    yield event
+
+    def _build_sources_event(
+        self, article_chunks: list[Chunk], decision_chunks: list[Chunk]
+    ) -> Sources:
+        sources: list[Source] = []
+
+        for c in article_chunks:
+            a = c.article
+            sources.append(
+                Source(
+                    id=c.id,
+                    citation=a.citation,
+                    url=a.source_url,
+                )
+            )
+
+        for c in decision_chunks:
+            d = c.decision
+            sources.append(
+                Source(
+                    id=c.id,
+                    citation=d.citation,
+                    url=d.source_url,
+                )
+            )
+
+        return Sources(type="sources", sources=sources)

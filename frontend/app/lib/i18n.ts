@@ -27,9 +27,11 @@ i18n
     },
 
     detection: {
-      order: ["cookie", "navigator"],
+      order: ["path", "cookie", "navigator"],
+      lookupFromPathIndex: 0,
       caches: ["cookie"],
       lookupCookie: "lang",
+      cookieOptions: { path: "/", maxAge: 31536000, sameSite: "strict" },
     },
 
     interpolation: {

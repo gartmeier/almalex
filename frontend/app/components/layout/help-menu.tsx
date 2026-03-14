@@ -11,11 +11,7 @@ import {
 import "~/lib/i18n";
 import { Button } from "../ui/button";
 
-interface HelpMenuProps {
-  onOpenFeedback: () => void;
-}
-
-export function HelpMenu({ onOpenFeedback }: HelpMenuProps) {
+export function HelpMenu() {
   let { t, i18n } = useTranslation();
   let language = i18n.language;
 
@@ -31,11 +27,18 @@ export function HelpMenu({ onOpenFeedback }: HelpMenuProps) {
           <Link to={`/${language}/faq`}>{t("navigation.faq")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to={`/${language}/policies`}>{t("navigation.policies")}</Link>
+          <Link to={`/${language}/${t("website.privacyPath")}`}>
+            {t("navigation.privacy")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/${language}/${t("website.termsPath")}`}>
+            {t("navigation.terms")}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onOpenFeedback}>
-          {t("navigation.reportIssue")}
+        <DropdownMenuItem asChild>
+          <a href="mailto:hello@almalex.ch">{t("navigation.reportIssue")}</a>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

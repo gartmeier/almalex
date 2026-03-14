@@ -1,43 +1,29 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, field_validator
 
-from app.schemas.search import SearchResult
-
-
-class TextContentBlock(BaseModel):
-    type: Literal["text"]
-    text: str
+from app.core.config import settings
 
 
-class SearchContentBlock(BaseModel):
-    type: Literal["search"]
-    status: Literal["completed", "in_progress"] = "completed"
-    query: str
-    results: list[SearchResult]
-
-
-class MessageCreate(BaseModel):
+class Message(BaseModel):
+    role: Literal["user", "assistant"]
     content: str
 
 
-class MessageDetail(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class ChatRequest(BaseModel):
+    messages: list[Message]
+    model: str
 
-    id: str
-    role: str
-    content: str
-    content_blocks: list[SearchContentBlock | TextContentBlock]
+    @field_validator("messages")
+    @classmethod
+    def messages_not_empty(cls, v):
+        if not v:
+            raise ValueError("messages must not be empty")
+        return v
 
-
-class ChatCreate(BaseModel):
-    id: str
-    message: str
-
-
-class ChatDetail(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
-    title: str | None
-    messages: list[MessageDetail]
+    @field_validator("model")
+    @classmethod
+    def model_allowed(cls, v):
+        if v not in settings.allowed_models:
+            raise ValueError(f"Model not allowed: {v}")
+        return v

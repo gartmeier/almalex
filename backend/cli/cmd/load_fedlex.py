@@ -1,96 +1,154 @@
 import click
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
-from cli.utils.fedlex import process_fedlex_articles
-from cli.utils.sparql import exec_sparql
-
-CURRENT_QUERY = """
-PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-
-SELECT DISTINCT ?srNumber ?language ?title ?abbreviation ?htmlUrl ?xmlUrl ?applicabilityDate ?endApplicabilityDate
-WHERE {{
-  # Configuration: language
-  BIND(<http://publications.europa.eu/resource/authority/language/{language}> AS ?languageUri)
-
-  # Get consolidation that is currently applicable
-  ?consolidation a jolux:Consolidation ;
-                jolux:dateApplicability ?applicabilityDate ;
-                jolux:isRealizedBy ?consoExpr ;
-                jolux:isMemberOf ?collection .
-
-  FILTER(xsd:date(?applicabilityDate) <= xsd:date(NOW()))
-
-  # Check if consolidation is still applicable
-  OPTIONAL {{ ?consolidation jolux:dateEndApplicability ?endApplicabilityDate }}
-  FILTER(!BOUND(?endApplicabilityDate) || xsd:date(?endApplicabilityDate) >= xsd:date(NOW()))
-
-  # Get language-specific expression
-  ?consoExpr jolux:language ?languageUri .
-
-  # Get HTML format
-  ?consoExpr jolux:isEmbodiedBy ?htmlManif .
-  ?htmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/html> ;
-             jolux:isExemplifiedBy ?htmlUrl .
-
-  # Get XML format
-  ?consoExpr jolux:isEmbodiedBy ?xmlManif .
-  ?xmlManif jolux:userFormat <https://fedlex.data.admin.ch/vocabulary/user-format/xml> ;
-            jolux:isExemplifiedBy ?xmlUrl .
-
-  # Get SR Number from collection
-  ?collection jolux:classifiedByTaxonomyEntry/skos:notation ?srNotationRaw .
-  FILTER(datatype(?srNotationRaw) = <https://fedlex.data.admin.ch/vocabulary/notation-type/id-systematique>)
-
-  # Check if collection is still in force
-  OPTIONAL {{ ?collection jolux:dateNoLongerInForce ?collectionEndForceDate }}
-  OPTIONAL {{ ?collection jolux:dateEndApplicability ?collectionEndApplicabilityDate }}
-  FILTER(!BOUND(?collectionEndForceDate) || xsd:date(?collectionEndForceDate) > xsd:date(NOW()))
-  FILTER(!BOUND(?collectionEndApplicabilityDate) || xsd:date(?collectionEndApplicabilityDate) >= xsd:date(NOW()))
-
-  # Get title and abbreviation
-  OPTIONAL {{
-    ?collection jolux:isRealizedBy ?collectionExpr .
-    ?collectionExpr jolux:language ?languageUri ;
-                    jolux:title ?title .
-    OPTIONAL {{ ?collectionExpr jolux:titleShort ?abbreviation }}
-  }}
-
-  # Reformat output values
-  BIND(STR(?srNotationRaw) AS ?srNumber)
-}}
-ORDER BY ?srNumber
-"""
+from cli.utils import sparql
+from cli.utils.context import generate_context_anthropic as generate_context
+from cli.utils.html import soup_to_text
+from cli.utils.http import fetch_html
+from cli.utils.text import split_text
 
 
-@click.command(help="Import legal documents from Fedlex (Swiss federal law)")
-def load_fedlex():
-    db = SessionLocal()
+@click.command(name="load-fedlex")
+@click.option("--lang", default="de", show_default=True)
+@click.option("--sr-number")
+@click.option("--force", is_flag=True, default=False)
+@click.option("--enable-context", is_flag=True, default=False)
+def load_fedlex_command(
+    lang: str, sr_number: str | None, force: bool, enable_context: bool
+):
+    if enable_context:
+        force = True
+    with SessionLocal() as db:
+        rows = sparql.fetch_all(lang, sr_number)
+        click.echo(f"Fetched {len(rows)} acts from Fedlex")
 
-    click.secho("Starting Fedlex import...", fg="green")
+        q = select(Act).where(Act.lang == lang)
+        if sr_number:
+            q = q.where(Act.sr_number == sr_number)
+        existing = {
+            (act.sr_number, str(act.applicability_date)): act
+            for act in db.scalars(q).all()
+        }
 
-    rows = exec_sparql(CURRENT_QUERY.format(language="DEU"))
+        for row in rows:
+            label = row.abbr or row.title or row.sr_number
+            act = existing.get((row.sr_number, row.applicability_date))
 
-    for row in rows:
-        sr_number = row["srNumber"]["value"]
-        law_title = row["title"]["value"]
-        law_abbr = row.get("abbreviation", {}).get("value")
+            if act and not force:
+                click.echo(f"  {label}: skipped")
+                continue
 
-        if law_abbr:
-            click.echo(f"Processing document: {law_abbr} ({sr_number})")
-        else:
-            click.echo(f"Processing document: {law_title} ({sr_number})")
+            try:
+                if enable_context:
+                    config = db.get(ActConfig, row.sr_number) or ActConfig(
+                        sr_number=row.sr_number
+                    )
+                    config.generate_context = True
+                    db.merge(config)
+                    db.flush()
 
-        articles_added = process_fedlex_articles(
-            db=db,
-            html_url=row["htmlUrl"]["value"],
-            xml_url=row["xmlUrl"]["value"],
-            sr_number=sr_number,
-            law_title=law_title,
-            law_abbr=law_abbr,
+                if act:
+                    db.delete(act)
+                    db.flush()
+
+                act = Act(
+                    lang=lang,
+                    sr_number=row.sr_number,
+                    title=row.title,
+                    abbr=row.abbr,
+                    source_url=row.source_url,
+                    html_url=row.html_url,
+                    xml_url=row.xml_url,
+                    applicability_date=row.applicability_date,
+                    applicability_end_date=row.applicability_end_date,
+                )
+                db.add(act)
+                db.flush()
+                click.echo(f"  {label}:")
+                _process_act(db, act)
+                db.commit()
+                click.secho(f"  {label}: done", fg="green")
+            except Exception as e:
+                db.rollback()
+                click.secho(f"  {label}: error — {e}", fg="yellow")
+
+        click.secho("Done", fg="green")
+
+
+def _process_act(db: Session, act: Act):
+    click.echo("    Fetching HTML...")
+
+    act_config = db.get(ActConfig, act.sr_number) or ActConfig(
+        sr_number=act.sr_number,
+        generate_context=False,
+    )
+
+    act_soup = fetch_html(act.html_url)
+    act_text = soup_to_text(act_soup) if act_config.generate_context else None
+
+    articles = []
+    chunks = []
+
+    for sort_order, article_tag in enumerate(act_soup.find_all("article")):
+        eid = article_tag.get("id")
+        assert eid, f"article at position {sort_order} has no id"
+
+        number_tag = article_tag.select_one(".heading > a")
+        assert number_tag, f"no .heading > a in article {eid}"
+        number = soup_to_text(number_tag)
+
+        collapseable = article_tag.find("div", class_="collapseable")
+        assert collapseable, f"no .collapseable in article {eid}"
+        text = soup_to_text(collapseable)
+
+        article = Article(
+            act_id=act.id,
+            eid=eid,
+            number=number,
+            html=str(article_tag),
+            text=text,
+            sort_order=sort_order,
         )
+        db.add(article)
+        articles.append(article)
+        db.flush()
 
-        click.echo(f"  Added {articles_added} articles")
+        breadcrumb = " > ".join(_section_headers(article_tag))
+        context_header = f"{act.label} | {breadcrumb}"
 
-    db.commit()
+        for chunk_text in split_text(article.text):
+            context_parts = [context_header]
+
+            if act_config.generate_context:
+                context_parts.append(generate_context(act_text, chunk_text, act.lang))
+
+            chunk_body = f"{article.citation}\n\n{chunk_text}"
+            embedding_input = "\n\n".join(context_parts) + f"\n\n{chunk_body}"
+
+            chunk = Chunk(
+                source_type="article",
+                article_id=article.id,
+                text=chunk_body,
+                embedding_input=embedding_input,
+            )
+            chunks.append(chunk)
+
+    db.add_all(chunks)
+    db.flush()
+
+    click.echo(f"    {len(articles)} articles, {len(chunks)} chunks")
+
+
+def _section_headers(tag):
+    headers = []
+    for section in tag.parents:
+        if section.name != "section":
+            continue
+        heading = section.find(class_="heading", recursive=False)
+        if heading:
+            headers.append(heading.get_text(" ", strip=True))
+    headers.reverse()
+    return headers
