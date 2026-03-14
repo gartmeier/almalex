@@ -63,6 +63,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <Meta />
         <Links />
+        <script
+          src="https://cdn.counter.dev/script.js"
+          data-id="3e7acdb5-ebd8-4897-b45d-62a3d3c7112b"
+          data-utcoffset="1"
+        />
       </head>
       <body>
         <script
