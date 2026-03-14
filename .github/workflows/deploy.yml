@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 🚀 Deploy to server
-      uses: appleboy/ssh-action@v1.0.3
+    - name: Tailscale
+      uses: tailscale/github-action@v4
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          cd /var/www/almalex.ch
-          ./deploy.sh
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        tags: tag:ci
+
+    - name: 🚀 Deploy to server
+      run: ssh -o StrictHostKeyChecking=no joshua@logres "cd /var/www/almalex.ch && ./deploy.sh"
