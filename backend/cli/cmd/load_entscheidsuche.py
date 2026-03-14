@@ -114,11 +114,18 @@ def _process_decision(
     number = metadata["Num"][0]
     lang = metadata.get("Sprache", "de")
     title = _extract_title(metadata)
-    html_url = f"{BASE_URL}/{metadata['HTML']['Datei']}" if "HTML" in metadata else None
-    pdf_url = f"{BASE_URL}/{metadata['PDF']['Datei']}" if "PDF" in metadata else None
-    source_url = metadata.get("HTML", {}).get("URL") or metadata.get("PDF", {}).get(
-        "URL"
-    )
+
+    html_url = None
+    pdf_url = None
+    source_url = None
+
+    if "PDF" in metadata:
+        pdf_url = BASE_URL + "/" + metadata["PDF"]["Datei"]
+        source_url = metadata["PDF"]["URL"]
+
+    if "HTML" in metadata:
+        html_url = BASE_URL + "/" + metadata["HTML"]["Datei"]
+        source_url = metadata["HTML"]["URL"]
 
     try:
         date_ = date.fromisoformat(metadata["Datum"])
