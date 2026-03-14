@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator
 
 from app.core.config import settings
@@ -9,6 +10,7 @@ from app.schemas.chat import Message
 from app.schemas.events import Error, Event, Source, Sources, Status
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
+from app.services.query_expansion_service import QueryExpansionService
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +21,12 @@ class ChatService:
         chunk_repo: ChunkRepository,
         embedding_service: EmbeddingService,
         llm_service: LLMService,
+        query_expansion_service: QueryExpansionService,
     ):
         self.chunk_repo = chunk_repo
         self.embedding_service = embedding_service
         self.llm_service = llm_service
+        self.query_expansion_service = query_expansion_service
 
     def process_message(
         self, *, messages: list[Message], model: str, lang: Language
@@ -39,17 +43,24 @@ class ChatService:
         yield Status(type="status", status="searching")
 
         query = messages[-1].content
-        query_embedding = self.embedding_service.embed_text(query)
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            embedding_future = pool.submit(self.embedding_service.embed_text, query)
+            expansion_future = pool.submit(
+                self.query_expansion_service.expand, query, lang
+            )
+            query_embedding = embedding_future.result()
+            expanded = expansion_future.result()
 
         articles = self.chunk_repo.search_chunks(
             query_embedding,
-            query,
+            expanded.article_queries,
             source_type="article",
             top_k=settings.search_article_top_k,
         )
         decisions = self.chunk_repo.search_chunks(
             query_embedding,
-            query,
+            expanded.decision_queries,
             source_type="decision",
             top_k=settings.search_decision_top_k,
         )

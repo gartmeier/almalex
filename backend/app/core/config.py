@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # App
+    debug: bool = False
     secret_key: str
     contact_email: str | None = None
     sentry_dsn: str | None = None
@@ -38,6 +39,9 @@ class Settings(BaseSettings):
         "swiss-ai/Apertus-70B-Instruct-2509",
         "mistral3",
     ]
+
+    # Query expansion
+    query_expansion_model: str | None = None
 
     # Search settings
     search_article_top_k: int = 12

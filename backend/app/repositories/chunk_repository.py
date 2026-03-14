@@ -12,7 +12,7 @@ class ChunkRepository:
     def search_chunks(
         self,
         query_embedding: list[float],
-        query_text: str,
+        query_texts: list[str],
         *,
         source_type: str | None = None,
         top_k: int = 20,
@@ -35,26 +35,28 @@ class ChunkRepository:
             vector_q = vector_q.where(Chunk.source_type == source_type)
         vector_cte = vector_q.cte("vector_ranks")
 
-        fts_query = func.plainto_tsquery("simple", query_text)
-        text_rank = func.ts_rank(Chunk.search_vector, fts_query).desc()
+        bm25_ctes = []
+        for i, query_text in enumerate(query_texts):
+            fts_query = func.plainto_tsquery("simple", query_text)
+            text_rank = func.ts_rank(Chunk.search_vector, fts_query).desc()
 
-        fts_q = (
-            select(
-                Chunk.id.label("chunk_id"),
-                func.row_number().over(order_by=text_rank).label("rank"),
+            fts_q = (
+                select(
+                    Chunk.id.label("chunk_id"),
+                    func.row_number().over(order_by=text_rank).label("rank"),
+                )
+                .where(Chunk.active.is_(True))
+                .where(Chunk.search_vector.op("@@")(fts_query))
+                .order_by(text_rank)
+                .limit(top_k * 2)
             )
-            .where(Chunk.active.is_(True))
-            .where(Chunk.search_vector.op("@@")(fts_query))
-            .order_by(text_rank)
-            .limit(top_k * 2)
-        )
-        if source_type:
-            fts_q = fts_q.where(Chunk.source_type == source_type)
-        fts_cte = fts_q.cte("fts_ranks")
+            if source_type:
+                fts_q = fts_q.where(Chunk.source_type == source_type)
+            bm25_ctes.append(fts_q.cte(f"fts_ranks_{i}"))
 
         combined = union_all(
-            select(fts_cte.c.chunk_id, fts_cte.c.rank),
             select(vector_cte.c.chunk_id, vector_cte.c.rank),
+            *[select(cte.c.chunk_id, cte.c.rank) for cte in bm25_ctes],
         ).subquery()
 
         rrf_scores = (

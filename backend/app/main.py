@@ -1,3 +1,5 @@
+import logging
+
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -10,6 +12,13 @@ from app.core.config import settings
 from app.core.limiter import limiter
 
 # Initialize Sentry only if DSN is configured
+if settings.debug:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(message)s"))
+    _app_logger = logging.getLogger("app")
+    _app_logger.setLevel(logging.INFO)
+    _app_logger.addHandler(_handler)
+
 if settings.sentry_dsn:
     sentry_sdk.init(dsn=settings.sentry_dsn)
 

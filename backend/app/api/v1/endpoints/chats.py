@@ -11,6 +11,7 @@ from app.schemas.events import Event
 from app.services.chat_service import ChatService
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
+from app.services.query_expansion_service import QueryExpansionService
 
 router = APIRouter(tags=["chat"])
 
@@ -20,6 +21,7 @@ def get_chat_service(db: Session = Depends(get_session)) -> ChatService:
         chunk_repo=ChunkRepository(db),
         embedding_service=EmbeddingService(openai_client),
         llm_service=LLMService(openai_client),
+        query_expansion_service=QueryExpansionService(openai_client),
     )
 
 
@@ -38,6 +40,7 @@ async def create_message(
                 chunk_repo=ChunkRepository(db),
                 embedding_service=EmbeddingService(openai_client),
                 llm_service=LLMService(openai_client),
+                query_expansion_service=QueryExpansionService(openai_client),
             )
             for event in svc.process_message(
                 messages=request.messages,
