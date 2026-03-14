@@ -34,7 +34,7 @@ export default function LandingLayout() {
               className="h-[22px] w-[22px] dark:hidden"
             />
             <img
-              src="/logo-blue.svg"
+              src="/logo-dark.svg"
               alt="Alma Lex"
               className="hidden h-[22px] w-[22px] dark:block"
             />
@@ -120,7 +120,7 @@ export default function LandingLayout() {
         <FooterLinks>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <img src="/logo-white.webp" alt="" className="h-5 w-5" />
+              <img src="/logo-dark.webp" alt="" className="h-5 w-5" />
               <span className="text-[17px] font-bold text-white">Alma Lex</span>
             </div>
           </div>

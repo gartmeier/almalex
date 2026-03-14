@@ -24,7 +24,7 @@ export default function Layout() {
             className="h-[22px] w-[22px] dark:hidden"
           />
           <img
-            src="/logo-blue.svg"
+            src="/logo-dark.svg"
             alt="Alma Lex"
             className="hidden h-[22px] w-[22px] dark:block"
           />
