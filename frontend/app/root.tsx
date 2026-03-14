@@ -11,7 +11,7 @@ import {
 
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import * as Sentry from "@sentry/react";
-import React, { useEffect } from "react";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 import type { Route } from "./+types/root";
 import "./app.css";

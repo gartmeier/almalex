@@ -51,8 +51,8 @@ echo "----------------------------------------"
 echo "🔄 Reloading backend service..."
 sudo systemctl reload almalex-backend.service
 
-#echo "🔄 Reloading frontend service..."
-#sudo systemctl reload almalex-frontend.service
+echo "🔄 Reloading frontend service..."
+sudo systemctl reload almalex-frontend.service
 
 echo ""
 echo "✅ Deployment completed successfully!"
