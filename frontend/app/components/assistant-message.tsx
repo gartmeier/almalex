@@ -129,8 +129,17 @@ export function AssistantMessageBlock({ message }: { message: Message }) {
         message.sources.length > 0 && (
           <div className="mt-5 flex flex-wrap gap-2">
             {message.sources.map((s) => (
-              <Badge key={s.id} variant="secondary" asChild>
-                <a href={s.url} target="_blank" rel="noopener noreferrer">
+              <Badge
+                key={s.id}
+                variant="secondary"
+                className="inline-block max-w-[250px] truncate"
+              >
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={s.citation}
+                >
                   {s.citation}
                 </a>
               </Badge>
