@@ -10,6 +10,7 @@ WorkingDirectory=/var/www/almalex.ch/backend
 Environment=PATH=/var/www/almalex.ch/backend/.venv/bin
 ExecStart=/var/www/almalex.ch/backend/.venv/bin/python -m cli.main load-fedlex
 ExecStart=/var/www/almalex.ch/backend/.venv/bin/python -m cli.main load-entscheidsuche --spider CH_BGE
+ExecStart=/var/www/almalex.ch/backend/.venv/bin/python -m cli.main embed
 
 [Install]
 WantedBy=multi-user.target
