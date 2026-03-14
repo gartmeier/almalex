@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, Decision, DecisionFile
 from app.db.session import SessionLocal
-from cli.utils.http import fetch_html, fetch_json, fetch_pdf_text
+from cli.utils.http import fetch_html_text, fetch_json, fetch_pdf_text
 from cli.utils.text import normalize_text, split_text
 
 BASE_URL = "https://entscheidsuche.ch/docs"
@@ -142,8 +142,7 @@ def _process_decision(
     click.echo(f"  Processing: {number} ({date_.year})")
 
     if html_url:
-        soup = fetch_html(html_url)
-        text = normalize_text(soup.get_text())
+        text = fetch_html_text(html_url)
     elif pdf_url:
         text = normalize_text(fetch_pdf_text(pdf_url))
     else:

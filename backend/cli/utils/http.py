@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from app.core.config import settings
+from cli.utils.html import html_to_text
 
 session = requests.Session()
 ua = "AlmeLex"
@@ -22,6 +23,13 @@ def fetch_html(url: str) -> BeautifulSoup:
     response.raise_for_status()
     response.encoding = response.apparent_encoding
     return BeautifulSoup(response.text, "html.parser")
+
+
+def fetch_html_text(url: str):
+    response = session.get(url)
+    response.raise_for_status()
+    response.encoding = response.apparent_encoding
+    return html_to_text(response.text)
 
 
 def fetch_pdf_text(url: str) -> str:

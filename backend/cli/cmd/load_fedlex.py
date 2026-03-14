@@ -6,9 +6,9 @@ from app.db.models import Act, ActConfig, Article, Chunk
 from app.db.session import SessionLocal
 from cli.utils import sparql
 from cli.utils.context import generate_context_anthropic as generate_context
-from cli.utils.html import md
+from cli.utils.html import soup_to_text
 from cli.utils.http import fetch_html
-from cli.utils.text import normalize_text, split_text
+from cli.utils.text import split_text
 
 
 @click.command(name="load-fedlex")
@@ -87,7 +87,7 @@ def _process_act(db: Session, act: Act):
     )
 
     act_soup = fetch_html(act.html_url)
-    act_text = md.convert_soup(act_soup) if act_config.generate_context else None
+    act_text = soup_to_text(act_soup) if act_config.generate_context else None
 
     articles = []
     chunks = []
@@ -98,11 +98,11 @@ def _process_act(db: Session, act: Act):
 
         number_tag = article_tag.select_one(".heading > a")
         assert number_tag, f"no .heading > a in article {eid}"
-        number = normalize_text(md.convert_soup(number_tag))
+        number = soup_to_text(number_tag)
 
         collapseable = article_tag.find("div", class_="collapseable")
         assert collapseable, f"no .collapseable in article {eid}"
-        text = normalize_text(md.convert_soup(collapseable))
+        text = soup_to_text(collapseable)
 
         article = Article(
             act_id=act.id,
