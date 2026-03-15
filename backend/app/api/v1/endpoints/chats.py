@@ -38,13 +38,7 @@ async def create_message(
 ):
     def event_stream():
         with session_context() as db:
-            svc = ChatService(
-                chunk_repo=ChunkRepository(db),
-                embedding_service=EmbeddingService(openai_client),
-                llm_service=LLMService(openai_client),
-                query_expansion_service=QueryExpansionService(openai_client),
-                reranker=RerankerService(cohere_client),
-            )
+            svc = get_chat_service(db)
             for event in svc.process_message(
                 messages=request.messages,
                 model=request.model,
