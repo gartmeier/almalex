@@ -1,0 +1,13 @@
+  Expect SR 2 (maybe +8) -- private law filtering:
+  - "Wie lange muss der Arbeitgeber bei Krankheit den Lohn weiterzahlen?" (Lohnfortzahlung)
+  - "Welche Kündigungsfristen gelten im Arbeitsvertrag nach OR?"
+
+  Expect SR 1 -- public law only:
+  - "Welche Kompetenzen hat der Bundesrat gemäss BV?"
+
+  Expect SR 2 + SR 1 -- cross-cutting:
+  - "Was sind die Unterschiede zwischen privatem und öffentlichem Arbeitsrecht?"
+
+  Expect no filter (all categories) -- non-legal:
+  - "Was ist das Wetter in Bern?"
+
