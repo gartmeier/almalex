@@ -15,7 +15,7 @@ class RerankerService:
         self.client = client
 
     def rerank(self, query: str, chunks: list[Chunk], top_n: int) -> list[Chunk]:
-        if not chunks or top_n >= len(chunks):
+        if not chunks:
             return chunks
 
         try:

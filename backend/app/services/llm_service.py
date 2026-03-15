@@ -31,7 +31,7 @@ class LLMService:
 
         stream = self.client.chat.completions.create(
             model=model,
-            messages=openai_messages,  # type: ingore
+            messages=openai_messages,  # type: ignore
             stream=True,
             extra_body={"reasoning_effort": settings.openai_reasoning_effort},
         )

@@ -2,6 +2,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator
 
+import sentry_sdk
+
 from app.core.config import settings
 from app.core.types import Language
 from app.db.models import Chunk
@@ -38,6 +40,7 @@ class ChatService:
             yield from self._process_message(messages=messages, model=model, lang=lang)
         except Exception as e:
             logger.exception("Error processing message")
+            sentry_sdk.capture_exception()
             yield Error(type="error", message=str(e))
 
     def _process_message(
