@@ -2,14 +2,14 @@
 
 ## Phase 1: Context & Prompt (Quick Wins)
 
-- [ ] **System Prompt konsolidieren**
-  - [ ] 3 Sprachvarianten (DE/FR/EN) durch einen englischen System-Prompt ersetzen
-  - [ ] Sprachanweisung: Antwort = Sprache der Frage, Englisch → Deutsch
-  - [ ] Schweizer Rechtschreibung (ss statt ß) und Swiss French (nonante, septante) Regeln
-  - [ ] FR-Abkürzungs-Mapping einbauen (OR→CO, ZGB→CC, StGB→CP, SchKG→LP, BV→Cst., ArG→LTr)
-  - [ ] Anwendbarkeitsprüfung via `path`-Attribut in Prompt aufnehmen
-  - [ ] Quellentyp-Hierarchie: Gesetz = primär, BGE = Konkretisierung
-  - [ ] Response-Struktur: Direkte Antwort → Rechtsgrundlage → Rechtsprechung → Einschränkungen
+- [x] **System Prompt konsolidieren**
+  - [x] 3 Sprachvarianten (DE/FR/EN) durch einen englischen System-Prompt ersetzen
+  - [x] Sprachanweisung: Antwort = Sprache der Frage, Englisch → Deutsch
+  - [x] Schweizer Rechtschreibung (ss statt ß) und Swiss French (nonante, septante) Regeln
+  - [x] FR-Abkürzungs-Mapping einbauen (OR→CO, ZGB→CC, StGB→CP, SchKG→LP, BV→Cst., ArG→LTr)
+  - [x] Anwendbarkeitsprüfung via `path`-Attribut in Prompt aufnehmen
+  - [x] Quellentyp-Hierarchie: Gesetz = primär, BGE = Konkretisierung
+  - [x] Response-Struktur: Direkte Antwort → Rechtsgrundlage → Rechtsprechung → Einschränkungen
 
 - [ ] **Zitationsformat umstellen**
   - [ ] `[Art. X OR](#id)` ersetzen durch `[ref:ID]` Marker
