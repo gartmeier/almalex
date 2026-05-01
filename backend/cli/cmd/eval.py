@@ -41,12 +41,12 @@ Row = dict[str, Any]
 
 @click.command("eval")
 @click.option(
-    "--model", default=None, help="Model to use (defaults to infomaniak_chat_model)"
+    "--model", default=None, help="Model to use (defaults to OPENAI_CHAT_MODEL)"
 )
 @click.option("--output", "-o", default="eval_results.csv", help="Output CSV file")
 @click.option("--limit", "-n", type=int, default=None, help="Limit number of questions")
 def eval_command(model: str | None, output: str, limit: int | None):
-    effective_model = model or settings.infomaniak_chat_model
+    effective_model = model or settings.openai_chat_model
     results = asyncio.run(run_eval(effective_model, limit))
 
     click.echo(f"Writing {len(results)} results to {output}")

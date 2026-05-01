@@ -31,7 +31,7 @@ def generate_context_openai(
     )
     response = openai_client.chat.completions.create(
         messages=[{"role": "user", "content": input_}],
-        model="mistral3",
+        model="mistralai/Ministral-3-14B-Instruct-2512",
         max_tokens=200,
     )
     return response.choices[0].message.content

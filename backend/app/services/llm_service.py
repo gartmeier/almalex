@@ -33,6 +33,7 @@ class LLMService:
             model=model,
             messages=openai_messages,  # type: ignore
             stream=True,
+            max_completion_tokens=settings.openai_max_completion_tokens,
             extra_body={"reasoning_effort": settings.openai_reasoning_effort},
         )
 
