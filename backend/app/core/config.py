@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     openai_chat_model: str
     openai_embedding_model: str
     openai_reasoning_effort: str = "medium"
+    openai_max_completion_tokens: int = 1500
 
     # Bulk embedding
     bulk_embedding_api_key: str
@@ -33,11 +34,10 @@ class Settings(BaseSettings):
 
     # Allowed chat models
     allowed_models: list[str] = [
-        "openai/gpt-oss-120b",
-        "qwen3",
-        "llama3",
+        "google/gemma-4-31B-it",
+        "Qwen/Qwen3.5-122B-A10B-FP8",
+        "mistralai/Ministral-3-14B-Instruct-2512",
         "swiss-ai/Apertus-70B-Instruct-2509",
-        "mistral3",
     ]
 
     # Query expansion

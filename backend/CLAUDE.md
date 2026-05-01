@@ -56,7 +56,7 @@ This is a FastAPI-based RAG (Retrieval-Augmented Generation) system for Swiss le
 ### Key Dependencies
 - FastAPI with SQLAlchemy for web framework and ORM
 - pgvector for vector similarity search
-- OpenAI SDK for chat (`openai/gpt-oss-120b`) and embeddings (`bge_multilingual_gemma2`)
+- OpenAI SDK for chat (`google/gemma-4-31B-it`) and embeddings (`bge_multilingual_gemma2`)
 - Anthropic SDK, Cohere, Tenacity for additional AI/retry capabilities
 - Redis for caching
 - Alembic for database migrations
