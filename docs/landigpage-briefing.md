@@ -165,7 +165,7 @@ Dunkler Hintergrund (Tiefblau). Headline: «Vollständig quelloffen.» Sechs Tec
 ### Backend
 - FastAPI (Python 3.13) + SQLAlchemy
 - PostgreSQL mit pgvector-Erweiterung
-- Redis (Caching/Session)
+- Redis (Rate-Limiting)
 
 ### KI / RAG Pipeline
 - **Embedding:** BGE Multilingual Gemma2
@@ -175,7 +175,7 @@ Dunkler Hintergrund (Tiefblau). Headline: «Vollständig quelloffen.» Sechs Tec
 - Modelle werden laufend angepasst an Infomaniak-Angebot und LEXam-Benchmark
 
 ### Infrastruktur & Monitoring
-- Dedizierter Hetzner-Server (Finnland), Deploy via systemd auf Linux
+- Dedizierter Hetzner-Server (Finnland), Docker Compose mit Images aus GitHub Container Registry
 - Error-Tracking: Bugsink (self-hosted, Open-Source-Alternative zu Sentry)
 
 ### Entwicklung

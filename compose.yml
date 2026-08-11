@@ -1,0 +1,116 @@
+name: almalex
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: almalex
+      POSTGRES_USER: almalex
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U almalex -d almalex"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    image: ghcr.io/gartmeier/almalex-backend:${IMAGE_TAG:-latest}
+    build:
+      context: backend
+    env_file: ${BACKEND_ENV_FILE:-backend/.env}
+    environment:
+      DATABASE_URL: postgresql://almalex:${POSTGRES_PASSWORD}@postgres:5432/almalex
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "127.0.0.1:8010:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  migrate:
+    image: ghcr.io/gartmeier/almalex-backend:${IMAGE_TAG:-latest}
+    env_file: ${BACKEND_ENV_FILE:-backend/.env}
+    environment:
+      DATABASE_URL: postgresql://almalex:${POSTGRES_PASSWORD}@postgres:5432/almalex
+      REDIS_URL: redis://redis:6379/0
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  sync:
+    image: ghcr.io/gartmeier/almalex-backend:${IMAGE_TAG:-latest}
+    env_file: ${BACKEND_ENV_FILE:-backend/.env}
+    environment:
+      DATABASE_URL: postgresql://almalex:${POSTGRES_PASSWORD}@postgres:5432/almalex
+      REDIS_URL: redis://redis:6379/0
+    command:
+      - sh
+      - -c
+      - >-
+        python -m cli.main load-fedlex &&
+        python -m cli.main load-entscheidsuche --spider CH_BGE &&
+        python -m cli.main embed
+    profiles: [tools]
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    image: ghcr.io/gartmeier/almalex-frontend:${IMAGE_TAG:-latest}
+    build:
+      context: frontend
+      args:
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    ports:
+      - "127.0.0.1:8011:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
